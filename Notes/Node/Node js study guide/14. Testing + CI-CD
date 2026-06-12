@@ -1,0 +1,1092 @@
+# Node.js Testing & CI/CD – Complete Guide
+
+Testing and CI/CD are the backbone of reliable software delivery. In Node.js ecosystems, automated testing ensures code quality, while CI/CD pipelines enable rapid, safe deployments. This guide covers unit/integration testing with Jest and Supertest, performance/load testing with k6 and Artillery, progressive delivery with canary deployments, and runtime control with feature flags.
+
+---
+
+## 1. Jest + Supertest
+
+**Jest** is a delightful JavaScript testing framework with a focus on simplicity. **Supertest** is a library for testing HTTP servers, allowing you to make assertions about responses without actually binding to a network port.
+
+### Setting Up Jest
+
+```javascript
+// jest.config.js
+module.exports = {
+  testEnvironment: 'node',
+  collectCoverageFrom: [
+    'src/**/*.js',
+    '!src/**/*.test.js',
+    '!src/**/__tests__/**'
+  ],
+  coverageThreshold: {
+    global: {
+      branches: 80,
+      functions: 80,
+      lines: 80,
+      statements: 80
+    }
+  },
+  testMatch: ['**/__tests__/**/*.js', '**/*.test.js'],
+  verbose: true
+};
+```
+
+### Unit Testing with Jest
+
+```javascript
+// math.js
+function add(a, b) {
+  return a + b;
+}
+
+function divide(a, b) {
+  if (b === 0) throw new Error('Division by zero');
+  return a / b;
+}
+
+module.exports = { add, divide };
+```
+
+```javascript
+// math.test.js
+const { add, divide } = require('./math');
+
+describe('Math functions', () => {
+  describe('add', () => {
+    it('should add two positive numbers', () => {
+      expect(add(2, 3)).toBe(5);
+    });
+
+    it('should handle negative numbers', () => {
+      expect(add(-1, -2)).toBe(-3);
+    });
+  });
+
+  describe('divide', () => {
+    it('should divide two numbers', () => {
+      expect(divide(10, 2)).toBe(5);
+    });
+
+    it('should throw error when dividing by zero', () => {
+      expect(() => divide(10, 0)).toThrow('Division by zero');
+    });
+  });
+});
+```
+
+### Mocking with Jest
+
+```javascript
+// user-service.js
+const db = require('./db');
+const emailService = require('./email');
+
+async function createUser(userData) {
+  const user = await db.users.insert(userData);
+  await emailService.sendWelcome(user.email);
+  return user;
+}
+
+module.exports = { createUser };
+```
+
+```javascript
+// user-service.test.js
+const { createUser } = require('./user-service');
+
+jest.mock('./db');
+jest.mock('./email');
+
+const db = require('./db');
+const emailService = require('./email');
+
+describe('User Service', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('should create user and send welcome email', async () => {
+    const mockUser = { id: 1, email: 'test@example.com' };
+    db.users.insert.mockResolvedValue(mockUser);
+    emailService.sendWelcome.mockResolvedValue(true);
+
+    const result = await createUser({ email: 'test@example.com' });
+
+    expect(result).toEqual(mockUser);
+    expect(db.users.insert).toHaveBeenCalledWith({ email: 'test@example.com' });
+    expect(emailService.sendWelcome).toHaveBeenCalledWith('test@example.com');
+  });
+
+  it('should throw error if database fails', async () => {
+    db.users.insert.mockRejectedValue(new Error('DB error'));
+
+    await expect(createUser({ email: 'test@example.com' }))
+      .rejects.toThrow('DB error');
+    expect(emailService.sendWelcome).not.toHaveBeenCalled();
+  });
+});
+```
+
+### Integration Testing with Supertest
+
+```javascript
+// app.js
+const express = require('express');
+const app = express();
+
+app.use(express.json());
+
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok' });
+});
+
+app.post('/users', async (req, res) => {
+  const { name, email } = req.body;
+  if (!name || !email) {
+    return res.status(400).json({ error: 'Name and email required' });
+  }
+  // In real app: save to database
+  res.status(201).json({ id: '123', name, email });
+});
+
+app.get('/users/:id', async (req, res) => {
+  const { id } = req.params;
+  // In real app: fetch from database
+  if (id === '999') {
+    return res.status(404).json({ error: 'User not found' });
+  }
+  res.json({ id, name: 'Test User', email: 'test@example.com' });
+});
+
+module.exports = app;
+```
+
+```javascript
+// app.test.js
+const request = require('supertest');
+const app = require('./app');
+
+describe('API Endpoints', () => {
+  describe('GET /health', () => {
+    it('should return status ok', async () => {
+      const response = await request(app)
+        .get('/health')
+        .expect('Content-Type', /json/)
+        .expect(200);
+
+      expect(response.body).toEqual({ status: 'ok' });
+    });
+  });
+
+  describe('POST /users', () => {
+    it('should create a new user', async () => {
+      const response = await request(app)
+        .post('/users')
+        .send({ name: 'Alice', email: 'alice@example.com' })
+        .expect(201);
+
+      expect(response.body).toMatchObject({
+        name: 'Alice',
+        email: 'alice@example.com'
+      });
+      expect(response.body.id).toBeDefined();
+    });
+
+    it('should return 400 if name missing', async () => {
+      const response = await request(app)
+        .post('/users')
+        .send({ email: 'alice@example.com' })
+        .expect(400);
+
+      expect(response.body.error).toContain('Name');
+    });
+  });
+
+  describe('GET /users/:id', () => {
+    it('should return user by id', async () => {
+      const response = await request(app)
+        .get('/users/123')
+        .expect(200);
+
+      expect(response.body).toMatchObject({ id: '123', name: 'Test User' });
+    });
+
+    it('should return 404 if user not found', async () => {
+      await request(app)
+        .get('/users/999')
+        .expect(404);
+    });
+  });
+});
+```
+
+### Testing with Real Database (Testcontainers)
+
+```javascript
+const { PostgreSqlContainer } = require('@testcontainers/postgresql');
+const { Client } = require('pg');
+const app = require('./app');
+
+describe('API with real database', () => {
+  let container;
+  let client;
+  let server;
+
+  beforeAll(async () => {
+    container = await new PostgreSqlContainer()
+      .withDatabase('testdb')
+      .withUsername('testuser')
+      .withPassword('testpass')
+      .start();
+
+    client = new Client({
+      host: container.getHost(),
+      port: container.getPort(),
+      database: container.getDatabase(),
+      user: container.getUsername(),
+      password: container.getPassword()
+    });
+    await client.connect();
+
+    // Run migrations
+    await client.query(`
+      CREATE TABLE users (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(255),
+        email VARCHAR(255) UNIQUE
+      )
+    `);
+
+    // Pass db client to app
+    app.set('db', client);
+    server = app.listen(0);
+  }, 30000);
+
+  afterAll(async () => {
+    await client.end();
+    await container.stop();
+    server.close();
+  });
+
+  it('should create and retrieve user', async () => {
+    const port = server.address().port;
+    const createRes = await request(`http://localhost:${port}`)
+      .post('/users')
+      .send({ name: 'Bob', email: 'bob@example.com' });
+
+    const userId = createRes.body.id;
+
+    const getRes = await request(`http://localhost:${port}`)
+      .get(`/users/${userId}`);
+
+    expect(getRes.body.name).toBe('Bob');
+  });
+});
+```
+
+---
+
+## 2. Load Testing (k6 / Artillery)
+
+Load testing ensures your application can handle expected (and unexpected) traffic. **k6** is a modern, developer‑friendly load testing tool with JavaScript scripting. **Artillery** is another popular choice with YAML‑based configuration.
+
+### k6 Load Testing
+
+**Installation:**
+```bash
+brew install k6   # macOS
+# or download from https://k6.io
+```
+
+**Basic k6 Script:**
+```javascript
+// load-test.js
+import http from 'k6/http';
+import { check, sleep } from 'k6';
+
+export const options = {
+  stages: [
+    { duration: '30s', target: 20 }, // Ramp up to 20 users
+    { duration: '1m', target: 20 },  // Stay at 20 users
+    { duration: '30s', target: 0 },  // Ramp down
+  ],
+  thresholds: {
+    http_req_duration: ['p(95)<500'], // 95% of requests <500ms
+    http_req_failed: ['rate<0.01'],   // Error rate <1%
+  },
+};
+
+export default function () {
+  const res = http.get('http://localhost:3000/users/123');
+
+  check(res, {
+    'status is 200': (r) => r.status === 200,
+    'response time < 200ms': (r) => r.timings.duration < 200,
+  });
+
+  sleep(1);
+}
+```
+
+**Running k6:**
+```bash
+k6 run load-test.js
+```
+
+### Advanced k6: Testing Authenticated Endpoints
+
+```javascript
+import http from 'k6/http';
+import { check } from 'k6';
+
+export const options = {
+  vus: 50,
+  duration: '60s',
+};
+
+export default function () {
+  // Login to get token
+  const loginRes = http.post('http://localhost:3000/auth/login', JSON.stringify({
+    email: `user${__VU}@test.com`,
+    password: 'password123'
+  }), {
+    headers: { 'Content-Type': 'application/json' }
+  });
+
+  check(loginRes, { 'login successful': (r) => r.status === 200 });
+
+  const token = loginRes.json('token');
+
+  // Use token for authenticated requests
+  const res = http.get('http://localhost:3000/users/me', {
+    headers: { 'Authorization': `Bearer ${token}` }
+  });
+
+  check(res, { 'got profile': (r) => r.status === 200 });
+}
+```
+
+### k6 with InfluxDB + Grafana (Metrics Visualization)
+
+```bash
+k6 run --out influxdb=http://localhost:8086/myk6db load-test.js
+```
+
+**Grafana Dashboard:** Import k6 dashboard (ID: 2587) to visualize metrics.
+
+### Artillery Load Testing
+
+**Installation:**
+```bash
+npm install -g artillery
+```
+
+**Basic Artillery Configuration (YAML):**
+```yaml
+# load-test.yml
+config:
+  target: "http://localhost:3000"
+  phases:
+    - duration: 60
+      arrivalRate: 5
+      rampTo: 50
+      name: "Warm up"
+    - duration: 120
+      arrivalRate: 50
+      name: "Sustained load"
+  defaults:
+    headers:
+      Content-Type: "application/json"
+
+scenarios:
+  - name: "Get user flow"
+    flow:
+      - get:
+          url: "/users/123"
+          expect:
+            - statusCode: 200
+      - think: 1
+
+  - name: "Create user flow"
+    flow:
+      - post:
+          url: "/users"
+          json:
+            name: "Test User"
+            email: "test{{ $randomString() }}@example.com"
+          capture:
+            - json: "$.id"
+              as: "userId"
+          expect:
+            - statusCode: 201
+      - get:
+          url: "/users/{{ userId }}"
+          expect:
+            - statusCode: 200
+```
+
+**Running Artillery:**
+```bash
+artillery run load-test.yml
+
+# Generate HTML report
+artillery run --output report.json load-test.yml
+artillery report report.json
+```
+
+### Artillery with Custom JavaScript
+
+```javascript
+// processor.js
+function generateUserData(userContext, events, done) {
+  const random = Math.floor(Math.random() * 10000);
+  userContext.vars.name = `User${random}`;
+  userContext.vars.email = `user${random}@example.com`;
+  return done();
+}
+
+module.exports = { generateUserData };
+```
+
+```yaml
+config:
+  processor: "./processor.js"
+  # ...
+
+scenarios:
+  - flow:
+      - function: "generateUserData"
+      - post:
+          url: "/users"
+          json:
+            name: "{{ name }}"
+            email: "{{ email }}"
+```
+
+### Comparison: k6 vs Artillery
+
+| Feature | k6 | Artillery |
+|---------|-----|-----------|
+| **Scripting** | JavaScript (ES6) | YAML + optional JS |
+| **Performance** | Very high (Go runtime) | Moderate (Node.js) |
+| **Distributed Testing** | k6 Cloud | Artillery Pro |
+| **Learning Curve** | Moderate | Low (declarative) |
+| **Built‑in Checks** | Yes | Yes |
+| **HTML Reports** | Via cloud/plugins | Built‑in |
+| **WebSocket Testing** | Yes | Yes |
+
+---
+
+## 3. Canary Deployments
+
+Canary deployment is a strategy where a new version of a service is **gradually rolled out** to a small subset of users before full deployment. If metrics remain healthy, the rollout continues; otherwise, it's automatically rolled back.
+
+### Canary Deployment Flow
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                           Canary Deployment Process                          │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  1. Deploy new version (canary) alongside stable version                     │
+│                                                                              │
+│  2. Route 5% of traffic to canary                                           │
+│                                                                              │
+│  3. Monitor metrics (error rate, latency) for N minutes                     │
+│                                                                              │
+│  4. If metrics healthy → increase to 25%, then 50%, then 100%               │
+│                                                                              │
+│  5. If metrics degrade → automatically rollback (0% to canary)              │
+│                                                                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Implementing Canary with Kubernetes and Istio
+
+```yaml
+# VirtualService for traffic splitting
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: user-service
+spec:
+  hosts:
+    - user-service
+  http:
+    - match:
+        - headers:
+            x-canary:
+              exact: "true"
+      route:
+        - destination:
+            host: user-service
+            subset: canary
+    - route:
+        - destination:
+            host: user-service
+            subset: stable
+          weight: 95
+        - destination:
+            host: user-service
+            subset: canary
+          weight: 5
+```
+
+```yaml
+# DestinationRule for subsets
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: user-service
+spec:
+  host: user-service
+  subsets:
+    - name: stable
+      labels:
+        version: v1
+    - name: canary
+      labels:
+        version: v2
+```
+
+### Automated Canary with Argo Rollouts
+
+```yaml
+# rollout.yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: user-service
+spec:
+  replicas: 5
+  strategy:
+    canary:
+      steps:
+        - setWeight: 5
+        - pause: { duration: 2m }
+        - setWeight: 25
+        - pause: { duration: 5m }
+        - setWeight: 50
+        - pause: { duration: 5m }
+        - setWeight: 100
+      analysis:
+        templates:
+          - templateName: error-rate-check
+        startingStep: 1  # Start analysis after first weight change
+```
+
+### Health Analysis for Automated Rollback
+
+```yaml
+# analysis-template.yaml
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: error-rate-check
+spec:
+  metrics:
+    - name: error-rate
+      interval: 30s
+      successCondition: result < 0.01
+      failureLimit: 3
+      provider:
+        prometheus:
+          address: http://prometheus:9090
+          query: |
+            sum(rate(http_requests_total{status=~"5..",service="user-service",version="v2"}[1m]))
+            /
+            sum(rate(http_requests_total{service="user-service",version="v2"}[1m]))
+```
+
+### Feature Flag‑Based Canary (Application Level)
+
+```javascript
+// Using feature flags to control canary behavior
+const launchDarkly = require('launchdarkly-node-server-sdk');
+
+const ldClient = await launchDarkly.init(process.env.LAUNCHDARKLY_SDK_KEY);
+
+app.use(async (req, res, next) => {
+  const user = { key: req.user?.id || 'anonymous' };
+  const useCanary = await ldClient.variation('canary-user-service', user, false);
+
+  if (useCanary) {
+    // Route to new logic or call canary backend
+    req.headers['x-route-to'] = 'canary';
+  }
+
+  next();
+});
+```
+
+### Observability for Canary
+
+Key metrics to monitor during canary rollout:
+- **Error rate** (5xx responses)
+- **Latency** (p95, p99)
+- **CPU/Memory usage** of canary pods
+- **Business metrics** (conversion rate, successful checkouts)
+
+```javascript
+// Exposing canary metrics
+const client = require('prom-client');
+
+const canaryRequests = new client.Counter({
+  name: 'canary_requests_total',
+  help: 'Total requests to canary version',
+  labelNames: ['version', 'status']
+});
+
+app.use((req, res, next) => {
+  const version = req.headers['x-version'] || 'stable';
+  res.on('finish', () => {
+    canaryRequests.inc({ version, status: res.statusCode < 400 ? 'success' : 'error' });
+  });
+  next();
+});
+```
+
+---
+
+## 4. Feature Flags
+
+Feature flags (also called feature toggles) allow you to **turn features on/off at runtime** without deploying code. They enable trunk‑based development, A/B testing, canary releases, and operational control.
+
+### Types of Feature Flags
+
+| Type | Purpose | Example |
+|------|---------|---------|
+| **Release Toggles** | Hide unfinished features | `new-checkout-flow` |
+| **Experiment Toggles** | A/B test variants | `checkout-button-color` |
+| **Ops Toggles** | Disable features during incidents | `disable-recommendations` |
+| **Permission Toggles** | Feature access per user/plan | `premium-analytics` |
+
+### LaunchDarkly Integration
+
+```javascript
+const LaunchDarkly = require('launchdarkly-node-server-sdk');
+
+const ldClient = await LaunchDarkly.init(process.env.LAUNCHDARKLY_SDK_KEY);
+
+// Middleware to attach LD user
+app.use(async (req, res, next) => {
+  req.ldUser = {
+    key: req.user?.id || req.ip || 'anonymous',
+    email: req.user?.email,
+    custom: {
+      plan: req.user?.plan || 'free',
+      region: req.headers['cf-ipcountry'] || 'unknown'
+    }
+  };
+  next();
+});
+
+// Feature flag middleware
+function featureFlag(flagKey, defaultValue = false) {
+  return async (req, res, next) => {
+    try {
+      req.flags = req.flags || {};
+      req.flags[flagKey] = await ldClient.variation(flagKey, req.ldUser, defaultValue);
+      next();
+    } catch (err) {
+      console.error('Feature flag error:', err);
+      req.flags[flagKey] = defaultValue;
+      next();
+    }
+  };
+}
+
+// Usage in route
+app.get('/dashboard', featureFlag('new-dashboard'), (req, res) => {
+  if (req.flags['new-dashboard']) {
+    return res.render('dashboard-v2');
+  }
+  res.render('dashboard-v1');
+});
+```
+
+### OpenFeature (Vendor‑Neutral Feature Flagging)
+
+```javascript
+const { OpenFeature } = require('@openfeature/server-sdk');
+const { LaunchDarklyProvider } = require('@openfeature/launchdarkly-provider');
+
+await OpenFeature.setProvider(new LaunchDarklyProvider(process.env.LAUNCHDARKLY_SDK_KEY));
+const client = OpenFeature.getClient();
+
+// Evaluation with context
+const context = {
+  targetingKey: user.id,
+  email: user.email,
+  plan: user.plan
+};
+
+const showNewUI = await client.getBooleanValue('new-ui', false, context);
+
+if (showNewUI) {
+  // Render new UI
+}
+```
+
+### Self‑Hosted Feature Flags with Redis
+
+```javascript
+class FeatureFlagService {
+  constructor(redis) {
+    this.redis = redis;
+    this.cache = new Map();
+    this.cacheTTL = 60000; // 1 minute
+  }
+
+  async isEnabled(flagKey, userId = null, defaultValue = false) {
+    const cacheKey = `${flagKey}:${userId || 'global'}`;
+    const cached = this.cache.get(cacheKey);
+    if (cached && Date.now() < cached.expires) {
+      return cached.value;
+    }
+
+    // Check user‑specific override
+    if (userId) {
+      const userOverride = await this.redis.get(`flag:${flagKey}:user:${userId}`);
+      if (userOverride !== null) {
+        const value = userOverride === 'true';
+        this.cache.set(cacheKey, { value, expires: Date.now() + this.cacheTTL });
+        return value;
+      }
+    }
+
+    // Check global flag
+    const globalFlag = await this.redis.get(`flag:${flagKey}:global`);
+    const value = globalFlag !== null ? globalFlag === 'true' : defaultValue;
+
+    this.cache.set(cacheKey, { value, expires: Date.now() + this.cacheTTL });
+    return value;
+  }
+
+  async setFlag(flagKey, enabled, userId = null) {
+    const key = userId ? `flag:${flagKey}:user:${userId}` : `flag:${flagKey}:global`;
+    await this.redis.set(key, enabled.toString());
+    this.cache.clear(); // Invalidate cache
+  }
+
+  async setPercentageRollout(flagKey, percentage) {
+    await this.redis.set(`flag:${flagKey}:percentage`, percentage.toString());
+  }
+
+  async isEnabledWithRollout(flagKey, userId) {
+    const percentage = await this.redis.get(`flag:${flagKey}:percentage`);
+    if (!percentage) return this.isEnabled(flagKey, userId);
+
+    // Deterministic hash for consistent rollout
+    const hash = crypto.createHash('md5').update(`${flagKey}:${userId}`).digest('hex');
+    const bucket = parseInt(hash.substring(0, 8), 16) % 100;
+    return bucket < parseInt(percentage);
+  }
+}
+```
+
+### Feature Flags in Frontend (React)
+
+```javascript
+// FeatureFlagContext.jsx
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import * as LDClient from 'launchdarkly-js-client-sdk';
+
+const FeatureFlagContext = createContext({});
+
+export function FeatureFlagProvider({ children, user }) {
+  const [flags, setFlags] = useState({});
+  const [client, setClient] = useState(null);
+
+  useEffect(() => {
+    const ldClient = LDClient.initialize(process.env.REACT_APP_LD_CLIENT_KEY, {
+      key: user.id,
+      email: user.email,
+      custom: { plan: user.plan }
+    });
+
+    ldClient.on('ready', () => {
+      setFlags(ldClient.allFlags());
+    });
+
+    ldClient.on('change', (changes) => {
+      setFlags(prev => ({ ...prev, ...changes }));
+    });
+
+    setClient(ldClient);
+
+    return () => ldClient.close();
+  }, [user]);
+
+  return (
+    <FeatureFlagContext.Provider value={{ flags, client }}>
+      {children}
+    </FeatureFlagContext.Provider>
+  );
+}
+
+export function useFeatureFlag(flagKey, defaultValue = false) {
+  const { flags } = useContext(FeatureFlagContext);
+  return flags[flagKey] ?? defaultValue;
+}
+
+// Usage in component
+function Dashboard() {
+  const showNewUI = useFeatureFlag('new-dashboard');
+  return showNewUI ? <NewDashboard /> : <OldDashboard />;
+}
+```
+
+### Best Practices for Feature Flags
+
+1. **Naming convention**: Use descriptive names with prefixes (`release/`, `experiment/`, `ops/`)
+2. **Default to safe values**: Ensure app works with flags off
+3. **Clean up stale flags**: Remove flag code after full rollout
+4. **Monitor flag usage**: Track evaluation metrics
+5. **Use short‑lived flags**: Avoid permanent flags that become technical debt
+6. **Test with flags on/off**: Include flag variations in test suite
+
+---
+
+## 5. CI/CD Pipeline with GitHub Actions
+
+A complete CI/CD pipeline orchestrates testing, building, and deployment.
+
+```yaml
+# .github/workflows/ci-cd.yml
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+env:
+  NODE_VERSION: '20'
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: testdb
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Type check
+        run: npm run type-check
+
+      - name: Unit tests
+        run: npm run test:ci
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/testdb
+          REDIS_URL: redis://localhost:6379
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./coverage/lcov.info
+          flags: unittests
+
+  integration-test:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run test:integration
+        env:
+          API_BASE_URL: http://localhost:3000
+
+  build-and-push:
+    runs-on: ubuntu-latest
+    needs: [test, integration-test]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=sha,prefix={{branch}}-
+            type=ref,event=branch
+            latest
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy-staging:
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy to Kubernetes staging
+        uses: azure/k8s-deploy@v4
+        with:
+          manifests: |
+            k8s/staging/deployment.yaml
+            k8s/staging/service.yaml
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          namespace: staging
+
+  canary:
+    runs-on: ubuntu-latest
+    needs: deploy-staging
+    environment: production
+    steps:
+      - name: Start canary deployment
+        run: |
+          echo "Deploying canary with 5% traffic"
+          # Use kubectl or ArgoCD CLI to update VirtualService weight
+
+      - name: Run smoke tests against canary
+        run: |
+          npm run test:smoke -- --url https://canary.example.com
+
+      - name: Monitor canary metrics
+        run: |
+          # Script to check Prometheus metrics and decide to promote/rollback
+          node scripts/canary-analyzer.js
+
+  deploy-production:
+    runs-on: ubuntu-latest
+    needs: canary
+    environment: production
+    steps:
+      - name: Promote canary to 100%
+        run: |
+          echo "Promoting canary to full production"
+          # Update VirtualService to 100% canary, then rename to stable
+```
+
+### Canary Analyzer Script
+
+```javascript
+// scripts/canary-analyzer.js
+const fetch = require('node-fetch');
+
+const PROMETHEUS_URL = process.env.PROMETHEUS_URL;
+const CANARY_VERSION = process.env.CANARY_VERSION;
+const ERROR_THRESHOLD = 0.01; // 1% error rate
+const LATENCY_THRESHOLD = 500; // 500ms p95
+
+async function queryPrometheus(query) {
+  const url = `${PROMETHEUS_URL}/api/v1/query?query=${encodeURIComponent(query)}`;
+  const res = await fetch(url);
+  const data = await res.json();
+  return parseFloat(data.data.result[0]?.value[1]) || 0;
+}
+
+async function analyze() {
+  const errorRate = await queryPrometheus(`
+    sum(rate(http_requests_total{version="${CANARY_VERSION}",status=~"5.."}[5m]))
+    /
+    sum(rate(http_requests_total{version="${CANARY_VERSION}"}[5m]))
+  `);
+
+  const p95Latency = await queryPrometheus(`
+    histogram_quantile(0.95,
+      sum(rate(http_request_duration_seconds_bucket{version="${CANARY_VERSION}"}[5m]))
+      by (le)
+    )
+  `) * 1000;
+
+  console.log(`Error Rate: ${(errorRate * 100).toFixed(2)}%`);
+  console.log(`P95 Latency: ${p95Latency.toFixed(2)}ms`);
+
+  if (errorRate > ERROR_THRESHOLD) {
+    console.error('❌ Error rate too high! Rolling back...');
+    process.exit(1);
+  }
+
+  if (p95Latency > LATENCY_THRESHOLD) {
+    console.error('❌ Latency too high! Rolling back...');
+    process.exit(1);
+  }
+
+  console.log('✅ Canary metrics healthy. Promoting...');
+}
+
+analyze().catch(err => {
+  console.error(err);
+  process.exit(1);
+});
+```
+
+---
+
+## Summary Table
+
+| Component | Tool | Purpose |
+|-----------|------|---------|
+| **Unit Testing** | Jest | Fast, isolated component tests |
+| **Integration Testing** | Supertest + Testcontainers | Test API endpoints with real dependencies |
+| **Load Testing** | k6, Artillery | Verify performance under load |
+| **Canary Deployments** | Argo Rollouts, Istio | Gradual, safe rollouts |
+| **Feature Flags** | LaunchDarkly, OpenFeature | Runtime feature control |
+| **CI/CD Pipeline** | GitHub Actions, GitLab CI | Automated build, test, deploy |
+
+**Key Takeaways:**
+1. **Test at multiple levels** — unit, integration, load, and smoke tests
+2. **Automate everything** — CI/CD pipeline should be the only path to production
+3. **Deploy gradually** — canary deployments catch issues before full impact
+4. **Use feature flags** — decouple deployment from release
+5. **Monitor continuously** — observability informs rollback decisions
+6. **Treat configuration as code** — pipeline, deployment manifests, and test scripts in version control
