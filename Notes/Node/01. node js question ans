@@ -1,0 +1,834 @@
+# Node.js Backend — Complete Interview Question Bank
+
+> Comprehensive, section-wise question bank covering every topic asked in Node.js backend interviews — from freshers to senior/staff level. Sourced from real interview reports, GeeksforGeeks, InterviewBit, Glassdoor, Blind, Medium, and senior-level engineering blogs.
+
+---
+
+## Table of Contents
+
+1. [Node.js Core Fundamentals](#1-nodejs-core-fundamentals)
+2. [Event Loop & Async Model](#2-event-loop--async-model)
+3. [Streams & Buffers](#3-streams--buffers)
+4. [Modules System](#4-modules-system)
+5. [Express.js & Middleware](#5-expressjs--middleware)
+6. [REST API Design](#6-rest-api-design)
+7. [Authentication & Authorization](#7-authentication--authorization)
+8. [Databases — MongoDB & Mongoose](#8-databases--mongodb--mongoose)
+9. [Databases — PostgreSQL / SQL & ORMs](#9-databases--postgresql--sql--orms)
+10. [Caching — Redis & Strategies](#10-caching--redis--strategies)
+11. [Error Handling & Logging](#11-error-handling--logging)
+12. [Security](#12-security)
+13. [Performance, Scaling & Clustering](#13-performance-scaling--clustering)
+14. [Worker Threads & Child Processes](#14-worker-threads--child-processes)
+15. [File System & Built-in Modules](#15-file-system--built-in-modules)
+16. [WebSockets & Real-Time Communication](#16-websockets--real-time-communication)
+17. [Microservices & Architecture](#17-microservices--architecture)
+18. [Message Queues — RabbitMQ / Kafka / Bull](#18-message-queues--rabbitmq--kafka--bull)
+19. [Testing in Node.js](#19-testing-in-nodejs)
+20. [DevOps — Docker, CI/CD & Deployment](#20-devops--docker-cicd--deployment)
+21. [TypeScript with Node.js](#21-typescript-with-nodejs)
+22. [Design Patterns in Node.js](#22-design-patterns-in-nodejs)
+23. [GraphQL with Node.js](#23-graphql-with-nodejs)
+24. [Advanced / Senior-Level Questions](#24-advanced--senior-level-questions)
+25. [Scenario-Based / System Design Questions](#25-scenario-based--system-design-questions)
+
+---
+
+## 1. Node.js Core Fundamentals
+
+### Architecture & Runtime
+
+- What is Node.js? How is it different from a browser's JavaScript environment?
+- Explain the Node.js architecture. What are its key components? (V8, libuv, event loop, thread pool)
+- What is the V8 engine? What does it do in the context of Node.js?
+- What is libuv? What role does it play in Node.js?
+- Why is Node.js single-threaded? What does that mean practically?
+- If Node.js is single-threaded, how does it handle thousands of concurrent requests?
+- What is non-blocking I/O? Give a concrete example.
+- What is the difference between blocking and non-blocking code?
+- What are the advantages and disadvantages of Node.js over Java or PHP for backend development?
+- When should you NOT use Node.js? What workloads is it poor for?
+- What is the Node.js thread pool? What operations use it? What is its default size?
+- How do you change the thread pool size in Node.js?
+- What is `process` in Node.js? What are the key properties and methods on it?
+- What is `global` in Node.js? How does it differ from `window` in the browser?
+- What is the difference between `process.exit()` and throwing an uncaught error?
+- What is `process.nextTick()`? How does it compare to `setImmediate()`?
+- What is `NODE_ENV`? Why is it important?
+- How do you read environment variables in Node.js? What is `dotenv`?
+- What is REPL in Node.js? What is it useful for?
+- What is the purpose of `package.json`? What are its key fields?
+- What is `package-lock.json`? Why should it be committed to source control?
+- What is the difference between `dependencies` and `devDependencies`?
+- What is semantic versioning? What is the difference between `^1.2.3` and `~1.2.3`?
+- What is `npm audit`? When should you run it?
+- What is the difference between `npm install` and `npm ci`? When do you use `npm ci`?
+- How does Node.js handle uncaught exceptions? What is `process.on('uncaughtException')`?
+- What is `process.on('unhandledRejection')`? When is it triggered?
+- What is the difference between `__dirname` and `__filename`?
+- What is `process.argv`? How do you parse CLI arguments?
+- How do you gracefully shut down a Node.js server?
+
+---
+
+## 2. Event Loop & Async Model
+
+### Event Loop Phases
+
+- Explain the Node.js event loop in detail. What are its phases?
+- What are the 6 phases of the event loop? Describe what happens in each.
+  - Timers (`setTimeout`, `setInterval`)
+  - Pending callbacks (I/O error callbacks)
+  - Idle / Prepare
+  - Poll (I/O callbacks)
+  - Check (`setImmediate`)
+  - Close callbacks
+- What is the difference between the microtask queue and the macrotask queue?
+- What runs first: `Promise.then()` callback or `setTimeout(fn, 0)`? Why?
+- What is the order of execution: `process.nextTick` vs `Promise.then` vs `setImmediate` vs `setTimeout(0)`?
+- What is `process.nextTick()`? What is a practical use case for it?
+- What is `setImmediate()`? How is it different from `setTimeout(fn, 0)`?
+- Can you starve the event loop using `process.nextTick()`? How?
+- What is event loop blocking? How do you detect and fix it?
+- What is the difference between CPU-bound and I/O-bound operations? How does Node handle each?
+- Why is synchronous code like `JSON.parse` of a huge payload dangerous in Node.js?
+- What are common causes of event loop lag in production?
+- What is the `--max-old-space-size` flag? What does it control?
+
+### Callbacks, Promises & Async/Await
+
+- What is callback hell? How do you avoid it?
+- What are the 3 ways to handle asynchronous code in Node.js?
+- What is the difference between error-first callbacks and Promises?
+- What is `promisify`? Implement it from scratch.
+- What is the difference between `async/await` and `.then()` chaining?
+- What happens when you `await` a non-Promise value?
+- How do you run multiple async operations in parallel in Node.js?
+- What is the difference between `await Promise.all([])` and sequential `await` in a loop?
+- What does `Promise.allSettled` do that `Promise.all` doesn't?
+- How do you implement a timeout for an async operation?
+- How do you cancel an in-flight async operation? (AbortController, AbortSignal)
+- What is `async_hooks`? What is it used for? (request tracing, context propagation)
+- How do you implement a retry mechanism with exponential backoff?
+- What is a race condition in async Node.js code? Give an example.
+
+---
+
+## 3. Streams & Buffers
+
+### Streams
+
+- What are streams in Node.js? Why are they important?
+- What are the 4 types of streams? Give an example of each.
+  - Readable, Writable, Duplex, Transform
+- How do you read a large file in Node.js without running out of memory?
+- What is `pipe()`? How does it work internally?
+- What is backpressure in Node.js streams? How do you handle it?
+- What is the difference between flowing mode and paused mode in readable streams?
+- What is `pipeline()` and how does it differ from `pipe()`? Why is `pipeline()` preferred?
+- How do you implement a custom Transform stream?
+- What is the `highWaterMark` option in streams?
+- How do you handle errors in a piped stream chain?
+- What are object mode streams?
+- What is the difference between `stream.Readable.from()` and creating a custom readable?
+- When would you use streams vs loading a file entirely into memory?
+- What is `zlib`? How do you compress/decompress data using streams?
+
+### Buffers
+
+- What is a Buffer in Node.js? How does it differ from an array?
+- Why does Node.js need Buffers? What is binary data?
+- How do you create a Buffer? What is the difference between `Buffer.alloc()` and `Buffer.allocUnsafe()`?
+- How do you convert between a Buffer and a string?
+- What is encoding? What are the common encodings in Node.js? (`utf8`, `base64`, `hex`, `binary`)
+- How do you convert a file to base64 using Buffers?
+
+---
+
+## 4. Modules System
+
+### CommonJS vs ES Modules
+
+- What is the CommonJS module system? How does `require()` work internally?
+- What is the module cache in Node.js? What happens when you `require` the same module twice?
+- What is the difference between CommonJS (`require/module.exports`) and ES Modules (`import/export`)?
+- How do you use ES Modules in Node.js? What is the `"type": "module"` field in `package.json`?
+- What is the difference between `module.exports` and `exports`?
+- Can you use `require` inside a conditional statement? Can you use `import` conditionally?
+- What is dynamic `import()`? When would you use it?
+- What is circular dependency in Node.js modules? How does Node handle it?
+- What is the difference between a built-in module, an npm package, and a local module?
+- How does Node.js resolve module paths? (the module resolution algorithm)
+- What is `__esModule` interop?
+- What is tree shaking? Why does it only work with ES Modules?
+
+---
+
+## 5. Express.js & Middleware
+
+### Core Express
+
+- What is Express.js? Why is it used with Node.js?
+- What is the request-response lifecycle in Express?
+- What is middleware in Express? How does the middleware chain work?
+- What does `next()` do in middleware? What happens if you don't call it?
+- What is the difference between `app.use()` and `app.get()` / `app.post()`?
+- What is the difference between application-level, router-level, and error-handling middleware?
+- How do you create a router in Express? Why would you use `express.Router()`?
+- What is the difference between `req.params`, `req.query`, and `req.body`?
+- How do you serve static files in Express?
+- What is `express.json()` middleware? What did `body-parser` used to do?
+- What is the order of middleware execution? Does order matter?
+- How do you implement error-handling middleware in Express? (4-argument signature)
+- How do you handle 404 errors in Express?
+- What is `res.json()` vs `res.send()` vs `res.end()`?
+- What is `res.locals`? What is it used for?
+- How do you implement request timeout middleware?
+- What is `express-async-errors` / `express-async-handler`? Why is it needed?
+- What is `helmet`? What HTTP headers does it set?
+- What is `morgan`? What does request logging look like in production?
+- What is `compression` middleware? What does it do?
+- What is `cors` middleware? When and how do you configure it?
+- How do you implement rate limiting in Express? (e.g., `express-rate-limit`)
+- How do you validate request bodies in Express? (`Joi`, `zod`, `express-validator`)
+- What is graceful shutdown in an Express app? How do you implement it?
+- What is the difference between `app.listen()` and `http.createServer(app).listen()`?
+- How do you structure a large Express application? (folder structure, separation of concerns)
+- What is `res.cookie()` vs setting the `Set-Cookie` header manually?
+- How do you handle file uploads in Express? (`multer`)
+- What is `express-session`? How does it work?
+
+---
+
+## 6. REST API Design
+
+### Principles & Best Practices
+
+- What is REST? What are the 6 constraints of REST architecture?
+- What is the difference between REST and RPC?
+- What is statelessness in REST? Why is it important?
+- What does idempotency mean? Which HTTP methods are idempotent?
+- What is the difference between `PUT` and `PATCH`?
+- When do you use `POST` vs `PUT`?
+- What are the correct HTTP status codes to use? Give examples for 2xx, 3xx, 4xx, 5xx.
+- When do you return `200` vs `201` vs `204`?
+- When do you return `400` vs `401` vs `403` vs `404` vs `422` vs `409`?
+- What is HATEOAS?
+- How do you version an API? What are the different strategies? (URI versioning, header versioning)
+- How do you design pagination for a REST API? (offset-based vs cursor-based)
+- What is cursor-based pagination? When is it better than offset-based?
+- How do you design filtering, sorting, and searching for a REST API?
+- What is the difference between `/users/:id/posts` and `/posts?userId=:id`?
+- What is request/response envelope vs plain JSON body? When do you use each?
+- How do you handle partial responses (field selection) in a REST API?
+- How do you design a batch API endpoint?
+- How do you implement API rate limiting? What headers do you return?
+- What is API idempotency key? When is it used?
+- How do you document a REST API? (Swagger/OpenAPI, Postman)
+- What is OpenAPI/Swagger? How do you generate docs from code?
+- How do you handle CORS in a REST API?
+- What is the difference between a monolithic API and a BFF (Backend for Frontend)?
+
+---
+
+## 7. Authentication & Authorization
+
+### Authentication
+
+- What is the difference between authentication and authorization?
+- What is session-based authentication vs token-based authentication?
+- What is JWT (JSON Web Token)? What are its three parts?
+- How does JWT authentication work end-to-end? (sign, send, verify)
+- What is the difference between `HS256` and `RS256` signing algorithms in JWT?
+- What are the security risks of JWT? How do you mitigate them?
+- Where should you store JWT on the client? (localStorage vs HttpOnly cookie — trade-offs)
+- How do you implement JWT refresh tokens? What is the refresh token rotation pattern?
+- What is the difference between access token and refresh token?
+- How do you invalidate/revoke a JWT before it expires?
+- What is OAuth 2.0? What are the 4 grant types?
+- What is the Authorization Code flow with PKCE? When is it used?
+- What is OpenID Connect (OIDC)? How does it extend OAuth 2.0?
+- What is Passport.js? How do you implement a `passport-jwt` strategy?
+- How do you implement Google OAuth login in a Node.js app?
+- What is bcrypt? How do you hash and compare passwords with it?
+- What is the difference between encryption and hashing?
+- What is salting a password? Why is it necessary?
+- What is `crypto.timingSafeEqual()`? Why is it important for authentication?
+- How do you implement magic link (passwordless) authentication?
+- What is MFA (Multi-Factor Authentication)? How do you implement TOTP?
+
+### Authorization
+
+- What is RBAC (Role-Based Access Control)? How do you implement it in Express?
+- What is ABAC (Attribute-Based Access Control)?
+- How do you implement permission-based middleware in Express?
+- What is the principle of least privilege? How do you apply it in API design?
+
+---
+
+## 8. Databases — MongoDB & Mongoose
+
+### MongoDB
+
+- What is MongoDB? How does it differ from relational databases?
+- What are documents and collections in MongoDB?
+- What is a BSON document? How does it differ from JSON?
+- What are the common MongoDB data types?
+- What is the `_id` field? How is an ObjectId generated?
+- What is an index in MongoDB? Why are indexes important?
+- What types of indexes does MongoDB support? (single field, compound, text, geospatial, TTL, sparse, partial)
+- What is the explain() method? How do you use it to diagnose slow queries?
+- What is a covered query in MongoDB?
+- What is the aggregation pipeline? Name 5 common stages and what they do.
+- What is `$lookup`? How does it perform a join?
+- What is `$facet`? When would you use it?
+- What is the difference between `find()` and `aggregate()`?
+- What is `$match`, `$group`, `$project`, `$sort`, `$limit`, `$skip`, `$unwind`?
+- What are MongoDB transactions? When are they used?
+- What is the difference between `updateOne`, `updateMany`, `replaceOne`, `findOneAndUpdate`?
+- What is an upsert?
+- What are MongoDB write concerns and read concerns?
+- What is sharding in MongoDB? What problem does it solve?
+- What is a replica set? How does failover work?
+- What is the oplog?
+- What is MongoDB Atlas? How does it differ from self-hosted MongoDB?
+
+### Mongoose
+
+- What is Mongoose? Why use it instead of the native MongoDB driver?
+- What is a Mongoose schema? What is a model?
+- How do you define validation in a Mongoose schema?
+- What are Mongoose virtuals?
+- What are Mongoose middleware (pre/post hooks)? Give 3 use cases.
+- What is `populate()` in Mongoose? How does it work? What are its limitations?
+- How do you implement soft deletes in Mongoose?
+- What is the difference between `save()` and `updateOne()` in Mongoose?
+- What is `lean()` in Mongoose? When should you use it?
+- How do you handle connection pooling in Mongoose?
+- What is the Mongoose `session` and how do you use it for transactions?
+- What is discriminator in Mongoose?
+- How do you paginate results in Mongoose efficiently?
+
+---
+
+## 9. Databases — PostgreSQL / SQL & ORMs
+
+### SQL Fundamentals
+
+- What is the difference between SQL and NoSQL databases?
+- When would you choose PostgreSQL over MongoDB?
+- What are ACID properties? Explain each.
+- What is a transaction? How do you use one in Node.js?
+- What is the difference between `INNER JOIN`, `LEFT JOIN`, `RIGHT JOIN`, `FULL OUTER JOIN`?
+- What is a subquery? What is a CTE (Common Table Expression)?
+- What is an index in PostgreSQL? What is the trade-off of over-indexing?
+- What is the difference between B-tree, Hash, GIN, and BRIN indexes?
+- What is EXPLAIN ANALYZE in PostgreSQL?
+- What is N+1 query problem? How do you fix it?
+- What are database migrations? How do you manage schema migrations in a Node.js app?
+- What is optimistic locking vs pessimistic locking?
+- What is a deadlock? How do you prevent it?
+- What is connection pooling? Why is it critical in a Node.js app?
+- What is `pg` vs `pg-pool` vs Knex.js vs Sequelize vs Prisma? When to use each?
+
+### ORMs
+
+- What is an ORM? What are its advantages and disadvantages?
+- What is Sequelize? How do you define a model and associations?
+- What is Prisma? How does it differ from Sequelize?
+- What is the Prisma schema? What is the Prisma client?
+- How do you handle database migrations in Prisma vs Sequelize?
+- What is a repository pattern? How do you implement it in Node.js?
+- What is the active record pattern vs the data mapper pattern?
+- What is Knex.js? When would you use it over an ORM?
+- How do you prevent SQL injection using a query builder?
+
+---
+
+## 10. Caching — Redis & Strategies
+
+### Redis
+
+- What is Redis? What data structures does it support?
+- What is the difference between Redis as a cache vs as a database vs as a message broker?
+- How do you connect to Redis from Node.js? (`ioredis` vs `node-redis`)
+- How do you set a key with a TTL (expiration) in Redis?
+- What are Redis data types? When would you use each?
+  - Strings, Hashes, Lists, Sets, Sorted Sets, Streams, HyperLogLog, Bitmaps
+- How do you implement session storage in Redis?
+- How do you implement a rate limiter using Redis?
+- What is Redis Pub/Sub? How does it differ from a message queue?
+- What is a Redis pipeline? What problem does it solve?
+- What is Redis Lua scripting? When is it useful?
+- What is the difference between Redis `WATCH/MULTI/EXEC` and a transaction?
+- What is Redis persistence? What is the difference between RDB and AOF?
+- What is Redis Cluster? What is Redis Sentinel?
+- What is cache invalidation? What are the common strategies?
+- What is the cache-aside pattern? How does it differ from write-through and write-behind?
+- What is a cache stampede (thundering herd)? How do you prevent it?
+- How do you implement distributed locking with Redis? (Redlock algorithm)
+- What is the difference between `DEL` and `UNLINK` in Redis?
+- What are common Redis anti-patterns to avoid?
+
+---
+
+## 11. Error Handling & Logging
+
+### Error Handling
+
+- What is the difference between operational errors and programmer errors in Node.js?
+- How do you handle errors in synchronous vs asynchronous code?
+- What is the error-first callback convention?
+- How do you propagate errors through a Promise chain?
+- How do you handle errors in `async/await`? What is the try/catch pattern?
+- What is centralized error handling in Express? How do you implement it?
+- What is a custom error class in Node.js? Implement `AppError` with a status code.
+- When should you use `process.on('uncaughtException')`? What are the risks?
+- When should you use `process.on('unhandledRejection')`?
+- How do you implement graceful error responses (not leaking stack traces in production)?
+- What is the difference between `throw` and `next(err)` in Express?
+- How do you handle async errors in Express without try/catch on every route?
+- What is domain error handling in Node.js? (deprecated, but may be asked)
+- How do you distinguish between a 4xx error (client) and 5xx error (server) in your error handler?
+
+### Logging
+
+- What is structured logging? Why is it better than `console.log` in production?
+- What is Winston? How do you configure transports, log levels, and formatters?
+- What is Pino? Why is it faster than Winston?
+- What are log levels? (`error`, `warn`, `info`, `http`, `verbose`, `debug`, `silly`)
+- What is correlation ID / request ID? How do you propagate it across async calls?
+- How do you implement centralized logging in a distributed Node.js system? (ELK, Datadog, Loki)
+- What is `morgan`? What log format would you use in production?
+- How do you redact sensitive fields (passwords, tokens) from logs?
+- What is `cls-hooked` or `AsyncLocalStorage` for log context propagation?
+- How do you implement audit logging in a Node.js app?
+
+---
+
+## 12. Security
+
+### Common Vulnerabilities
+
+- What is SQL injection? How do you prevent it in Node.js?
+- What is NoSQL injection (MongoDB injection)? How do you prevent it?
+- What is XSS (Cross-Site Scripting)? How do you prevent it in a Node.js API?
+- What is CSRF (Cross-Site Request Forgery)? How do you prevent it?
+- What is prototype pollution? How can it affect a Node.js app?
+- What is a mass assignment vulnerability? How do you prevent it?
+- What is SSRF (Server-Side Request Forgery)?
+- What is a timing attack? How does `crypto.timingSafeEqual()` help?
+- What is a ReDoS (Regular Expression Denial of Service)?
+- What is directory traversal? How do you prevent it?
+
+### Hardening & Best Practices
+
+- What does `helmet.js` do? Which headers does it set?
+- What is CORS? How do you configure it securely?
+- What is the principle of least privilege in APIs?
+- How do you implement input validation and sanitization?
+- What is rate limiting? How do you implement it? What is distributed rate limiting?
+- What is `hpp` (HTTP Parameter Pollution)? How do you protect against it?
+- How do you securely store secrets in a Node.js application?
+- What is a Content Security Policy (CSP)?
+- What is HTTPS? How do you force HTTPS in Express?
+- How do you prevent brute-force login attacks?
+- What is `npm audit`? How do you handle vulnerable dependencies?
+- What is OWASP Top 10? Which items are most relevant to Node.js APIs?
+- How do you implement security headers? (HSTS, X-Frame-Options, X-Content-Type-Options)
+- What is a JWT secret? How long should it be? How do you rotate it?
+- How do you implement API key authentication securely?
+
+---
+
+## 13. Performance, Scaling & Clustering
+
+### Performance Optimization
+
+- How do you profile a Node.js application? What tools do you use?
+- What is the `clinic` tool suite? (clinic doctor, clinic flame, clinic bubbleprof)
+- How do you detect event loop lag in production?
+- What is `--inspect` flag? How do you use Chrome DevTools to profile Node.js?
+- What is V8 heap snapshot? How do you use it to debug memory leaks?
+- How do you detect and fix memory leaks in Node.js?
+- What are the common causes of memory leaks in Node.js? (closures, global state, event listeners, caches)
+- What is garbage collection in Node.js? How does V8's GC work?
+- What is the old space vs new space in V8 memory?
+- How do you tune V8 garbage collection? (`--max-old-space-size`, `--expose-gc`)
+- What is `process.memoryUsage()`? What do `heapUsed`, `heapTotal`, `rss`, `external` mean?
+- What is the `perf_hooks` module? How do you measure execution time with `performance.now()`?
+- How do you optimize database queries in a Node.js app?
+- When should you use streaming vs buffering for large responses?
+- What is connection pooling? Why is it critical for performance under load?
+- How do you implement caching at the application layer?
+- What is `compression` middleware? What is the trade-off of enabling it?
+
+### Scaling
+
+- How do you scale a Node.js application to handle high traffic?
+- What is the Node.js Cluster module? How does it work?
+- What is the difference between clustering and worker threads?
+- How does the master process distribute connections to workers in Cluster mode? (round-robin)
+- What is PM2? What are its key features? How is it different from raw `node`?
+- How do you use PM2 in cluster mode?
+- What is horizontal vs vertical scaling? Which does Node.js lean toward?
+- What is stateless architecture? Why is it necessary for horizontal scaling?
+- How do you share state across multiple Node.js instances? (Redis, sticky sessions)
+- What is a load balancer? How does Nginx act as a reverse proxy/load balancer for Node.js?
+- What is sticky session? When do you need it?
+- How do you implement zero-downtime deployment with Node.js?
+- What is graceful shutdown? How do you implement it? (drain existing connections, stop accepting new ones)
+- What is circuit breaker pattern? How do you implement it in Node.js?
+- What is the `--max-semi-space-size` flag?
+
+---
+
+## 14. Worker Threads & Child Processes
+
+### Worker Threads
+
+- What is the `worker_threads` module? What problem does it solve?
+- When should you use worker threads vs clustering?
+- How do worker threads share memory? What is `SharedArrayBuffer`?
+- What is `Atomics`? When is it needed with `SharedArrayBuffer`?
+- How do worker threads communicate? (`MessageChannel`, `postMessage`, `workerData`)
+- How do you terminate a worker thread gracefully?
+- What is `isMainThread`? How do you use it to write a single-file worker?
+- What are the limitations of worker threads? (each has its own event loop, no DOM)
+- What is a thread pool pattern using worker threads?
+
+### Child Processes
+
+- What are child processes in Node.js? What are the 4 methods to create them?
+  - `spawn`, `exec`, `execFile`, `fork`
+- What is the difference between `spawn()` and `exec()`?
+- What is the difference between `fork()` and `spawn()`?
+- What is IPC (Inter-Process Communication) in Node.js?
+- How do you communicate between a parent and child process?
+- What are the security risks of using `exec()` with user input?
+- When would you use `execFile()` instead of `exec()`?
+- How do you handle a child process crash in the parent?
+- What is `detached: true` option in `spawn()`?
+
+---
+
+## 15. File System & Built-in Modules
+
+### File System (`fs`)
+
+- What is the `fs` module? What are the key methods?
+- What is the difference between `fs.readFile()` and `fs.createReadStream()`? When to use each?
+- What is `fs.promises`? How does it differ from callback-based `fs`?
+- What is `fs.watch()` vs `fs.watchFile()`? What are their limitations?
+- How do you recursively read a directory in Node.js?
+- What is `fs.stat()` vs `fs.lstat()`?
+- How do you implement atomic file writes?
+- What is the `path` module? What is `path.join()` vs `path.resolve()`?
+- What is `os` module? Give 3 use cases.
+- What is the `url` module? How do you parse a URL?
+- What is `crypto` module? How do you generate a random token? How do you create an HMAC?
+- What is `zlib` module? How do you gzip a response in Express?
+- What is `net` module? What can you build with it?
+- What is `dns` module? What are `dns.lookup()` vs `dns.resolve()`?
+- What is `child_process` module? (covered above)
+
+---
+
+## 16. WebSockets & Real-Time Communication
+
+### WebSockets
+
+- What is a WebSocket? How does the WebSocket handshake work?
+- What is the difference between WebSockets, HTTP long polling, and Server-Sent Events (SSE)?
+- When would you use WebSockets vs SSE vs polling?
+- What is `socket.io`? How does it differ from raw WebSockets?
+- What is `socket.io` room? How does it enable group messaging?
+- How do you scale `socket.io` across multiple servers? (Redis adapter)
+- What is `socket.io` namespace?
+- What is a heartbeat/ping-pong in WebSockets? Why is it needed?
+- How do you authenticate a WebSocket connection?
+- How do you handle reconnection logic in WebSocket clients?
+- How do you broadcast to all connected clients vs a subset?
+- What is the `ws` package? When would you use it over `socket.io`?
+
+### SSE (Server-Sent Events)
+
+- What is SSE? How does it work?
+- How do you implement SSE in Express?
+- What are the limitations of SSE vs WebSockets?
+- How do you handle client disconnection in SSE?
+
+---
+
+## 17. Microservices & Architecture
+
+### Microservices
+
+- What is a microservices architecture? What are its advantages and disadvantages?
+- What is the difference between a monolith and microservices?
+- How do microservices communicate? (REST/HTTP, gRPC, message queues)
+- What is gRPC? How does it compare to REST?
+- What is a service mesh? What problems does it solve?
+- What is an API Gateway? What are its responsibilities?
+- What is service discovery? How does it work in a Node.js microservices setup?
+- What is the circuit breaker pattern? How do you implement it in Node.js?
+- What is the bulkhead pattern?
+- What is the saga pattern? What is the difference between choreography and orchestration?
+- What is CQRS (Command Query Responsibility Segregation)?
+- What is event sourcing?
+- How do you handle distributed transactions in microservices?
+- How do you implement health checks in a Node.js service?
+- How do you implement distributed tracing? (OpenTelemetry, Jaeger)
+- What is a sidecar pattern?
+- What is the strangler fig pattern for migrating a monolith to microservices?
+- How do you handle inter-service authentication?
+- What is a BFF (Backend for Frontend)?
+- How do you handle versioning in a microservices setup?
+
+---
+
+## 18. Message Queues — RabbitMQ / Kafka / Bull
+
+### Message Queues
+
+- What is a message queue? Why would you use one?
+- What is the difference between a message queue and a pub/sub system?
+- What is RabbitMQ? What are exchanges, queues, and bindings?
+- What are the RabbitMQ exchange types? (direct, fanout, topic, headers)
+- What is message acknowledgment in RabbitMQ? What happens if a consumer crashes?
+- What is a dead letter queue? When is it used?
+- What is message durability vs persistence in RabbitMQ?
+- What is Apache Kafka? How is it different from RabbitMQ?
+- What is a Kafka topic, partition, consumer group, and offset?
+- What is Kafka's message retention policy?
+- When would you choose Kafka over RabbitMQ?
+- What is Bull/BullMQ? How does it use Redis as a backend?
+- How do you implement job queues with BullMQ? What are job priorities and retries?
+- How do you handle failed jobs in BullMQ?
+- What is the competing consumers pattern?
+- What is at-least-once vs at-most-once vs exactly-once delivery?
+
+---
+
+## 19. Testing in Node.js
+
+### Testing Fundamentals
+
+- What is the testing pyramid in Node.js context? (unit, integration, e2e)
+- What is Jest? What is Mocha + Chai? How do they compare?
+- What is `supertest`? How do you test Express routes with it?
+- What is the difference between a mock, stub, and spy?
+- How do you mock modules in Jest? (`jest.mock()`, `jest.spyOn()`)
+- How do you mock external API calls in tests? (nock, msw, jest.fn)
+- How do you test a function that uses `setTimeout`? (fake timers: `jest.useFakeTimers()`)
+- How do you test async code in Jest?
+- What is `beforeAll`, `beforeEach`, `afterAll`, `afterEach`?
+- What is code coverage? What does 100% coverage guarantee?
+- How do you test database interactions? (in-memory DB, test containers, mocking)
+- What are snapshot tests? When are they useful in a backend context?
+- What is `testcontainers`? How does it help with integration tests?
+- How do you test error handling middleware?
+- How do you test WebSocket handlers?
+- What is contract testing? What is Pact?
+- What is TDD (Test-Driven Development)? How do you apply it in Node.js?
+- What is mutation testing?
+
+---
+
+## 20. DevOps — Docker, CI/CD & Deployment
+
+### Docker & Containers
+
+- What is Docker? What is a container vs a virtual machine?
+- How do you write a `Dockerfile` for a Node.js application?
+- What is a multi-stage build in Docker? Why is it important for Node.js?
+- What is `.dockerignore`? What should you include in it?
+- What is the difference between `COPY` and `ADD` in a Dockerfile?
+- What is `CMD` vs `ENTRYPOINT` in a Dockerfile?
+- How do you optimize Docker image size for a Node.js app?
+- What is Docker Compose? How do you use it for a Node.js + MongoDB + Redis stack?
+- How do you handle environment variables in Docker containers?
+- What is a health check in Docker?
+- What is Kubernetes? What are pods, services, deployments, and ingress?
+- What is a rolling deployment vs blue-green deployment vs canary deployment?
+
+### CI/CD & Deployment
+
+- What is a CI/CD pipeline? What does a typical Node.js CI pipeline look like?
+- What is GitHub Actions? How do you set up a basic CI pipeline for a Node.js app?
+- What is the difference between `npm start` and using PM2 in production?
+- What is PM2? What are its key features?
+- What is a reverse proxy? How do you configure Nginx in front of a Node.js app?
+- What is SSL termination at the load balancer level?
+- What is a 12-factor app? Which factors are most relevant to Node.js?
+- How do you manage secrets in production? (env vars, Vault, AWS Secrets Manager)
+- What is infrastructure as code? What is Terraform?
+- How do you implement zero-downtime deployment for a Node.js app?
+
+---
+
+## 21. TypeScript with Node.js
+
+- How do you set up a TypeScript Node.js project from scratch?
+- What is `tsconfig.json`? What are the key compiler options? (`strict`, `target`, `module`, `outDir`, `paths`)
+- What is the difference between `CommonJS` and `ESNext` as `module` target?
+- How do you type `req`, `res`, `next` in an Express route with TypeScript?
+- How do you type environment variables in TypeScript?
+- What is declaration merging? How do you extend `Request` type in Express?
+- How do you use generics in service classes and repositories?
+- What is `ts-node`? What is `ts-node-dev`?
+- How do you handle JSON imports in TypeScript?
+- What are path aliases in TypeScript? How do you configure them for Node.js?
+- What is `zod`? How does it combine runtime validation with TypeScript types?
+- How do you type a MongoDB document with Mongoose + TypeScript?
+
+---
+
+## 22. Design Patterns in Node.js
+
+### Creational Patterns
+
+- What is the Singleton pattern? When is it used in Node.js? (DB connection, config)
+- What is the Factory pattern? Give a Node.js example.
+- What is Dependency Injection? How do you implement it without a framework?
+- What is IoC (Inversion of Control)?
+
+### Structural Patterns
+
+- What is the Repository pattern? Why is it used in Node.js backends?
+- What is the Service layer pattern? How does it separate concerns from controllers?
+- What is the Adapter pattern? Give a Node.js use case.
+- What is the Decorator pattern? How does it relate to Express middleware?
+- What is the Proxy pattern? When is it used in Node.js? (caching, rate limiting)
+
+### Behavioral Patterns
+
+- What is the Observer pattern? How does `EventEmitter` implement it?
+- What is the Pub/Sub pattern? How is it different from Observer?
+- What is the Strategy pattern? Give a Node.js example.
+- What is the Chain of Responsibility pattern? How does Express middleware implement it?
+- What is the Command pattern?
+
+### Node.js Specific Patterns
+
+- What is the Middleware pattern? How is it different from traditional OOP patterns?
+- What is the callback pattern? What problems does it cause at scale?
+- What is the Reactor pattern? How does it relate to the event loop?
+- What is the pipeline pattern in Node.js streams?
+- What is module-level singleton pattern (leveraging module cache)?
+
+---
+
+## 23. GraphQL with Node.js
+
+- What is GraphQL? How does it differ from REST?
+- What are the three GraphQL operation types: query, mutation, and subscription?
+- What is a GraphQL schema? What is SDL (Schema Definition Language)?
+- What is a resolver in GraphQL?
+- What is `Apollo Server`? How do you set it up with Express?
+- What is `graphql-yoga`?
+- What is the N+1 problem in GraphQL? What is DataLoader?
+- How do you implement authentication/authorization in GraphQL resolvers?
+- What is schema stitching vs federation?
+- What is a GraphQL directive? Give an example.
+- What is persisted queries?
+- What is introspection? Should you disable it in production?
+- What is the difference between GraphQL subscription and polling?
+- How do you handle file uploads in GraphQL?
+- What is code-first vs schema-first GraphQL?
+
+---
+
+## 24. Advanced / Senior-Level Questions
+
+### Deep Internals
+
+- Explain the complete lifecycle of an HTTP request in a Node.js + Express application.
+- How does Node.js perform I/O? Walk through what happens when `fs.readFile()` is called.
+- What is V8's JIT (Just-In-Time) compilation? What is hidden class optimization?
+- What is inline caching in V8? How does it affect performance?
+- What is deoptimization in V8? What causes it?
+- What is the heap vs the stack in Node.js memory?
+- How does the garbage collector decide what to collect? What are generations?
+- What is `--heap-prof` and `--cpu-prof` in Node.js?
+- What is `AsyncLocalStorage`? How do you use it for request context propagation?
+- What is `async_hooks`? How is `AsyncLocalStorage` built on top of it?
+- How do you implement structured concurrency in Node.js?
+- What is `AbortController` and `AbortSignal` used for in Node.js?
+- How does `require()` differ from `import()` in terms of blocking vs non-blocking?
+- What is the `vm` module in Node.js? What are its security implications?
+- What is NAPI / Node Addons? When would you write a native Node.js addon?
+
+### Architecture & Design Decisions
+
+- How do you design a Node.js service for 10,000 requests per second?
+- You notice your Node.js service's memory is growing unboundedly in production. How do you investigate?
+- Your event loop is showing high lag (200ms+). Walk through your debugging process.
+- How would you migrate a monolith Node.js app to microservices?
+- How do you ensure data consistency across multiple microservices?
+- How do you design an idempotent API?
+- How do you implement distributed locking in Node.js?
+- How do you handle long-running background jobs in a Node.js API?
+- How do you implement feature flags in a Node.js service?
+- How do you design an API that handles both synchronous and asynchronous workflows?
+- What are the trade-offs between using an ORM vs raw SQL in a high-performance Node.js app?
+- How do you design a multi-tenant Node.js SaaS application?
+- How do you implement a webhook receiver in Node.js?
+- How would you design a file processing service (e.g., image resizing)?
+
+---
+
+## 25. Scenario-Based / System Design Questions
+
+These are open-ended design questions asked at senior/staff level:
+
+### Design Problems
+
+- Design a **URL shortener service** (like bit.ly) — storage, redirect, analytics, rate limiting.
+- Design a **real-time chat application** — WebSockets, message persistence, read receipts, online status.
+- Design a **job queue system** — delayed jobs, retries, priorities, dead letter, monitoring.
+- Design a **notification service** — push notifications, email, SMS, user preferences, rate limiting.
+- Design a **file upload and processing service** — S3, async processing, progress tracking.
+- Design an **authentication service** — JWT, refresh tokens, OAuth2, MFA, revocation.
+- Design a **rate limiting service** — token bucket, sliding window, distributed with Redis.
+- Design an **audit log system** — event capture, immutability, search, retention.
+- Design a **payment processing service** — idempotency, webhook handling, retry, reconciliation.
+- Design a **search service** using Elasticsearch — indexing, full-text search, ranking.
+- Design a **caching layer** for a high-traffic Node.js API — cache-aside, TTL, invalidation strategy.
+- Design a **multi-tenant API** with data isolation at the database level.
+- Design a **webhook delivery system** — retry, ordering, at-least-once delivery, failure handling.
+- Design a **distributed task scheduler** — cron jobs across multiple instances.
+
+### Scenario-Based Debugging
+
+- Your Node.js API's response times are spiking to 5 seconds under moderate load. How do you diagnose?
+- A Node.js service is consuming 4GB of RAM and growing. Walk through your memory leak investigation.
+- After deploying a new version, one of your services is causing cascading failures in the entire system. What do you do?
+- Your PostgreSQL queries that used to be fast are now taking 3 seconds. How do you debug?
+- A Redis `KEYS *` command is running in production and causing latency spikes. How do you fix it and prevent recurrence?
+- Your JWT tokens are somehow being forged in production. What is your incident response process?
+- Your message queue is growing without consumers processing messages. What are the possible causes?
+- A deployment caused one pod to restart in a loop (CrashLoopBackOff). How do you debug?
+
+---
+
+## Quick Reference — Most Frequently Asked Topics
+
+| Topic | Frequency in Interviews |
+|---|---|
+| Event loop phases + execution order | 🔴 Always asked |
+| Streams + backpressure | 🔴 Always asked |
+| JWT + refresh token flow | 🔴 Always asked |
+| Express middleware chain + error handling | 🔴 Always asked |
+| Clustering vs Worker Threads | 🔴 Always asked |
+| MongoDB aggregation pipeline | 🔴 Always asked |
+| Redis caching strategies | 🔴 Always asked |
+| `process.nextTick` vs `setImmediate` vs `setTimeout` order | 🔴 Always asked |
+| Memory leak detection and debugging | 🟠 Frequently asked |
+| Graceful shutdown implementation | 🟠 Frequently asked |
+| REST API design principles + versioning | 🟠 Frequently asked |
+| Circuit breaker pattern | 🟠 Frequently asked |
+| `async_hooks` / `AsyncLocalStorage` | 🟡 Senior rounds |
+| CQRS / Event sourcing | 🟡 Senior rounds |
+| gRPC vs REST | 🟡 Senior rounds |
+| Kafka vs RabbitMQ trade-offs | 🟡 Senior rounds |
