@@ -1779,7 +1779,52 @@ Synchronous code runs first (1, 4). Microtasks (Promises) run before macrotasks 
 
 #### Q97. What are template literals?
 
-Backtick strings that support: multi-line strings, embedded expressions `${expr}`, and tagged templates. `\`Hello, ${name}!\`` evaluates `name` at runtime. Much cleaner than string concatenation for dynamic strings.
+### **The Short Version**
+
+Template literals are a modern, much cleaner way to work with text (strings) in JavaScript. Instead of using single (`'`) or double (`"`) quotes, you wrap your text in **backticks (```)**.
+
+They solve two major headaches of traditional strings: messy string gluing (concatenation) and multi-line formatting.
+
+---
+
+### **The 2 Best Features**
+
+#### 1. Stuffing Variables Inside Text (Interpolation)
+
+Instead of using the plus sign (`+`) to awkwardly glue text and variables together, you can inject variables or math directly into the text using the **`${}`** placeholder. JavaScript will evaluate whatever is inside the brackets on the fly.
+
+* **The Old, Messy Way:** ```javascript
+"Hello, " + name + "! You are " + (age + 1) + " next year.";
+```
+
+```
+
+
+* **The New, Clean Way:** ```javascript
+`Hello, ${name}! You are ${age + 1} next year.`;
+```
+
+
+```
+
+
+
+#### 2. Multi-line Text Made Easy
+
+With regular strings, you can't just hit the "Enter" key to start a new line without your code breaking (you used to have to inject messy `\n` characters everywhere). With template literals, what you see is what you get.
+
+```javascript
+// This just works naturally:
+const emailTemplate = `
+  Hi Customer,
+  
+  Thank you for your order!
+  
+  Best,
+  The Team
+`;
+
+```
 
 [⬆ Back to Table of Contents](#-table-of-contents)
 
@@ -1795,7 +1840,10 @@ A unique, immutable primitive value. `Symbol('desc')` creates a Symbol; no two S
 
 #### Q99. What is a WeakMap and when would you use it?
 
-A `Map` where keys must be objects and are held weakly — if the key object is garbage collected, the entry is automatically removed. No `size`, no iteration. Use cases: private data for objects (key = object, value = private data), caching computed results tied to object lifetime, storing metadata without preventing GC.
+"A WeakMap is a collection of key-value pairs where keys must be objects, and those keys are held weakly."
+
+The "Why" (The Killer Feature)
+"Because the keys are held weakly, a WeakMap prevents memory leaks. If an object used as a key is deleted anywhere else in your application, JavaScript automatically wipes out its entry from the WeakMap and frees up that memory."
 
 [⬆ Back to Table of Contents](#-table-of-contents)
 
@@ -1803,7 +1851,10 @@ A `Map` where keys must be objects and are held weakly — if the key object is 
 
 #### Q100. What is a WeakSet?
 
-Like `Set` but holds objects weakly. If an object in the WeakSet is garbage collected, it's removed. No size or iteration. Use case: tracking which objects have been processed without preventing their garbage collection (e.g., visited nodes in graph traversal).
+"A WeakSet is a collection of unique objects that are held weakly."
+
+The "Why" (The Killer Feature)
+"Because it holds objects weakly, it prevents memory leaks. If an object stored inside a WeakSet has no other active references left in your application, JavaScript's garbage collector will automatically wipe it out of the WeakSet and free up the memory."
 
 [⬆ Back to Table of Contents](#-table-of-contents)
 
@@ -1827,7 +1878,27 @@ A collection of unique values (no duplicates). Values can be of any type. `Set` 
 
 #### Q103. What are iterators and iterables?
 
-**Iterable**: an object with a `[Symbol.iterator]()` method that returns an iterator. Built-in iterables: arrays, strings, Maps, Sets, generators. **Iterator**: an object with a `next()` method returning `{value, done}`. Powers `for...of`, spread, destructuring, and `Array.from()`.
+"Iterable is the data structure you want to loop over, and Iterator is the pointer that actually does the looping."
+
+1. The Iterable (The "Loopable" Object)
+An object is iterable if it contains a special method called [Symbol.iterator]. This method is a green light that tells JavaScript, "Yes, I can be stepped through."
+
+Examples: Arrays, Strings, Maps, and Sets are all built-in iterables.
+
+2. The Iterator (The Tracker)
+An iterator is the actual machine returned by that [Symbol.iterator] method. It is a simple object with a .next() method.
+
+Every time JavaScript calls .next(), the iterator returns the next item in line as an object:
+
+{ value: "item", done: false }
+
+When it finally runs out of data, it returns { value: undefined, done: true } to signal the end.
+
+The "Book" Analogy
+Think of an Iterable like a Book (it holds all the content). Think of the Iterator like a Pointer Finger tracking the words. The finger knows exactly where you currently are and moves to the .next() word when you tell it to.
+
+Why this matters in JavaScript
+Under the hood, modern features like the for...of loop, the spread operator (...), and destructuring don't actually know how to read arrays or strings directly. Instead, they secretly request the object's iterator and repeatedly call .next() until done becomes true.
 
 [⬆ Back to Table of Contents](#-table-of-contents)
 
