@@ -88,6 +88,8 @@ Modern frameworks blur the line. For example, React Server Components allow part
 
 Let me know if you’d like a deeper dive into a specific aspect, like hydration, data fetching patterns, or framework implementations.
 ------------------------
+<img width="1321" height="873" alt="image" src="https://github.com/user-attachments/assets/a72ecb8c-b092-4560-8d30-c79988c00dd8" />
+
 %%{init: {
   'theme': 'base',
   'themeVariables': {
