@@ -87,3 +87,61 @@ Here’s a concise breakdown of how the rendering flow differs between **Client-
 Modern frameworks blur the line. For example, React Server Components allow parts of the UI to be rendered only on the server (zero JS sent), while interactive “islands” are hydrated on the client. This gives the best of both worlds: instant static content and selective interactivity.
 
 Let me know if you’d like a deeper dive into a specific aspect, like hydration, data fetching patterns, or framework implementations.
+------------------------
+%%{init: {
+  'theme': 'base',
+  'themeVariables': {
+    'primaryColor': '#ffffff',
+    'primaryTextColor': '#000000',
+    'primaryBorderColor': '#000000',
+    'lineColor': '#000000',
+    'textColor': '#000000',
+    'signalColor': '#000000',
+    'signalTextColor': '#000000',
+    'noteBkgColor': '#fefce8',
+    'noteTextColor': '#000000',
+    'noteBorderColor': '#000000',
+    'actorBkg': '#f4f4f5',
+    'actorTextColor': '#000000',
+    'actorLineColor': '#000000',
+    'sequenceNumberColor': '#ffffff',
+    'sequenceNumberBkg': '#000000'
+  }
+}}%%
+sequenceDiagram
+    autonumber
+    
+    actor User
+    participant UI as React Component
+    participant Thunk as fetchUserData (Thunk)
+    participant API as Backend Server
+    participant Slice as userSlice (Reducer)
+    participant Store as Redux Store
+
+    User->>UI: Clicks "View Profile"
+    
+    rect rgb(235, 245, 255)
+    Note right of UI: SCENARIO 1: INITIATING THE FETCH
+    UI->>Thunk: useDispatch( fetchUserData(123) )
+    Thunk->>API: HTTP GET /api/users/123
+    Thunk->>Slice: Dispatches { type: 'user/fetchUserData/pending' }
+    Slice->>Store: State updates -> isLoading: true, data: null
+    Store-->>UI: useSelector() sees isLoading. Renders <Spinner />
+    end
+    
+    rect rgb(235, 255, 235)
+    Note right of UI: SCENARIO 2: SUCCESSFUL RESPONSE
+    API-->>Thunk: Returns { id: 123, name: "Alice", role: "Admin" }
+    Thunk->>Slice: Dispatches 'fulfilled' + Payload (Alice's Data)
+    Slice->>Store: State updates -> isLoading: false, data: {Alice}
+    Store-->>UI: useSelector() sees data. Renders Alice's Profile
+    end
+
+    rect rgb(255, 235, 235)
+    Note right of UI: SCENARIO 3: ERROR / FAILURE
+    API--xThunk: Fails (Network Error / 500)
+    Thunk->>Slice: Dispatches 'rejected' + Error Message
+    Slice->>Store: State updates -> isLoading: false, error: "500"
+    Store-->>UI: useSelector() sees error. Renders Error Text
+    end
+    ------------------------------------
