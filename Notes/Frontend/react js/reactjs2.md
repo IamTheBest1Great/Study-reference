@@ -1134,7 +1134,12 @@ Use React DevTools 'Highlight Updates' to spot components re-rendering. Record a
 
 #### Q79. What is the `useTransition` hook for performance?
 
-Marks a state update as a non-urgent transition. React renders the urgent update first (keeping UI responsive) and defers the transition. Returns `[isPending, startTransition]`; use `isPending` to show a loading indicator.
+`useTransition` lets you mark a state update as **non-urgent** so your app stays fast and responsive to user input (like typing or clicking).
+
+* **How it works:** React prioritizes urgent updates (like updating a text input) immediately, and runs non-urgent updates (like filtering a heavy list) in the background.
+* **What it returns:** It gives you `[isPending, startTransition]`:
+* `startTransition(() => { ... })`: Wraps the state update you want to defer.
+* `isPending`: A boolean that tells you if the deferred update is still loading, letting you show a spinner or loading indicator.
 
 [⬆ Back to Table of Contents](#-table-of-contents)
 
@@ -1142,7 +1147,34 @@ Marks a state update as a non-urgent transition. React renders the urgent update
 
 #### Q80. What is `useDeferredValue`?
 
-Accepts a value and returns a deferred copy that trails behind during heavy renders. UI stays responsive with the current value while React concurrently renders the expensive output with the new value.
+`useDeferredValue` takes a state value and gives you a deferred copy that "lags behind" while heavy re-renders happen in the background.
+
+* **How it works:** React updates the critical UI immediately (like typing in an input box) and delays updating the expensive UI (like a list of 10,000 items) until the main thread is free.
+* **Key difference from `useTransition`:**
+* Use **`useTransition`** when you control the state update code yourself (`startTransition(() => setCount(...))`).
+* Use **`useDeferredValue`** when you receive a value from a parent component or custom hook and don't control the state setter directly.
+
+
+
+**Example:**
+
+```jsx
+function SearchPage({ query }) {
+  // 'query' updates instantly, but 'deferredQuery' trails behind during heavy renders
+  const deferredQuery = useDeferredValue(query);
+
+  return (
+    <div>
+      {/* Input stays smooth because it uses the real-time query */}
+      <SearchInput value={query} />
+
+      {/* Expensive list uses deferred query so it won't block typing */}
+      <HeavyList query={deferredQuery} />
+    </div>
+  );
+}
+
+```
 
 [⬆ Back to Table of Contents](#-table-of-contents)
 
@@ -1158,7 +1190,15 @@ Separate the input state (urgent) from the search results state (deferred). Use 
 
 #### Q82. What is tree shaking?
 
-Bundlers (webpack, Rollup, Vite) remove unused exports from the final bundle using static analysis of import/export. Use named exports and avoid side-effectful imports to enable effective tree shaking.
+**Tree shaking** is a process where modern build tools (like Vite, Webpack, or Rollup) automatically **remove unused code** from your final JavaScript bundle before sending it to the browser.
+
+Think of your codebase as a tree: live, imported code represents healthy leaves, while unused code represents dead leaves. Tree shaking simply "shakes" the tree so the dead leaves fall off.
+
+* **How it works:** Bundlers inspect your `import` and `export` statements (ES Modules) to see what code is actually being called. Any exported code that is never imported or used is stripped out.
+* **Why it matters:** It keeps your final file sizes smaller, making your website load and run faster.
+* **How to enable it:**
+* Use **named exports** (`export const myFunc = ...`) instead of default object exports (`export default { myFunc, ... }`).
+* Avoid importing entire libraries when you only need a single helper function (e.g., import `import { add } from 'lodash-es'` instead of importing all of `lodash`).
 
 [⬆ Back to Table of Contents](#-table-of-contents)
 
@@ -1166,7 +1206,15 @@ Bundlers (webpack, Rollup, Vite) remove unused exports from the final bundle usi
 
 #### Q83. What are common React performance pitfalls?
 
-Inline object/function props; context with rapidly changing values; large component trees without memoization; missing keys in lists; doing heavy work in render; importing large libraries without tree shaking; large images without lazy loading.
+Common React performance pitfalls include:
+
+* **Inline object or function props:** Writing `{ () => {} }` or `style={{ margin: 0 }}` inline creates new references on every render, causing child components to re-render unnecessarily.
+* **Context with rapidly changing values:** Passing values that update frequently (like scroll position or timers) through a single Context forces all consuming components to re-render on every change.
+* **Large component trees without memoization:** Unnecessary re-renders cascading down deep component trees when state changes near the top.
+* **Missing or unstable keys in lists:** Using array indexes or non-unique `key` props makes it hard for React's reconciliation algorithm to track DOM nodes, leading to inefficient re-renders.
+* **Doing heavy work directly in render:** Running complex calculations, data filtering, or sorting inside the component body without caching them via `useMemo`.
+* **Importing large libraries without tree shaking:** Importing entire monolithic libraries (like `import _ from 'lodash'`) instead of specific ES modules (`import add from 'lodash/add'`), bloating the bundle size.
+* **Large images without lazy loading:** Loading high-resolution images all at once instead of deferring off-screen images using `loading="lazy"`.
 
 [⬆ Back to Table of Contents](#-table-of-contents)
 
@@ -1293,7 +1341,18 @@ Split into multiple smaller contexts by concern. Memoize provider values. Move h
 
 #### Q98. What is the flux architecture pattern?
 
-Unidirectional data flow: Action → Dispatcher → Store → View → (user interaction) → Action. Redux is inspired by Flux. Data always flows one way, making state changes predictable and traceable.
+**Flux** is a design pattern created by Facebook that enforces **unidirectional (one-way) data flow** to make state changes predictable and easy to debug.
+
+**The 4-Step Cycle:**
+
+1. **Action:** An object describing what happened (e.g., `CLICK_LIKE_BUTTON`).
+2. **Dispatcher:** The central hub that receives the Action and passes it to all Stores.
+3. **Store:** Holds the application's state and logic; updates itself when it receives an Action.
+4. **View:** The UI (like React components) listes to the Store and updates what the user sees.
+
+When a user interacts with the View, it fires a new **Action**, and the cycle repeats in one direction only:
+
+$$\text{Action} \longrightarrow \text{Dispatcher} \longrightarrow \text{Store} \longrightarrow \text{View}$$
 
 [⬆ Back to Table of Contents](#-table-of-contents)
 
@@ -1307,7 +1366,42 @@ Unidirectional data flow: Action → Dispatcher → Store → View → (user int
 
 #### Q99. What are Higher-Order Components (HOCs)?
 
-Functions that take a component and return a new component with enhanced behavior. E.g., `withAuth(Component)` wraps it to redirect if unauthenticated. HOCs are less common now that custom hooks exist.
+A **Higher-Order Component (HOC)** is a function that takes a original component as an argument and returns a new, enhanced component.
+
+Think of it like wrapping a plain box in gift wrap—the content inside stays the same, but it gets extra features on the outside.
+
+### Simple Example: `withLogger`
+
+Here is an HOC that logs to the console every time a component renders:
+
+```jsx
+// 1. Define the HOC
+function withLogger(WrappedComponent) {
+  return function EnhancedComponent(props) {
+    console.log(`Rendering ${WrappedComponent.name}...`);
+    
+    // Renders the original component with its props
+    return <WrappedComponent {...props} />;
+  };
+}
+
+// 2. Create a standard component
+function UserProfile({ name }) {
+  return <h1>Hello, {name}!</h1>;
+}
+
+// 3. Wrap the component using the HOC
+const UserProfileWithLogger = withLogger(UserProfile);
+
+// Usage: Works just like a regular component, but automatically logs on render!
+// <UserProfileWithLogger name="Alex" />
+
+```
+
+### Why use them?
+
+* **Code Reuse:** Share common logic (like authentication checks, logging, or styling) across multiple components without duplicating code.
+* **Modern Alternative:** While HOCs are still valid, most modern React code uses **Custom Hooks** instead because they are easier to read and avoid deeply nested component trees ("wrapper hell").
 
 [⬆ Back to Table of Contents](#-table-of-contents)
 
