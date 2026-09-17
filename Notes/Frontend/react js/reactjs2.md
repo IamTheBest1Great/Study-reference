@@ -1442,10 +1442,47 @@ Instead of the component making all the rules about how its state updates, it ha
 ---
 
 #### Q104. What is the controlled component pattern for reusable components?
-This pattern creates a flexible component that can run on "autopilot" OR be manually "steered" by its parent.
+The **controlled component pattern for reusable components** allows a component to run in two flexible modes:
 
-Instead of forcing a component to be strictly controlled or strictly uncontrolled, you build it to support both modes seamlessly.
-A reusable component can work in two modes: uncontrolled (manages own state) or controlled (parent provides `value` + `onChange`). Example: an `<Accordion>` that works out of the box but can also be fully controlled.
+* **Uncontrolled (Autopilot):** The component manages its own internal state. You just import and use it immediately—no extra setup required.
+* **Controlled (Manual Steering):** The parent component passes down a `value` and an `onChange` handler to take full control of the component's state.
+
+**Why use it?**
+
+It gives you the best of both worlds: quick usage out-of-the-box for simple cases, and complete control for complex scenarios.
+
+---
+
+**Simple Example:**
+
+```jsx
+function Toggle({ value, onChange }) {
+  // 1. Internal state for Uncontrolled mode
+  const [internalOn, setInternalOn] = useState(false);
+
+  // 2. Determine if controlled mode is active (is 'value' passed?)
+  const isControlled = value !== undefined;
+  const isOn = isControlled ? value : internalOn;
+
+  const handleToggle = () => {
+    if (!isControlled) {
+      setInternalOn(!internalOn); // Update self
+    }
+    onChange?.(!isOn); // Notify parent if callback provided
+  };
+
+  return <button onClick={handleToggle}>{isOn ? 'ON' : 'OFF'}</button>;
+}
+
+// --- Usage ---
+
+// Mode 1: Uncontrolled (Works out-of-the-box)
+<Toggle />
+
+// Mode 2: Controlled (Parent manages state)
+<Toggle value={isMuted} onChange={(newState) => setIsMuted(newState)} />
+
+```
 
 [⬆ Back to Table of Contents](#-table-of-contents)
 
@@ -1453,7 +1490,21 @@ A reusable component can work in two modes: uncontrolled (manages own state) or 
 
 #### Q105. Custom hooks vs HOCs vs render props – when to use each?
 
-Custom hooks: sharing stateful logic without extra JSX – the modern default. HOCs: when you need to wrap a component (e.g., code splitting, legacy compatibility). Render props: when JSX composition is specifically needed.
+Here is a breakdown of when to use each pattern:
+
+* **Custom Hooks (Modern Default)**
+* **When to use:** Whenever you need to share non-visual, stateful logic between components (e.g., fetching data, handling form state, listening to window resize).
+* **Why:** It cleans up your code without adding extra wrapper layers to the component tree or modifying component hierarchy.
+
+
+* **Higher-Order Components (HOCs)**
+* **When to use:** When you need to enhance or wrap an entire component before export (e.g., legacy authentication checks, route protection, code splitting like `React.lazy`, or third-party library integration).
+* **Why:** Useful when you want to wrap a component without altering its internal implementation.
+
+
+* **Render Props**
+* **When to use:** When a component needs to expose internal state or logic to decide *what* UI to render dynamically via JSX (e.g., a `<MouseTracker>` passing coordinates to custom children).
+* **Why:** Gives the parent full control over rendering while keeping state management encapsulated inside the child component.
 
 [⬆ Back to Table of Contents](#-table-of-contents)
 
@@ -1461,7 +1512,14 @@ Custom hooks: sharing stateful logic without extra JSX – the modern default. H
 
 #### Q106. How should you structure a large React application?
 
-Feature-based folder structure (`features/auth`, `features/dashboard`). Shared UI components in `components/`. Keep business logic in hooks/services. Clear separation between UI, state, and data layers. TypeScript for safety.
+Here is how to structure a large React application:
+
+* **Feature-Based Folder Structure:** Group files by feature (e.g., `src/features/auth/`, `src/features/dashboard/`) rather than by file type. Keep related components, state, and assets together in one folder.
+* **Shared Component Library:** Store global, reusable UI elements (like buttons, modals, inputs, and layouts) in a central `src/components/` directory.
+* **Separate Business Logic:** Move API calls, data fetching, and complex calculations out of JSX components and into dedicated custom hooks (`/hooks`) or service layers (`/services`).
+* **Clear Layer Architecture:** Maintain strict separation of concerns—keep UI components responsible only for rendering, state management for tracking application data, and data services for API interactions.
+* **Type Safety with TypeScript:** Use TypeScript interfaces and types to enforce clear data structures, prevent runtime bugs, and enable auto-completion across teams.
+* **Centralized Configuration:** Store global state management (Redux, Zustand), routing definitions, utility functions, and environment variables in dedicated top-level directories (`/store`, `/routes`, `/utils`).
 
 [⬆ Back to Table of Contents](#-table-of-contents)
 
@@ -1526,7 +1584,13 @@ Components that provide behavior, accessibility, and state management with no UI
 
 #### Q113. How do you prevent prop explosion in complex components?
 
-Use compound components instead of many boolean props. Accept a config object. Use context for deeply shared state. Separate components for different variants rather than one component with 20 props.
+Here is how to prevent prop explosion (a single component taking dozens of props):
+
+* **Use Compound Components:** Break a massive component into smaller, linked sub-components (e.g., `<Card.Header>`, `<Card.Body>`, `<Card.Footer>`) so each part handles its own props instead of passing everything into `<Card>`.
+* **Accept Config Objects:** Pass grouped settings as a single configuration object (e.g., `options={{ theme: 'dark', animated: true }}`) rather than individual boolean props like `isDark`, `isAnimated`, `hasBorder`.
+* **Use Context for Deep State:** Use React Context internally so deeply nested child elements can access parent state directly without prop-drilling through intermediate levels.
+* **Split into Variant Components:** Instead of creating one giant `<Button>` with 20 conditional props, build distinct components for major variations (e.g., `<IconButton>`, `<SubmitButton>`, `<LinkButton>`).
+* **Pass Component Slots / Children:** Allow parents to pass custom elements or UI slots via the `children` prop instead of creating props for every possible UI customization (e.g., `renderHeader={() => ...}`).
 
 [⬆ Back to Table of Contents](#-table-of-contents)
 
@@ -1564,7 +1628,41 @@ Event handler errors, async code (`setTimeout`, promises), server-side rendering
 
 #### Q117. Is there a functional equivalent of error boundaries?
 
-Not built-in to React as of React 18. `react-error-boundary` library provides a functional wrapper. React 19 is expected to improve this. You must use a class component or a wrapper library.
+Error boundaries cannot be written using native React functional components or hooks because the necessary lifecycle methods (`getDerivedStateFromError` and `componentDidCatch`) do not have functional hook equivalents yet.
+
+To handle errors functionally, you have two options:
+
+* **Use the `react-error-boundary` library:** A popular library that provides a functional component wrapper and hooks (like `useErrorBoundary` and `FallbackComponent`).
+* **Use a Class Wrapper:** Write a custom Error Boundary class component once, and wrap it around your functional components.
+
+---
+
+### Example using `react-error-boundary`:
+
+```jsx
+import { ErrorBoundary } from 'react-error-boundary';
+
+// 1. Fallback component to display when an error occurs
+function ErrorFallback({ error, resetErrorBoundary }) {
+  return (
+    <div role="alert">
+      <p>Something went wrong:</p>
+      <pre>{error.message}</pre>
+      <button onClick={resetErrorBoundary}>Try again</button>
+    </div>
+  );
+}
+
+// 2. Wrap your functional component
+function App() {
+  return (
+    <ErrorBoundary FallbackComponent={ErrorFallback}>
+      <MyFunctionalComponent />
+    </ErrorBoundary>
+  );
+}
+
+```
 
 [⬆ Back to Table of Contents](#-table-of-contents)
 
