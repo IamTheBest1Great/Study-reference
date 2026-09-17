@@ -1021,7 +1021,61 @@ A HOC that wraps a functional component. On re-render of the parent, React shall
 [⬆ Back to Table of Contents](#-table-of-contents)
 
 ---
+`React.memo` and `useMemo` are both performance optimization tools in React that use memoization to prevent unnecessary work, but they target different parts of your application:
 
+**Key Differences**
+
+| Feature | `React.memo` | `useMemo` |
+| --- | --- | --- |
+| **What it Optimizes** | Entire component re-renders. | Expensive calculations or values within a component. |
+| **Type** | Higher-Order Component (HOC). | React Hook. |
+| **Where to Use** | Wraps around a component definition. | Called inside a functional component body. |
+| **Trigger Mechanism** | Compares current props with previous props. | Recalculates when items in its dependency array change. |
+
+---
+
+**1. `React.memo**`
+
+`React.memo` wraps a component so that React skips rendering it if its props haven't changed, even when its parent component re-renders.
+
+* **Best for:** Pure components that render often with identical props.
+* **Example:**
+```jsx
+const ChildComponent = React.memo(function Child({ count }) {
+  return <div>Count: {count}</div>;
+});
+
+```
+
+
+
+**2. `useMemo**`
+
+`useMemo` caches the result of a calculation or function execution between renders so heavy computations aren't re-run unnecessarily.
+
+* **Best for:** Filtering large datasets, performing complex math, or preserving object/array reference identity across renders.
+* **Example:**
+```jsx
+function ParentComponent({ items }) {
+  // Re-calculates only when 'items' changes
+  const sortedList = useMemo(() => {
+    return items.sort((a, b) => a.value - b.value);
+  }, [items]);
+
+  return <List data={sortedList} />;
+}
+
+```
+
+
+
+---
+
+**When to Use Which**
+
+* Use **`React.memo`** when a parent re-renders frequently and causes a child component to re-render unnecessarily without changing its props.
+* Use **`useMemo`** when a function inside a single component is performing CPU-heavy tasks on every render, or when passing stable object references to memoized children.
+---
 #### Q72. When does `React.memo` NOT help?
 
 When props include new object/function references on every parent render (must pair with `useMemo`/`useCallback`). When the component is cheap to render (overhead of comparison > render cost). When props always change.
