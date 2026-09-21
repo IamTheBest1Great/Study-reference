@@ -1313,6 +1313,58 @@ setTimeout(obj.greet, 0); // `this` is window/undefined → error
      greet = () => console.log(this.name);
    }
    ```
+   When you pass a method like `obj.greet` as a callback (such as in `setTimeout`), **you are passing the function itself, not the object it belongs to.**
+
+---
+
+### The Problem
+
+In JavaScript, the value of `this` depends on **how** a function is called, not where it was written:
+
+1. **Direct call with an object (`obj.greet()`):** JavaScript sees `obj.` right before the function call, so it knows `this` refers to `obj`.
+2. **Passed as a callback (`setTimeout(obj.greet, 0)`):** You are extracting `greet` and passing just the raw function pointer to `setTimeout`. Inside `setTimeout`, the browser calls the function as a standalone action: `callback()`. Because there is no `obj.` in front of it when it actually runs, the connection to `obj` is lost.
+
+* In **non-strict mode**, `this` defaults to the global `window` object.
+* In **strict mode**, `this` becomes `undefined`.
+
+Since `window` (or `undefined`) doesn't have a `.name` property matching your object, trying to log `this.name` results in `undefined` or a `TypeError`.
+
+---
+
+### The Fixes Explained
+
+To make sure `this` points to `obj`, you have three simple fixes:
+
+#### 1. `.bind(obj)`
+
+```javascript
+setTimeout(obj.greet.bind(obj), 0);
+
+```
+
+`bind()` creates a new version of the function that permanently locks `this` to `obj`, no matter who calls it later.
+
+#### 2. Arrow Function Wrapper
+
+```javascript
+setTimeout(() => obj.greet(), 0);
+
+```
+
+Instead of handing `setTimeout` the raw method, you pass an arrow function. When `setTimeout` runs, it executes the arrow function, which in turn calls `obj.greet()`. Because `obj.` is explicitly written at the call site, implicit binding works as expected.
+
+#### 3. Arrow Function as a Class Field
+
+```javascript
+class MyClass {
+  greet = () => {
+    console.log(this.name);
+  };
+}
+
+```
+
+Arrow functions do not have their own `this`; they inherit `this` from the surrounding scope where the instance was created. Using an arrow function for a class method automatically locks `this` to the instance.
 [⬆ Back to Table of Contents](#-table-of-contents)
 
 ---
