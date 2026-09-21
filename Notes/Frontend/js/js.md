@@ -527,23 +527,92 @@ If a closure holds a reference to a large object or DOM node and is never releas
 
 #### Q23. What is an execution context?
 
-An execution context is simply the environment or workspace that JavaScript sets up to run your code.
+Think of an **Execution Context** as a kitchen workspace where JavaScript cooks up your code.
 
-Think of it as a desk prepared for a specific task. Every time JavaScript runs a script or calls a function, it sets up a new desk with all the tools and information needed to do that specific job.
+Before a chef can cook, they need a prep table, all their ingredients gathered, and a recipe to read. In JavaScript, the Execution Context is that prep table. It is the specific environment where your code is evaluated, variables are stored, and instructions are executed.
 
-What is inside this workspace?
-Every execution context holds three crucial things:
+Every time you run a JavaScript file, it goes through a strict chronological order to set up this workspace and run your code.
 
-The Variables: The actual data and functions you created for this specific task.
+1. **The Global Context is Born:** The Main Kitchen.
+The moment your JavaScript file runs, it creates a base workspace called the **Global Execution Context**. Anything not inside a function lives here.
 
-The Scope Chain (Lexical Environment): A map that tells the code which other desks it is allowed to look at if it can't find a variable locally.
 
-The this Keyword: A pointer that tells the code who currently "owns" this workspace.
+2. **Memory Creation Phase:** Gathering Ingredients.
+Before executing a single line of code, JavaScript acts like a scanner. It reads through your entire file from top to bottom and allocates memory for your variables and functions.
 
-The Two Main Types
-Global Execution Context (The Main Office): This is the very first desk created when your program starts up. There is only one global context, and it handles all the code that isn't inside a function. It stays active until you close the webpage or app.
+* Variables are temporarily set to a placeholder value called `undefined`.
+* Whole functions are stored directly in memory.
+*(This is why you can sometimes call a function in JS before you've actually written it—a concept called Hoisting).*
 
-Function Execution Context (Temporary Project Rooms): Every single time you call (or execute) a function, JavaScript instantly builds a brand new, temporary desk just for that function. Once the function finishes its job and returns a value, that desk is completely packed up and thrown away.
+
+3. **Code Execution Phase:** Cooking the Recipe.
+Now, JavaScript reads the file a second time, strictly line by line. It replaces those `undefined` placeholders with your actual data (like assigning `let age = 25;`) and does the actual work (like doing math or printing to the console).
+
+
+4. **Function Contexts are Created:** Mini Prep Stations.
+Whenever JavaScript reaches a line that *calls* a function, it pauses. It creates a brand new, temporary **Function Execution Context** just for that function. This mini-workspace goes through the exact same Memory and Execution phases. Once the function finishes returning its result, this temporary workspace is immediately deleted, and JavaScript goes back to the main kitchen.
+
+
+---
+
+### A Quick Example
+
+```javascript
+let myName = "Alex"; // 1. Memory phase: myName = undefined. Execution phase: myName = "Alex".
+
+function sayHi() {   // 2. Memory phase: stores whole function. 
+  let greeting = "Hello"; 
+  console.log(greeting + " " + myName);
+}
+
+sayHi();             // 3. Execution phase: triggers a new Function Execution Context!
+
+```
+
+### How JavaScript keeps track of multiple functions
+Think of the **Call Stack** as a stack of plates at a buffet.
+
+JavaScript is a "single-threaded" language, which simply means it can only do **one thing at a time**. It only has one chef. Because it can only cook one recipe at a time, it needs a system to keep track of where it is in the process, especially when one function tells it to go run another function.
+
+The Call Stack is that tracking system. It operates on a rule called **LIFO** (Last In, First Out). If you put a plate on top of a stack, that top plate is the very first one you have to take off.
+
+Here is how JavaScript builds and dismantles this stack:
+
+1. **The Base Plate (Global Context):** When you run a file, JavaScript puts the very first plate down. This is the Global Execution Context. It sits at the bottom of the stack, holding your main code.
+2. **Adding Plates (Push):** If your main code calls a function—let's call it `makeSandwich()`—JavaScript stops what it's doing and puts a new `makeSandwich` plate directly on top of the base plate.
+3. **Stacking Higher:** What if `makeSandwich()` needs to call `sliceBread()`? JavaScript pauses `makeSandwich` and puts a `sliceBread` plate on top of the stack.
+4. **Removing Plates (Pop):** JavaScript always works on whatever plate is at the **very top**. It finishes `sliceBread()`, removes (pops) that plate off the stack, and goes back to working on the plate right beneath it (`makeSandwich()`).
+
+### The Stack in Action
+
+Let's look at a tiny piece of code:
+
+```javascript
+function greet() {
+  sayHello();
+  console.log("How are you?");
+}
+
+function sayHello() {
+  console.log("Hello!");
+}
+
+greet();
+
+```
+
+Here is exactly what happens in the Call Stack:
+
+1. **Push:** The file starts. (Stack: `Global`)
+2. **Push:** We call `greet()`. (Stack: `Global` -> `greet`)
+3. **Push:** Inside `greet`, we call `sayHello()`. (Stack: `Global` -> `greet` -> `sayHello`)
+4. **Push & Pop:** `sayHello` calls `console.log("Hello!")`. The log prints, and finishes instantly.
+5. **Pop:** `sayHello` finishes its work and is removed. (Stack: `Global` -> `greet`)
+6. **Push & Pop:** `greet` moves to its next line and calls `console.log("How are you?")`. It prints and finishes.
+7. **Pop:** `greet` finishes its work and is removed. (Stack: `Global`)
+8. **Pop:** The file finishes. The stack is empty.
+
+Whenever you see an error in your console that says **"Maximum call stack size exceeded"**, it means you accidentally created an infinite loop (like a function calling itself forever) and JavaScript stacked so many plates that the pile fell over!
 
 [⬆ Back to Table of Contents](#-table-of-contents)
 
