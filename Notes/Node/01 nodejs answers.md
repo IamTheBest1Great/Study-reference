@@ -38,10 +38,10 @@
 
 ### Architecture & Runtime
 
-**Q: What is Node.js? How is it different from a browser's JavaScript environment?**  
+**Q1: What is Node.js? How is it different from a browser's JavaScript environment?**  
 Node.js is an open-source, cross-platform JavaScript runtime environment that executes JavaScript code outside a web browser. It uses the V8 engine (same as Chrome) to parse and run JavaScript, but adds a set of C++ bindings (via libuv) to provide access to operating system features like file I/O, networking, and concurrency. Unlike the browser, Node.js has no DOM, no `window` object, but has `global`, `process`, and built-in modules like `fs`, `http`, `path`. It is primarily used for server-side applications.
 
-**Q: Explain the Node.js architecture. What are its key components? (V8, libuv, event loop, thread pool)**  
+**Q2: Explain the Node.js architecture. What are its key components? (V8, libuv, event loop, thread pool)**  
 Node.js architecture comprises:
 - **V8**: JavaScript engine that compiles JS into native machine code.
 - **libuv**: Cross-platform C library providing the event loop, asynchronous I/O operations (file system, networking, DNS), and a thread pool for blocking operations.
@@ -51,7 +51,7 @@ Node.js architecture comprises:
 
 Together, they enable non-blocking I/O and high concurrency.
 
-**Q: What is the V8 engine? What does it do in the context of Node.js?**  
+**Q3: What is the V8 engine? What does it do in the context of Node.js?**  
 V8 is Google's open-source high-performance JavaScript and WebAssembly engine, written in C++. In Node.js, V8 compiles and executes JavaScript code. It also manages memory (heap allocation, garbage collection) and optimises code through Just-In-Time (JIT) compilation, including hidden classes and inline caching. Node.js extends V8 with additional C++ objects and functions to interact with the system.
 
 **Q: What is libuv? What role does it play in Node.js?**  
