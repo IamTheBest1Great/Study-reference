@@ -679,152 +679,850 @@ process.on("SIGTERM", () => {
 
 ### Event Loop Phases
 
-**Q: Explain the Node.js event loop in detail. What are its phases?**  
-The event loop is an infinite loop that continuously checks for and executes callbacks. It operates in phases, each with a FIFO queue of callbacks. A simplified loop runs as follows: each phase processes its queue until the queue is empty or a maximum number of callbacks is executed; then it moves to the next phase. Between phases, microtasks (nextTick queue and Promise callbacks) are processed.
+# Node.js Backend Interview Questions — Interview-Ready Answers
 
-**Q: What are the 6 phases of the event loop? Describe what happens in each.**  
-- **Timers**: Executes callbacks scheduled by `setTimeout()` and `setInterval()`.
-- **Pending callbacks**: Executes I/O callbacks deferred to the next loop iteration (e.g., some TCP errors).
-- **Idle, prepare**: Internal use only (libuv housekeeping).
-- **Poll**: Retrieves new I/O events; executes I/O-related callbacks (except close callbacks, timers, and `setImmediate()`). If the poll queue is empty, it will wait for new I/O events or exit if timers are due.
-- **Check**: Executes `setImmediate()` callbacks.
-- **Close callbacks**: Executes close event callbacks, e.g., `socket.on('close', ...)`.
+## Section 2: Event Loop & Async Model
 
-**Q: What is the difference between the microtask queue and the macrotask queue?**  
-- **Microtasks** (nextTick queue and Promise callbacks) are executed after every phase of the event loop (not just after macrotasks). They have higher priority.
-- **Macrotasks** (timers, I/O, setImmediate) are queued per phase and processed one batch per phase iteration.  
-In Node.js, `process.nextTick` has even higher priority than Promises.
+This section covers 27 questions from your attached document. The answers follow the original question order and are written in the style you should use when answering an interviewer: explain the concept, describe how it works, and give a practical example when appropriate.
 
-**Q: What runs first: `Promise.then()` callback or `setTimeout(fn, 0)`? Why?**  
-`Promise.then()` runs first because it is a microtask. After the current synchronous code completes, the event loop will process all microtasks (including Promises) before moving to the timers phase where `setTimeout` callbacks reside.
+# Part A: Event Loop Phases
 
-**Q: What is the order of execution: `process.nextTick` vs `Promise.then` vs `setImmediate` vs `setTimeout(0)`?**  
-Order:  
-1. `process.nextTick` callbacks (nextTick queue, highest priority)  
-2. `Promise.then` (and other microtasks like `queueMicrotask`)  
-3. `setTimeout(0)` (timer phase, zero delay)  
-4. `setImmediate` (check phase)  
-(Note: in some cases if called from the main module, `setTimeout(0)` vs `setImmediate` order is non-deterministic because timers may have expired; however, if inside an I/O cycle, `setImmediate` runs first. But within the same tick, nextTick and Promises always run before any macrotask.)
+## Q1. Explain the Node.js event loop in detail. What are its phases?
 
-**Q: What is `process.nextTick()`? What is a practical use case for it?**  
-`process.nextTick(cb)` schedules a callback to run immediately after the current operation completes, before any I/O, timers, or Promise callbacks. Use cases:
-- Ensure a function runs after current code but before any I/O (e.g., emitting an event after construction).
-- Prevent starvation or defer an operation to the next tick for consistency.
+Expected interview answer:
 
-**Q: What is `setImmediate()`? How is it different from `setTimeout(fn, 0)`?**  
-`setImmediate(cb)` executes the callback on the check phase of the event loop, after the poll phase (I/O).  
-`setTimeout(fn, 0)` is subject to a minimum delay (1ms in practice) and runs in the timers phase.  
-Inside an I/O callback, `setImmediate` is always executed before `setTimeout(0)` because the check phase comes immediately after the poll phase.
+“The event loop is a mechanism that allows Node.js to handle asynchronous operations without blocking the main JavaScript thread while waiting for I/O.
 
-**Q: Can you starve the event loop using `process.nextTick()`? How?**  
-Yes, by recursively calling `process.nextTick`, you can keep adding to the nextTick queue, preventing the event loop from ever advancing to other phases. This blocks I/O and other callbacks indefinitely. This is called "nextTick starvation". Avoid overusing nextTick in loops.
+When an asynchronous operation, such as reading a file or receiving a network response, is initiated, Node.js can continue executing other code instead of waiting for that operation to finish.
 
-**Q: What is event loop blocking? How do you detect and fix it?**  
-Event loop blocking happens when synchronous CPU-heavy code runs for too long, delaying I/O and timer callbacks. Detection: use `clinic doctor`, `perf_hooks` monitoring, or event loop lag metrics (e.g., `toobusy-js`). Fix: offload CPU tasks to worker threads, break work into chunks with `setImmediate`, use `child_process.fork`, or optimize algorithms.
+The event loop coordinates when callbacks associated with completed operations can execute. It has several phases, including timers, pending callbacks, poll, check, and close callbacks.
 
-**Q: What is the difference between CPU-bound and I/O-bound operations? How does Node handle each?**  
-- **CPU-bound**: tasks limited by processor speed (e.g., heavy computations). They block the event loop. Node handles them poorly on the main thread; use worker threads or child processes.  
-- **I/O-bound**: tasks waiting for external I/O (disk, network). Node excels due to non-blocking I/O and event loop, serving many concurrent I/O operations without blocking.
+After JavaScript finishes the current operation, Node.js processes its scheduled microtasks and continues through the event-loop phases.
 
-**Q: Why is synchronous code like `JSON.parse` of a huge payload dangerous in Node.js?**  
-`JSON.parse` is synchronous and CPU-intensive. Parsing a very large JSON string blocks the event loop for the entire duration, preventing the server from handling other requests, leading to high latency and potential timeouts.
+This architecture allows Node.js to handle many concurrent I/O operations efficiently. However, long-running synchronous JavaScript can block the event loop and delay other requests.”
 
-**Q: What are common causes of event loop lag in production?**  
-- CPU-intensive synchronous operations (large `JSON.parse`, crypto, image processing).  
-- Blocking database driver calls (e.g., `pg` in sync mode).  
-- Poorly implemented recursion or loops.  
-- Large array/object manipulations.  
-- Overuse of `process.nextTick`.  
-- Garbage collection pauses (memory pressure).  
-- Excessive synchronous logging.
+Remember: The event loop coordinates asynchronous work; it does not make CPU-intensive JavaScript run in parallel.
 
-**Q: What is the `--max-old-space-size` flag? What does it control?**  
-It sets the maximum size of V8's old-generation heap in megabytes. Node.js memory is limited; this flag can be used to increase the heap beyond the default (typically ~1.4GB on 64-bit). E.g., `node --max-old-space-size=4096 app.js`. It helps when dealing with large in-memory data but does not fix memory leaks.
+## Q2. What are the six phases of the Node.js event loop? Describe each.
 
-### Callbacks, Promises & Async/Await
+Expected interview answer:
 
-**Q: What is callback hell? How do you avoid it?**  
-Callback hell (pyramid of doom) is deeply nested callbacks making code hard to read and maintain. Avoid it by:
-- Modularizing code into smaller functions.
-- Using Promises and `.then()` chaining.
-- Using `async/await` for a synchronous-like flow.
-- Using libraries like `async.js`.
+“The Node.js event loop has six main phases, and each phase handles a particular category of callbacks.
 
-**Q: What are the 3 ways to handle asynchronous code in Node.js?**  
-1. **Callbacks**: error-first callbacks passed to async functions.  
-2. **Promises**: `.then()/.catch()` chaining.  
-3. **Async/await**: syntactic sugar over Promises, makes code look synchronous.
+1. Timers: Executes callbacks whose `setTimeout()` or `setInterval()` thresholds have been reached.
+2. Pending callbacks: Executes certain I/O callbacks deferred to a later loop iteration, such as some TCP-related error callbacks.
+3. Idle and prepare: Used internally by libuv for event-loop preparation.
+4. Poll: Processes I/O-related events and callbacks. It can also wait for new I/O events when appropriate.
+5. Check: Executes callbacks scheduled using `setImmediate()`.
+6. Close callbacks: Executes certain close-event callbacks, such as a socket's `close` event.
 
-**Q: What is the difference between error-first callbacks and Promises?**  
-Error-first callbacks follow the convention `function(err, result)`, where the first argument is the error or `null`. Promises use `reject` for errors and `resolve` for results; error handling is done via `.catch()` or `try/catch` with `async/await`. Promises offer better composability, chaining, and error propagation.
+The loop moves between these phases as the application runs. Promise callbacks and `process.nextTick()` callbacks are handled through separate scheduling queues rather than being additional event-loop phases.”
 
-**Q: What is `promisify`? Implement it from scratch.**  
-`util.promisify` converts a callback-based function to return a Promise.  
-Implementation:
-```javascript
+Remember this order:
+
+`Timers → Pending callbacks → Idle/Prepare → Poll → Check → Close callbacks`
+
+## Q3. What is the difference between the microtask queue and the macrotask queue?
+
+Expected interview answer:
+
+“The main difference is their scheduling behavior and when their callbacks get a chance to execute.
+
+In Node.js, Promise callbacks, such as those registered with `.then()`, and callbacks scheduled using `queueMicrotask()` are processed through the microtask queue.
+
+Node.js also has a separate `process.nextTick()` queue, which is generally processed before the Promise microtask queue after the current JavaScript operation.
+
+What developers commonly call macrotasks are scheduled operations such as timers, I/O callbacks, and `setImmediate()`. These are associated with different event-loop phases.
+
+Microtasks generally run before Node.js proceeds to the next event-loop phase. However, repeatedly scheduling microtasks or `nextTick` callbacks can delay other work, including I/O.”
+
+Remember: `process.nextTick()` has its own queue; Promise callbacks use the microtask queue; timers and I/O callbacks are handled through event-loop phases.
+
+## Q4. What runs first: `Promise.then()` or `setTimeout(fn, 0)`? Why?
+
+Expected interview answer:
+
+“Normally, a Promise's `.then()` callback runs before a `setTimeout(fn, 0)` callback when both are scheduled during the same synchronous execution.
+
+The reason is that Promise callbacks are microtasks, whereas `setTimeout()` schedules a timer callback.
+
+After the synchronous JavaScript finishes, Node.js processes the relevant microtask queues before moving on to the timer callback.
+
+So, under these conditions, the Promise callback executes first.”
+
+Example:
+
+```
+console.log("Start");
+
+setTimeout(() => console.log("Timer"), 0);
+
+Promise.resolve().then(() => console.log("Promise"));
+
+console.log("End");
+```
+
+Output:
+
+```
+Start
+End
+Promise
+Timer
+```
+
+Remember: Synchronous code runs first, followed by the Promise callback, then the timer callback in this example.
+
+## Q5. What is the order of execution of `process.nextTick`, `Promise.then`, `setImmediate`, and `setTimeout(0)`?
+
+Expected interview answer:
+
+“First, synchronous JavaScript executes. After the current operation finishes, Node.js processes `process.nextTick()` callbacks before Promise microtasks in the normal case.
+
+After those queues are processed, execution continues through the event loop, where timer callbacks and `setImmediate()` callbacks can execute.
+
+An important point is that I would not claim that `setTimeout(fn, 0)` always runs before `setImmediate()`. Their relative order can depend on the execution context and timing.
+
+For example, inside an I/O callback, `setImmediate()` normally executes before a zero-delay timer scheduled in that callback.
+
+Therefore, I would distinguish the reliable ordering of synchronous code and microtasks from the context-dependent ordering of timers and `setImmediate()`.”
+
+Example:
+
+```
+process.nextTick(() => console.log("nextTick"));
+
+Promise.resolve().then(() => console.log("Promise"));
+
+setTimeout(() => console.log("Timeout"), 0);
+
+setImmediate(() => console.log("Immediate"));
+
+console.log("Sync");
+```
+
+The beginning of the output is:
+
+```
+Sync
+nextTick
+Promise
+```
+
+The relative order of `Timeout` and `Immediate` is not guaranteed for this top-level example.
+
+Remember: Do not memorize a universal execution order for `setTimeout(0)` and `setImmediate()`.
+
+## Q6. What is `process.nextTick()`? Give a practical use case.
+
+Expected interview answer:
+
+“`process.nextTick()` schedules a callback to run after the current JavaScript operation completes, before Node.js continues to the next event-loop phase.
+
+It can be useful when an API needs to defer a callback until the current call stack has finished, while still executing it before normal event-loop callbacks.
+
+For example, it can help an API invoke a callback asynchronously and maintain consistent behavior when the result is immediately available.
+
+However, I would use it carefully because recursively scheduling `process.nextTick()` can prevent the event loop from progressing and delay I/O operations.”
+
+Example:
+
+```
+console.log("Start");
+
+process.nextTick(() => {
+  console.log("Next tick");
+});
+
+console.log("End");
+```
+
+Output:
+
+```
+Start
+End
+Next tick
+```
+
+Remember: `process.nextTick()` defers execution until the current operation finishes; it does not mean the callback executes immediately in the current call stack.
+
+## Q7. What is `setImmediate()`? How is it different from `setTimeout(fn, 0)`?
+
+Expected interview answer:
+
+“Both methods schedule callbacks for later execution, but they are associated with different parts of the event loop.
+
+`setImmediate()` schedules a callback for the check phase, which follows the poll phase.
+
+`setTimeout(fn, 0)` schedules a timer callback after a minimum delay threshold. It does not mean the callback runs immediately.
+
+When both are scheduled inside an I/O callback, `setImmediate()` normally executes first because the check phase follows the poll phase.
+
+At the top level of a script, however, their relative execution order is not guaranteed.”
+
+Example:
+
+```
+const fs = require("node:fs");
+
+fs.readFile(__filename, () => {
+  setTimeout(() => console.log("Timeout"), 0);
+
+  setImmediate(() => console.log("Immediate"));
+});
+```
+
+Here, `Immediate` normally prints before `Timeout`.
+
+Remember: `setImmediate()` is tied to the check phase; `setTimeout()` is tied to the timers phase.
+
+## Q8. Can you starve the event loop using `process.nextTick()`? How?
+
+Expected interview answer:
+
+“Yes. Event-loop starvation can happen if we continuously schedule callbacks using `process.nextTick()`.
+
+For example, if a callback schedules itself again using `process.nextTick()`, Node.js keeps processing the next-tick queue instead of progressing normally through the event-loop phases.
+
+As a result, timers and I/O callbacks can be delayed for a very long time or indefinitely.
+
+This is dangerous in a backend application because incoming requests may not receive timely responses.
+
+To prevent this, I would avoid unbounded recursive scheduling with `process.nextTick()`. For repeated work, I would consider chunking it and yielding through mechanisms such as `setImmediate()`.”
+
+Example of a problematic pattern:
+
+```
+function repeat() {
+  process.nextTick(repeat);
+}
+
+repeat();
+```
+
+Remember: An endlessly replenished `nextTick` queue can starve the event loop.
+
+## Q9. What is event-loop blocking? How do you detect and fix it?
+
+Expected interview answer:
+
+“Event-loop blocking happens when JavaScript runs an operation that occupies the main thread for too long, preventing the application from processing other callbacks and requests promptly.
+
+For example, a large synchronous computation or parsing an extremely large JSON payload can increase API response times even when other requests are performing simple operations.
+
+To investigate this, I would monitor event-loop delay and CPU usage, review application logs, and use diagnostic tools such as Node.js `perf_hooks` or Clinic.js.
+
+Once the cause is identified, I would optimize the algorithm, break work into smaller chunks where appropriate, or offload CPU-intensive work to worker threads or child processes.
+
+I would then measure event-loop delay and request latency again to confirm that the fix improves performance.”
+
+Remember: Detect the bottleneck first; then optimize, split, or offload the blocking work.
+
+## Q10. What is the difference between CPU-bound and I/O-bound operations? How does Node.js handle each?
+
+Expected interview answer:
+
+“CPU-bound operations are limited mainly by processing power. Examples include complex mathematical computations, large data transformations, and intensive image processing.
+
+I/O-bound operations spend much of their time waiting for external resources, such as a database, file system, or remote API.
+
+Node.js handles I/O-bound workloads well because asynchronous I/O allows the main JavaScript thread to process other work while an operation is pending.
+
+CPU-intensive JavaScript running on the main thread is different because it can block the event loop.
+
+For CPU-heavy tasks, I would consider worker threads, child processes, or a separate processing service, depending on the workload and architecture.”
+
+| CPU-bound                         | I/O-bound                                       |
+| --------------------------------- | ----------------------------------------------- |
+| Limited by computation            | Often limited by waiting for external resources |
+| Can block the main thread         | Asynchronous I/O allows other work to proceed   |
+| Example: complex calculations     | Example: asynchronous database query            |
+| Possible solution: worker threads | Possible solution: non-blocking I/O             |
+
+Remember: Node.js is especially effective when operations involve waiting rather than prolonged computation on the main thread.
+
+## Q11. Why is synchronous code like `JSON.parse()` of a huge payload dangerous?
+
+Expected interview answer:
+
+“`JSON.parse()` is synchronous, meaning the JavaScript thread must finish parsing the JSON before it can execute other JavaScript.
+
+If a server receives an extremely large JSON payload, parsing it can consume considerable CPU time and block the event loop.
+
+During that period, other requests, timers, and callbacks may be delayed, which can increase latency and even cause request timeouts.
+
+To address this, I would limit request-body sizes, validate input, avoid unnecessarily large payloads, and consider worker threads or streaming parsers when the workload justifies them.”
+
+Remember: A synchronous operation does not become non-blocking simply because the application uses Node.js.
+
+## Q12. What are common causes of event-loop lag in production?
+
+Expected interview answer:
+
+“Event-loop lag means callbacks are being executed later than expected because the event loop cannot make progress quickly enough.
+
+Common causes include CPU-intensive synchronous operations, large JSON parsing tasks, long-running loops, large object or array transformations, excessive `process.nextTick()` scheduling, and garbage-collection pauses caused by memory pressure.
+
+Excessive synchronous logging can also contribute to the problem.
+
+To troubleshoot it, I would examine event-loop delay metrics, CPU and memory usage, request latency, and profiling data.
+
+After identifying the cause, I would optimize the work, reduce unnecessary memory allocation, or offload CPU-intensive processing where appropriate.”
+
+Remember: Event-loop lag can come from CPU use, memory pressure, or scheduling patterns—not only from database queries.
+
+## Q13. What is the `--max-old-space-size` flag? What does it control?
+
+Expected interview answer:
+
+“The `--max-old-space-size` flag configures the maximum size of V8's old-generation heap, measured in megabytes.
+
+For example, we can start a Node.js application with a larger heap limit using this command:
+
+```
+node --max-old-space-size=4096 app.js
+```
+
+This sets the old-generation heap limit to approximately 4 GB.
+
+It can help an application that legitimately needs to keep a large amount of data in memory. However, increasing the limit does not fix a memory leak or guarantee better performance.
+
+I would first investigate memory usage and garbage collection, then increase the heap limit only if the application's workload requires it and the host has sufficient memory.”
+
+Remember: This flag controls a V8 heap limit; it does not set the total memory limit for the entire process.
+
+# Part B: Callbacks, Promises & Async/Await
+
+## Q14. What is callback hell? How do you avoid it?
+
+Expected interview answer:
+
+“Callback hell happens when multiple asynchronous operations are nested inside one another, making the code difficult to read, understand, and maintain.
+
+For example, an application might need to fetch a user, retrieve that user's orders, and then fetch payment details for those orders. If each operation uses a nested callback, the code can become deeply indented.
+
+We can avoid callback hell by breaking the logic into smaller functions, using Promises, or using `async/await`.
+
+In modern Node.js applications, I generally prefer `async/await` for sequential asynchronous workflows because it makes the code easier to read and allows us to handle errors using `try/catch`.”
+
+Example:
+
+```
+async function getUserDetails(userId) {
+  try {
+    const user = await getUser(userId);
+    const orders = await getOrders(user.id);
+    const payments = await getPayments(orders);
+
+    return payments;
+  } catch (error) {
+    console.error("Failed to fetch user details:", error);
+    throw error;
+  }
+}
+```
+
+Remember: Promises and `async/await` help avoid deeply nested callbacks and improve error handling.
+
+## Q15. What are the three ways to handle asynchronous code in Node.js?
+
+Expected interview answer:
+
+“There are three common approaches to handling asynchronous code in Node.js: callbacks, Promises, and `async/await`.
+
+First, callbacks pass a function to be executed when an operation completes. Traditional Node.js APIs often use error-first callbacks.
+
+Second, Promises represent the eventual success or failure of an asynchronous operation. We can handle the result using `.then()` and errors using `.catch()`.
+
+Third, `async/await` provides a more readable syntax for working with Promises. It allows us to write asynchronous workflows in a style similar to synchronous code.
+
+Although all three approaches are useful, I generally prefer `async/await` for most modern application code.”
+
+Example:
+
+```
+// Callback
+fs.readFile("data.txt", "utf8", (err, data) => {
+  if (err) return console.error(err);
+  console.log(data);
+});
+
+// Promise
+fetchData()
+  .then(data => console.log(data))
+  .catch(error => console.error(error));
+
+// Async/await
+async function main() {
+  try {
+    const data = await fetchData();
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+```
+
+Remember: Callback → function; Promise → `.then()` and `.catch()`; `async/await` → readable Promise-based code.
+
+## Q16. What is the difference between error-first callbacks and Promises?
+
+Expected interview answer:
+
+“Error-first callbacks and Promises are two different ways of handling asynchronous results.
+
+With an error-first callback, the first argument represents the error, and the second argument represents the successful result. If the operation succeeds, the error is generally `null`.
+
+With Promises, a successful operation fulfills the Promise, while a failure rejects it. We can handle fulfillment using `.then()` and rejection using `.catch()`.
+
+Promises are easier to compose across multiple asynchronous operations and provide a more structured way to propagate errors. They also work naturally with `async/await`.”
+
+Example of an error-first callback:
+
+```
+fs.readFile("data.txt", "utf8", (err, data) => {
+  if (err) {
+    return console.error(err);
+  }
+
+  console.log(data);
+});
+```
+
+Example using a Promise:
+
+```
+fetchData()
+  .then(data => console.log(data))
+  .catch(error => console.error(error));
+```
+
+Remember: Callbacks pass errors as arguments; Promises represent success or failure through their state.
+
+## Q17. What is `promisify()`? How would you implement it from scratch?
+
+Expected interview answer:
+
+“`promisify()` converts a callback-based function into a function that returns a Promise.
+
+In Node.js, we can use the built-in `util.promisify()` utility for compatible error-first callback APIs.
+
+The basic idea is to create a Promise, invoke the original function, and pass it a callback. If the callback receives an error, we reject the Promise. Otherwise, we resolve it with the result.
+
+This allows us to use older callback-based APIs with `async/await`.”
+
+Example implementation for a simple function that returns one result:
+
+```
 function promisify(fn) {
-  return (...args) => new Promise((resolve, reject) => {
-    fn(...args, (err, result) => {
-      if (err) reject(err);
-      else resolve(result);
+  return (...args) =>
+    new Promise((resolve, reject) => {
+      fn(...args, (err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+        }
+      });
     });
-  });
 }
 ```
 
-**Q: What is the difference between `async/await` and `.then()` chaining?**  
-`async/await` uses a synchronous-style syntax, making error handling easier with `try/catch`. `.then()` uses chaining and can be more verbose, but is still powerful. Both are Promises. `async/await` pauses execution within the async function, but the function itself is non-blocking.
+Using Node.js's built-in utility:
 
-**Q: What happens when you `await` a non-Promise value?**  
-`await` wraps the non-Promise value in `Promise.resolve()`, so the code continues synchronously but waits for the next microtask to execute. The expression evaluates to that value.
+```
+const { promisify } = require("node:util");
+const fs = require("node:fs");
 
-**Q: How do you run multiple async operations in parallel in Node.js?**  
-Use `Promise.all([asyncFn1(), asyncFn2()])`. For error handling per operation, use `Promise.allSettled`. To start all but not await them sequentially, avoid `await` inside a loop; map to promise array and then `await Promise.all`.
+const readFile = promisify(fs.readFile);
 
-**Q: What is the difference between `await Promise.all([])` and sequential `await` in a loop?**  
-- `Promise.all` initiates all promises concurrently and waits for all to finish (or fails fast).  
-- Sequential `await` in a loop waits for each operation to complete before starting the next, increasing total time.
+async function main() {
+  const data = await readFile("data.txt", "utf8");
+  console.log(data);
+}
 
-**Q: What does `Promise.allSettled` do that `Promise.all` doesn't?**  
-`Promise.allSettled` returns a promise that resolves after all input promises settle (either fulfilled or rejected), giving an array of result objects with `status` and `value`/`reason`. `Promise.all` short-circuits on the first rejection.
+main().catch(console.error);
+```
 
-**Q: How do you implement a timeout for an async operation?**  
-Create a timeout promise that rejects after a delay, and race it with the actual operation using `Promise.race`.
-```javascript
+Remember: `promisify()` converts a compatible callback API into a Promise-returning function.
+
+## Q18. What is the difference between `async/await` and `.then()` chaining?
+
+Expected interview answer:
+
+“Both `async/await` and `.then()` are ways of working with Promises. The main difference is how the code is written and organized.
+
+With `.then()` chaining, we attach callbacks to handle the result of each Promise. With `async/await`, we can write the same workflow in a more sequential and readable style.
+
+For error handling, `.then()` chains can use `.catch()`, whereas `async/await` commonly uses `try/catch`.
+
+Importantly, `await` does not block the entire Node.js thread. It suspends the execution of the current async function while the awaited Promise settles, allowing other work to proceed.”
+
+Example using `.then()`:
+
+```
+getUser()
+  .then(user => getOrders(user.id))
+  .then(orders => console.log(orders))
+  .catch(error => console.error(error));
+```
+
+Equivalent approach using `async/await`:
+
+```
+async function main() {
+  try {
+    const user = await getUser();
+    const orders = await getOrders(user.id);
+
+    console.log(orders);
+  } catch (error) {
+    console.error(error);
+  }
+}
+```
+
+Remember: Both use Promises; `async/await` often makes sequential workflows easier to read.
+
+## Q19. What happens when you `await` a non-Promise value?
+
+Expected interview answer:
+
+“When we use `await` with a non-Promise value, JavaScript evaluates that value and uses it as the result of the `await` expression.
+
+For example, if we write `await 10`, the expression evaluates to `10`.
+
+However, the execution of the surrounding async function is still suspended and resumed asynchronously. So even though the value is not a Promise, `await` still affects the execution order.
+
+This is useful to remember when reasoning about asynchronous code and microtask scheduling.”
+
+Example:
+
+```
+async function main() {
+  console.log("Start");
+
+  const value = await 10;
+
+  console.log(value);
+  console.log("End");
+}
+
+main();
+
+console.log("Outside");
+```
+
+Output:
+
+```
+Start
+Outside
+10
+End
+```
+
+Remember: `await` works with ordinary values too, but the continuation of the async function resumes asynchronously.
+
+## Q20. How do you run multiple asynchronous operations in parallel in Node.js?
+
+Expected interview answer:
+
+“When multiple independent asynchronous operations do not depend on one another, I can run them concurrently using `Promise.all()`.
+
+For example, an API dashboard might need user details, notifications, and activity information. Instead of awaiting each request sequentially, I can start the operations together and await the resulting Promises.
+
+`Promise.all()` resolves when all its input Promises fulfill. If one rejects, the combined Promise rejects.
+
+If I need the outcome of every operation, including failures, I would consider `Promise.allSettled()` instead.”
+
+Example:
+
+```
+async function getDashboard() {
+  const [user, notifications, activity] = await Promise.all([
+    getUser(),
+    getNotifications(),
+    getActivity()
+  ]);
+
+  return { user, notifications, activity };
+}
+```
+
+Remember: Use `Promise.all()` for independent operations that can run concurrently.
+
+## Q21. What is the difference between `await Promise.all()` and sequential `await` in a loop?
+
+Expected interview answer:
+
+“The main difference is whether independent operations run concurrently or one after another.
+
+With `Promise.all()`, we start the independent operations and wait for all of them to finish. This can reduce total execution time.
+
+With sequential `await` in a loop, each operation must complete before the next one starts.
+
+For example, if I need to fetch information for ten independent users, running the requests concurrently can be faster than awaiting each request one by one.
+
+However, for large workloads, I would use controlled concurrency instead of launching an unlimited number of operations at once.”
+
+Sequential execution:
+
+```
+for (const id of userIds) {
+  await getUser(id);
+}
+```
+
+Concurrent execution:
+
+```
+const users = await Promise.all(
+  userIds.map(id => getUser(id))
+);
+```
+
+Remember: Sequential `await` is appropriate when operations depend on one another; concurrent execution is useful when they are independent.
+
+## Q22. What does `Promise.allSettled()` do that `Promise.all()` does not?
+
+Expected interview answer:
+
+“Both methods work with multiple Promises, but they handle failures differently.
+
+`Promise.all()` fulfills when all input Promises fulfill. If any input Promise rejects, the returned Promise rejects without waiting for all the remaining operations to settle.
+
+`Promise.allSettled()` waits until every input Promise has either fulfilled or rejected. It then returns an array describing the result of each operation.
+
+I would use `Promise.all()` when all results are required for success. I would use `Promise.allSettled()` when I need to collect every outcome, such as generating a report about several independent API calls.”
+
+Example:
+
+```
+const results = await Promise.allSettled([
+  fetchUser(),
+  fetchOrders(),
+  fetchNotifications()
+]);
+
+results.forEach(result => {
+  if (result.status === "fulfilled") {
+    console.log("Success:", result.value);
+  } else {
+    console.log("Failure:", result.reason);
+  }
+});
+```
+
+Remember: `Promise.all()` is useful for all-or-fail workflows; `Promise.allSettled()` is useful when every operation's result matters.
+
+## Q23. How do you implement a timeout for an asynchronous operation?
+
+Expected interview answer:
+
+“One way to implement a timeout is to use `Promise.race()` between the actual operation and a Promise that rejects after a specified delay.
+
+Whichever Promise settles first determines the result returned by `Promise.race()`.
+
+For example, if I want an operation to finish within three seconds, I can race it against a three-second timeout Promise.
+
+However, there is an important distinction: `Promise.race()` does not automatically cancel the underlying operation. It only determines which result the caller receives first. If the operation supports cancellation, I would cancel it separately when the timeout occurs.”
+
+Example:
+
+```
 function withTimeout(promise, ms) {
-  const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), ms));
-  return Promise.race([promise, timeout]);
+  let timer;
+
+  const timeout = new Promise((_, reject) => {
+    timer = setTimeout(() => {
+      reject(new Error("Operation timed out"));
+    }, ms);
+  });
+
+  return Promise.race([promise, timeout])
+    .finally(() => clearTimeout(timer));
 }
 ```
 
-**Q: How do you cancel an in-flight async operation? (AbortController, AbortSignal)**  
-Use `AbortController` and its `signal`. Pass `signal` to fetch or other APIs that support it, or listen for the `abort` event in custom logic. Cancel by calling `controller.abort()`.
-```javascript
-const controller = new AbortController();
-fetch(url, { signal: controller.signal });
-// later: controller.abort();
+Usage:
+
+```
+try {
+  const result = await withTimeout(fetchData(), 3000);
+  console.log(result);
+} catch (error) {
+  console.error(error.message);
+}
 ```
 
-**Q: What is `async_hooks`? What is it used for? (request tracing, context propagation)**  
-`async_hooks` module provides hooks to track the lifecycle of asynchronous resources in Node.js. It enables building context propagation libraries (like `cls-hooked` or `AsyncLocalStorage`) to maintain a consistent context across asynchronous boundaries (e.g., request ID, user session) without manually passing arguments.
+Remember: A timeout limits how long the caller waits; it does not necessarily stop the underlying operation.
 
-**Q: How do you implement a retry mechanism with exponential backoff?**  
-Define a function that calls the async operation, on failure, waits for `delay = initialDelay * 2^attempt`, then retries. Use `async/await` and recursive retry or loop.
-```javascript
-async function retry(fn, retries = 3, initialDelay = 100) {
-  for (let i = 0; i < retries; i++) {
+## Q24. How do you cancel an in-flight asynchronous operation using `AbortController` and `AbortSignal`?
+
+Expected interview answer:
+
+“`AbortController` provides a way to request cancellation of an asynchronous operation, while its `signal` communicates that cancellation request to an API that supports it.
+
+I create an `AbortController`, pass its signal to the operation, and call `controller.abort()` when I need to cancel it.
+
+For example, in a backend service making an HTTP request to an external API, I could abort the request if it exceeds a timeout or is no longer needed.
+
+The important point is that cancellation depends on the operation supporting the signal. `AbortController` cannot automatically cancel arbitrary JavaScript code or every asynchronous operation.”
+
+Example:
+
+```
+const controller = new AbortController();
+
+async function fetchData() {
+  try {
+    const response = await fetch("https://example.com/api", {
+      signal: controller.signal
+    });
+
+    return await response.json();
+  } catch (error) {
+    if (error.name === "AbortError") {
+      console.log("Request cancelled");
+    } else {
+      throw error;
+    }
+  }
+}
+
+fetchData();
+
+// Cancel when needed:
+controller.abort();
+```
+
+Remember: Create a controller, pass its signal to a compatible API, and call `abort()` to request cancellation.
+
+## Q25. What is `async_hooks`? What is it used for?
+
+Expected interview answer:
+
+“`async_hooks` is a Node.js module that provides hooks for observing the lifecycle of asynchronous resources.
+
+It can help developers understand how asynchronous operations are created and managed, and it has been used to implement request tracing and context propagation.
+
+For example, in a backend application, we might want to associate a request ID with every log entry produced while handling a particular HTTP request, including logs from asynchronous database operations.
+
+Rather than manually passing the request ID through every function, we can use context-propagation mechanisms. For many application-level use cases, Node.js's `AsyncLocalStorage` is a more convenient high-level solution than directly implementing context management with low-level hooks.”
+
+Remember: `async_hooks` helps observe asynchronous resource lifecycles; `AsyncLocalStorage` is commonly useful for carrying context across asynchronous operations.
+
+## Q26. How do you implement a retry mechanism with exponential backoff?
+
+Expected interview answer:
+
+“Exponential backoff is a retry strategy in which the waiting time increases after each failed attempt.
+
+For example, if the initial delay is 100 milliseconds, the next delays could be 100, 200, and 400 milliseconds.
+
+This is useful when an operation fails temporarily because of network issues, rate limiting, or a remote service being overloaded.
+
+I would limit the number of attempts and retry only errors that are appropriate to retry. I would also consider adding random jitter to prevent many clients from retrying simultaneously.
+
+For operations that change data, I would verify that retrying cannot accidentally perform the same action twice.”
+
+Example implementation:
+
+```
+async function retry(fn, maxAttempts = 3, initialDelay = 100) {
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
     try {
       return await fn();
-    } catch (err) {
-      if (i === retries - 1) throw err;
-      await new Promise(r => setTimeout(r, initialDelay * Math.pow(2, i)));
+    } catch (error) {
+      const isLastAttempt = attempt === maxAttempts - 1;
+
+      if (isLastAttempt) {
+        throw error;
+      }
+
+      const delay = initialDelay * 2 ** attempt;
+
+      await new Promise(resolve => setTimeout(resolve, delay));
     }
   }
 }
 ```
 
-**Q: What is a race condition in async Node.js code? Give an example.**  
-A race condition occurs when the outcome depends on the non-deterministic ordering of asynchronous events. Example: two concurrent requests updating the same database record without proper locking; both read the current value, increment, and write back, resulting in a lost update. Another example: `if (!exists) create()` without atomic operations.
+Usage:
+
+```
+const result = await retry(() => fetchData(), 3, 100);
+```
+
+In this example, there are at most three total attempts, with waits of 100 ms and 200 ms before the second and third attempts.
+
+Remember: Exponential backoff increases the delay after each failure; always limit retries and consider idempotency.
+
+## Q27. What is a race condition in asynchronous Node.js code? Give an example.
+
+Expected interview answer:
+
+“A race condition occurs when the result of an operation depends on the timing or ordering of concurrent activities.
+
+Even though JavaScript in a typical Node.js process executes on one main thread, asynchronous operations can still create race conditions when their execution overlaps.
+
+For example, suppose two requests update the same user's account balance. Both requests read the same balance, calculate a new value, and then write their results. One update may overwrite the other, causing a lost update.
+
+To prevent this, I would use an appropriate database-level solution, such as an atomic update, transaction, optimistic concurrency control, or locking, depending on the requirement.”
+
+Consider this conceptual example:
+
+```
+async function incrementBalance(userId) {
+  const user = await getUser(userId);
+
+  const newBalance = user.balance + 1;
+
+  await updateBalance(userId, newBalance);
+}
+```
+
+If two requests execute this function concurrently, both could read the same original balance and then write the same incremented balance.
+
+For a database that supports atomic updates, the operation should instead be performed atomically, conceptually like this:
+
+```
+UPDATE users
+SET balance = balance + 1
+WHERE user_id = $1;
+```
+
+Remember: Race conditions can occur in asynchronous Node.js applications; protecting shared state often requires atomic operations or database concurrency controls.
+
+# Final Revision Sheet
+
+Here are the key distinctions from this section that you should be able to explain quickly in an interview.
+
+| Concept                | Main point                                                                      |
+| ---------------------- | ------------------------------------------------------------------------------- |
+| Event loop             | Coordinates callback execution and asynchronous work                            |
+| Microtasks             | Promise callbacks and `queueMicrotask()`                                        |
+| `process.nextTick()`   | Separate queue processed before Promise microtasks in normal Node.js scheduling |
+| `setImmediate()`       | Callback in the check phase                                                     |
+| `setTimeout(fn, 0)`    | Timer callback; not guaranteed to precede `setImmediate()`                      |
+| Event-loop blocking    | Long-running synchronous work delays callbacks                                  |
+| CPU-bound vs I/O-bound | Computation versus waiting for external operations                              |
+| Callback vs Promise    | Callback convention versus composable Promise state                             |
+| `async/await`          | Syntax for working with Promises                                                |
+| `Promise.all()`        | Fails fast when an input rejects                                                |
+| `Promise.allSettled()` | Collects all fulfillment and rejection outcomes                                 |
+| `Promise.race()`       | Returns the first settled result; does not automatically cancel other work      |
+| `AbortController`      | Requests cancellation from APIs that support its signal                         |
+| Exponential backoff    | Increases delay between retries                                                 |
+| Race condition         | Outcome depends on overlapping operations and their ordering                    |
+
+## What you should focus on first
+
+The most important concepts to practise explaining aloud are the event-loop scheduling order, why CPU-heavy work blocks Node.js, `Promise.all()` versus `Promise.allSettled()`, timeout versus cancellation, and race conditions in database updates.
+
+These are particularly useful because they test not just your knowledge of definitions, but also whether you understand how to apply Node.js in real backend applications.
 
 ---
 
