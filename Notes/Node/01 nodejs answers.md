@@ -2607,229 +2607,1374 @@ A good interview response should explain the concept, describe the mechanism, an
 
 ### Core Express
 
-**Q: What is Express.js? Why is it used with Node.js?**  
-Express.js is a minimal, flexible web application framework for Node.js, providing a robust set of features for building web and mobile APIs. It simplifies routing, middleware integration, request/response handling, and templating.
+# Node.js Backend Interview Questions — Interview-Ready Answers
 
-**Q: What is the request-response lifecycle in Express?**  
-A request enters Express, goes through a series of middleware functions and route handlers (in the order they are defined), and eventually sends a response. Middleware can modify `req` and `res`, end the cycle, or call `next()` to pass control to the next middleware.
+## Section 5: Express.js & Middleware
 
-**Q: What is middleware in Express? How does the middleware chain work?**  
-Middleware functions have access to `req`, `res`, and `next`. They execute sequentially; each middleware can end the request or call `next()`. This chaining allows modular handling (logging, auth, body parsing, routing).
+This section covers the questions in your attached document, rewritten in natural spoken English with practical examples and key points to remember.
 
-**Q: What does `next()` do in middleware? What happens if you don't call it?**  
-`next()` passes control to the next middleware in the stack. If not called, the request hangs (unless a response is sent). In error-handling middleware, `next(err)` sends the error to the error handler.
+# Part A: Core Express.js
 
-**Q: What is the difference between `app.use()` and `app.get()` / `app.post()`?**  
-`app.use()` mounts middleware for all HTTP methods at a specified path (or globally). `app.get()`, `app.post()` handle specific HTTP methods on a path.
+## Q1. What is Express.js? Why is it used with Node.js?
 
-**Q: What is the difference between application-level, router-level, and error-handling middleware?**  
-- Application-level: bound to `app` instance (e.g., `app.use`).  
-- Router-level: bound to `express.Router()`.  
-- Error-handling: takes four arguments `(err, req, res, next)`, defined after other middleware.
+Expected interview answer:
 
-**Q: How do you create a router in Express? Why would you use `express.Router()`?**  
-```javascript
-const router = express.Router();
-router.get('/users', ...);
-module.exports = router;
+“Express.js is a lightweight and flexible web application framework built on top of Node.js.
+
+Node.js provides the runtime for executing JavaScript on the server, while Express simplifies building web servers and REST APIs.
+
+It provides features such as routing, middleware, request and response handling, and error handling.
+
+For example, instead of manually handling every HTTP request using Node.js's built-in HTTP module, I can use Express to define routes such as `GET /users` or `POST /users`.
+
+This makes backend code easier to organize, maintain, and extend.”
+
+Example:
+
 ```
-Router enables modular route definitions, keeping code organized. Use it to mount sub-applications.
+const express = require("express");
 
-**Q: What is the difference between `req.params`, `req.query`, and `req.body`?**  
-- `req.params`: route parameters (e.g., `/users/:id` → `req.params.id`).  
-- `req.query`: query string parameters (e.g., `?name=foo` → `req.query.name`).  
-- `req.body`: parsed request body (requires body-parser middleware, e.g., `express.json()`).
+const app = express();
 
-**Q: How do you serve static files in Express?**  
-`app.use(express.static('public'))` serves files from the `public` directory. Options can set cache control, etc.
+app.get("/", (req, res) => {
+  res.send("Hello World");
+});
 
-**Q: What is `express.json()` middleware? What did `body-parser` used to do?**  
-`express.json()` parses incoming requests with JSON payloads, populating `req.body`. It's built-in since Express 4.16+, replacing the separate `body-parser` package.
+app.listen(3000);
+```
 
-**Q: What is the order of middleware execution? Does order matter?**  
-Yes, the order in which middleware is defined determines the execution order. General pattern: global middleware (logging, parsing), then route-specific middleware, then error-handling middleware last.
+Remember: Node.js provides the runtime; Express simplifies backend web development.
 
-**Q: How do you implement error-handling middleware in Express? (4-argument signature)**  
-Define a middleware with `(err, req, res, next)`. Express recognizes error handlers by the four arguments. Inside, send appropriate status code and error message. Ensure it's placed after all other routes.
-```javascript
-app.use((err, req, res, next) => {
-  res.status(err.status || 500).json({ error: err.message });
+## Q2. What is the request-response lifecycle in Express?
+
+Expected interview answer:
+
+“The request-response lifecycle describes how an incoming HTTP request is processed by an Express application until a response is sent back to the client.
+
+When a request arrives, it passes through the middleware and route handlers in the order they are registered.
+
+For example, the request might first pass through logging middleware, then JSON parsing middleware, authentication middleware, and finally the matching route handler.
+
+Each middleware can modify the request or response, send a response, or call `next()` to pass control to the next middleware.
+
+Once the response is sent, the request-response cycle is generally considered complete.”
+
+Example flow:
+
+`Client → Logging → JSON Parser → Authentication → Route Handler → Response`
+
+Remember: Middleware order determines the processing flow of an Express request.
+
+## Q3. What is middleware in Express? How does the middleware chain work?
+
+Expected interview answer:
+
+“Middleware is a function that executes during the request-response lifecycle of an Express application.
+
+It typically receives three arguments: `req`, `res`, and `next`.
+
+The `req` object contains request information, `res` is used to send the response, and `next()` passes control to the next middleware.
+
+Middleware is useful for common tasks such as request logging, authentication, validation, body parsing, and error handling.
+
+We can register multiple middleware functions, and Express executes the applicable ones in their defined order.”
+
+Example:
+
+```
+app.use((req, res, next) => {
+  console.log(req.method, req.url);
+  next();
 });
 ```
 
-**Q: How do you handle 404 errors in Express?**  
-Add a catch-all middleware at the end of your routes: `app.use((req, res, next) => { res.status(404).send('Not Found'); });`
+Remember: Middleware handles reusable request-processing logic.
 
-**Q: What is `res.json()` vs `res.send()` vs `res.end()`?**  
-- `res.json(obj)`: sends JSON response, sets Content-Type to application/json.  
-- `res.send(body)`: automatically sets Content-Type based on body type (string, Buffer, object).  
-- `res.end()`: ends the response without sending data (or after raw writing with `res.write()`).
+## Q4. What does `next()` do in middleware? What happens if you don't call it?
 
-**Q: What is `res.locals`? What is it used for?**  
-`res.locals` is an object that holds response-local variables scoped to the request, accessible only to the view(s) rendered during that request/response cycle. Useful for passing data to templates.
+Expected interview answer:
 
-**Q: How do you implement request timeout middleware?**  
-Create middleware that sets a timer; if the response isn't finished after a certain time, call `req.destroy()` or `res.status(408).send('Request Timeout')`. You can use `req.setTimeout` or a library like `express-timeout`.
+“`next()` passes control from the current middleware to the next applicable middleware or route handler.
 
-**Q: What is `express-async-errors` / `express-async-handler`? Why is it needed?**  
-Express does not catch errors thrown inside async route handlers automatically. If an async function throws, the error is lost. `express-async-handler` wraps an async function to catch rejections and pass them to `next`. `express-async-errors` monkey-patches Express to propagate unhandled rejections, but explicit wrapping is safer.
+If middleware sends a response, it does not need to call `next()`.
 
-**Q: What is `helmet`? What HTTP headers does it set?**  
-Helmet helps secure Express apps by setting various HTTP headers: `Content-Security-Policy`, `X-Content-Type-Options: nosniff`, `X-Frame-Options`, `Strict-Transport-Security`, `X-DNS-Prefetch-Control`, etc.
+However, if it neither sends a response nor calls `next()`, the request may remain pending, causing the client to wait indefinitely.
 
-**Q: What is `morgan`? What does request logging look like in production?**  
-Morgan is an HTTP request logger middleware. In production, use combined format or custom JSON logs. It outputs request method, URL, status, response time, etc.
+We can also call `next(err)` to pass an error to Express's error-handling middleware.
 
-**Q: What is `compression` middleware? What does it do?**  
-`compression` gzip/deflates response bodies to reduce network payload size, improving performance. It adds a `Content-Encoding` header. Trade-off: CPU overhead.
+Therefore, every middleware should either complete the response, pass control forward, or pass an error to the error handler.”
 
-**Q: What is `cors` middleware? When and how do you configure it?**  
-`cors` middleware enables Cross-Origin Resource Sharing. Configure it with allowed origins, methods, headers, credentials. Use restrictive policies, not `*` for production.
+Example:
 
-**Q: How do you implement rate limiting in Express? (e.g., `express-rate-limit`)**  
-Use `express-rate-limit`: `app.use(rateLimit({ windowMs: 15*60*1000, max: 100 }));` This returns 429 when exceeded. For distributed systems, use a store like `rate-limit-redis`.
+```
+app.use((req, res, next) => {
+  if (!req.headers.authorization) {
+    return res.status(401).json({
+      error: "Authentication required"
+    });
+  }
 
-**Q: How do you validate request bodies in Express? (`Joi`, `zod`, `express-validator`)**  
-Create a validation middleware that checks `req.body` against a schema, and if invalid, returns 400 with error details. Example with Joi: `const { error } = schema.validate(req.body); if (error) return res.status(400).json(...);`
+  next();
+});
+```
 
-**Q: What is graceful shutdown in an Express app? How do you implement it?**  
-Graceful shutdown stops accepting new connections, allows ongoing requests to finish, then closes. Implementation: listen for SIGTERM, call `server.close()`, wait for active connections to drain (using `stoppable` or manual tracking), then exit.
+Remember: `next()` continues the middleware chain; `next(err)` forwards an error.
 
-**Q: What is the difference between `app.listen()` and `http.createServer(app).listen()`?**  
-`app.listen()` is a convenience wrapper that creates an `http.Server`, calls `listen` on it, and returns the server. Using `http.createServer(app).listen()` allows you more control (e.g., attaching WebSocket server to the same HTTP server). Both are equivalent.
+## Q5. What is the difference between `app.use()` and `app.get()` / `app.post()`?
 
-**Q: How do you structure a large Express application? (folder structure, separation of concerns)**  
-Common structure:  
-- `routes/` — route definitions  
-- `controllers/` — request handlers  
-- `services/` — business logic  
-- `models/` — data access  
-- `middleware/` — custom middleware  
-- `config/` — environment configuration  
-- `utils/` — utilities  
-- `app.js` — Express setup, `server.js` — entry point.
+Expected interview answer:
 
-**Q: What is `res.cookie()` vs setting the `Set-Cookie` header manually?**  
-`res.cookie()` sets a cookie with options (domain, path, maxAge, httpOnly, secure, sameSite) and automatically creates the `Set-Cookie` header. Manually you'd craft the header string, but `res.cookie()` is safer and simpler.
+“The main difference is that `app.use()` is primarily used to register middleware, while `app.get()` and `app.post()` register route handlers for specific HTTP methods.
 
-**Q: How do you handle file uploads in Express? (`multer`)**  
-Multer is middleware for handling `multipart/form-data`. Configure storage (disk or memory), limits. Add to route: `upload.single('avatar')`. Access file via `req.file`.
+`app.use()` can apply middleware globally or to a particular path prefix, regardless of the HTTP method.
 
-**Q: What is `express-session`? How does it work?**  
-`express-session` creates a session middleware that stores session data server-side, identified by a cookie (session ID). It populates `req.session`. Use a store (e.g., Redis) for production. It keeps state between HTTP requests.
+For example, I can use `app.use()` to log every request or enable JSON parsing.
 
----
+On the other hand, `app.get('/users')` handles GET requests for the users route, while `app.post('/users')` handles POST requests for that route.
 
-## 6. REST API Design
+I use `app.use()` for common request processing and method-specific route handlers for application functionality.”
 
-### Principles & Best Practices
+Example:
 
-**Q: What is REST? What are the 6 constraints of REST architecture?**  
-REST (Representational State Transfer) is an architectural style. Constraints:
-1. Client-server separation.
-2. Statelessness: each request must contain all necessary information.
-3. Cacheability: responses must indicate whether they are cacheable.
-4. Uniform interface (resource identification, manipulation through representations, self-descriptive messages, HATEOAS).
-5. Layered system.
-6. (Optional) Code on demand.
+```
+app.use(express.json());
 
-**Q: What is the difference between REST and RPC?**  
-REST is resource-oriented, using standard HTTP methods and URLs to represent resources. RPC (Remote Procedure Call) is action-oriented, invoking specific functions with parameters. REST leverages HTTP semantics; RPC often uses custom methods (like `/getUser`). gRPC is a modern RPC framework.
+app.get("/users", (req, res) => {
+  res.json([]);
+});
 
-**Q: What is statelessness in REST? Why is it important?**  
-Statelessness means the server does not store client context between requests. Each request must be self-contained (authentication, state). This simplifies scaling and reliability, as any server can handle any request without session affinity.
+app.post("/users", (req, res) => {
+  res.status(201).json(req.body);
+});
+```
 
-**Q: What does idempotency mean? Which HTTP methods are idempotent?**  
-An idempotent operation produces the same result even if called multiple times. Idempotent HTTP methods: GET, HEAD, PUT, DELETE, OPTIONS, TRACE. POST is not idempotent.
+Remember: `app.use()` registers middleware; `app.get()` and `app.post()` register method-specific routes.
 
-**Q: What is the difference between `PUT` and `PATCH`?**  
-PUT replaces the entire resource (or creates if absent) with the request payload; it is idempotent. PATCH applies partial modifications; it is not necessarily idempotent (depends on instructions).
+## Q6. What is the difference between application-level, router-level, and error-handling middleware?
 
-**Q: When do you use `POST` vs `PUT`?**  
-POST is used to create a new resource when the server determines the URI (or for non-idempotent actions). PUT is used to create or replace a resource at a specific URI known by the client. PUT requires the full resource representation.
+Expected interview answer:
 
-**Q: What are the correct HTTP status codes to use? Give examples for 2xx, 3xx, 4xx, 5xx.**  
-- 200 OK: success
-- 201 Created: resource created
-- 204 No Content: success with no body
-- 301 Moved Permanently, 302 Found
-- 304 Not Modified (caching)
-- 400 Bad Request
-- 401 Unauthorized
-- 403 Forbidden
-- 404 Not Found
-- 409 Conflict
-- 422 Unprocessable Entity
-- 429 Too Many Requests
-- 500 Internal Server Error
-- 502 Bad Gateway
-- 503 Service Unavailable
+“Express supports different kinds of middleware based on where and how we register them.
 
-**Q: When do you return `200` vs `201` vs `204`?**  
-- 200: standard success with response body.
-- 201: after successful creation, often with a Location header.
-- 204: success but no content to return (e.g., DELETE, successful update without body).
+Application-level middleware is registered on the main Express application using methods such as `app.use()`.
 
-**Q: When do you return `400` vs `401` vs `403` vs `404` vs `422` vs `409`?**  
-- 400: malformed request syntax (invalid JSON, missing required field).
-- 401: authentication required or failed.
-- 403: authenticated but not allowed (forbidden).
-- 404: resource not found.
-- 422: semantic validation errors (well-formed but invalid data).
-- 409: conflict with current state (duplicate, stale version).
+Router-level middleware is registered on an `express.Router()` instance and applies to routes managed by that router.
 
-**Q: What is HATEOAS?**  
-Hypermedia as the Engine of Application State. Responses include links to related resources/actions, allowing clients to navigate the API dynamically. Rarely fully implemented in practice but a principle of REST.
+Error-handling middleware uses four arguments: `err`, `req`, `res`, and `next`. It handles errors passed through the Express error-handling mechanism.
 
-**Q: How do you version an API? What are the different strategies? (URI versioning, header versioning)**  
-- URI versioning: `/api/v1/users`, `/api/v2/users`. Simple, explicit.
-- Header versioning: `Accept: application/vnd.company.v2+json`. Cleaner URLs, but harder to browse.
-- Query parameter: `?version=2`.  
-Choose based on client needs.
+I would use application-level middleware for common functionality, router-level middleware for specific route groups, and error-handling middleware for centralized error responses.”
 
-**Q: How do you design pagination for a REST API? (offset-based vs cursor-based)**  
-- Offset-based: `?offset=0&limit=20`. Simple but inefficient with large offsets, susceptible to drift.
-- Cursor-based: `?cursor=abc123&limit=20`. Encodes position, more stable for large, real-time datasets. Often implemented with an opaque cursor (e.g., base64 encoded timestamp or ID).
+Remember: Application → whole application; router → route group; error handler → handles propagated errors.
 
-**Q: What is cursor-based pagination? When is it better than offset-based?**  
-Cursor-based pagination returns a cursor pointing to the next item, avoiding the performance penalty of counting rows for offsets. Better for large, constantly updated datasets (e.g., social media feeds), as it maintains consistency despite insertions/deletions.
+## Q7. How do you create a router in Express? Why would you use `express.Router()`?
 
-**Q: How do you design filtering, sorting, and searching for a REST API?**  
-- Filtering: query parameters `?status=active&role=admin`. Use bracket notation for range `?price[lte]=100`.  
-- Sorting: `?sort=-created_at,+name` (desc, asc).  
-- Searching: `?q=keyword` for full-text, or field-specific `?name=John`.  
-Validate and sanitize parameters.
+Expected interview answer:
 
-**Q: What is the difference between `/users/:id/posts` and `/posts?userId=:id`?**  
-Both return posts belonging to a user. `/users/:id/posts` emphasizes the relationship as a nested resource, typically cleaner for parent-child relations. `/posts?userId=:id` is a filtered collection. Nested can become deeply nested and less flexible; filtering is simpler for complex queries.
+“`express.Router()` allows us to create a modular routing system within an Express application.
 
-**Q: What is request/response envelope vs plain JSON body? When do you use each?**  
-Envelope wraps data in a consistent structure (e.g., `{ success: true, data: {...}, meta: {...}, errors: null }`). Plain JSON returns only the resource. Envelope is useful for metadata (pagination, error details), but increases payload. Many APIs use plain JSON for success and envelope for errors.
+Instead of defining every route in a single file, we can group related routes into separate router files.
 
-**Q: How do you handle partial responses (field selection) in a REST API?**  
-Allow clients to request specific fields via query parameter: `?fields=id,name,email`. In the response, include only those fields. This reduces payload size.
+For example, I can create a user router containing endpoints for retrieving users, creating users, and updating user details.
 
-**Q: How do you design a batch API endpoint?**  
-POST `/batch` with a body containing an array of operations, each with method, path, body. Execute in order (or parallel) and return an array of responses. Example: `{ ops: [ { method: 'POST', path: '/users', body: {...} }, ... ] }`. Consider partial failures.
+Then I can mount that router in the main application using `app.use('/users', userRouter)`.
 
-**Q: How do you implement API rate limiting? What headers do you return?**  
-Use middleware to track request count per API key/IP. Return `429 Too Many Requests`. Include headers: `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset` (Unix timestamp when quota resets).
+This improves separation of concerns and makes a large backend easier to maintain.”
 
-**Q: What is API idempotency key? When is it used?**  
-An idempotency key is a unique value sent by the client to make POST/PATCH requests idempotent. The server stores the key and the response; if the same key is received again, the same response is returned without re-executing the operation. Essential for payments and safe retries.
+Example:
 
-**Q: How do you document a REST API? (Swagger/OpenAPI, Postman)**  
-Use OpenAPI specification (formerly Swagger) to describe endpoints, request/response schemas. Tools like `swagger-jsdoc` + `swagger-ui-express` can generate interactive docs from JSDoc comments. Postman collections can also document APIs.
+```
+// routes/userRoutes.js
+const express = require("express");
 
-**Q: What is OpenAPI/Swagger? How do you generate docs from code?**  
-OpenAPI is a specification for describing REST APIs. You can write the spec manually (YAML/JSON) or generate it from code annotations (JSDoc with `swagger-jsdoc`, or using TypeScript decorators with `tsoa`). Then serve via `swagger-ui`.
+const router = express.Router();
 
-**Q: How do you handle CORS in a REST API?**  
-Set appropriate `Access-Control-Allow-Origin`, `Access-Control-Allow-Methods`, `Access-Control-Allow-Headers` headers. For preflight (OPTIONS), respond with `204`. Use `cors` middleware to configure.
+router.get("/", (req, res) => {
+  res.json({ message: "Get users" });
+});
 
-**Q: What is the difference between a monolithic API and a BFF (Backend for Frontend)?**  
-Monolithic API serves all clients equally. BFF creates separate backend services tailored to specific frontend experiences (mobile, web), aggregating data and reducing over-fetching. BFF is a pattern in microservices to avoid chatty APIs.
+router.post("/", (req, res) => {
+  res.status(201).json({ message: "Create user" });
+});
 
+module.exports = router;
+```
+
+```
+// app.js
+const userRoutes = require("./routes/userRoutes");
+
+app.use("/users", userRoutes);
+```
+
+Remember: `express.Router()` lets us organize related routes into reusable modules.
+
+## Q8. What is the difference between `req.params`, `req.query`, and `req.body`?
+
+Expected interview answer:
+
+“The main difference is where the request data comes from.
+
+`req.params` contains route parameters, which are defined in the route path. For example, in `/users/:id`, the user ID is available through `req.params.id`.
+
+`req.query` contains query-string parameters, such as filters or pagination values. For example, `/users?page=2` gives us the page through `req.query.page`.
+
+`req.body` contains data sent in the request body, commonly with POST, PUT, or PATCH requests. To parse JSON request bodies, we typically use `express.json()`.
+
+I choose the appropriate location based on whether the value identifies a resource, modifies the query, or contains submitted data.”
+
+Example:
+
+```
+app.use(express.json());
+
+app.get("/users/:id", (req, res) => {
+  const { id } = req.params;
+  const { fields } = req.query;
+
+  res.json({ id, fields });
+});
+
+app.post("/users", (req, res) => {
+  res.status(201).json(req.body);
+});
+```
+
+Remember: `params` = route values, `query` = URL query string, `body` = request payload.
+
+## Q9. How do you serve static files in Express?
+
+Expected interview answer:
+
+“Express provides the built-in `express.static()` middleware to serve static files such as images, CSS, JavaScript, and HTML files.
+
+We pass the directory containing those files to `express.static()`, and Express makes them accessible through HTTP requests.
+
+For example, if my project contains a `public` directory, I can configure Express to serve files from that directory.
+
+This is useful for serving assets directly without writing a separate route for each file.”
+
+Example:
+
+```
+app.use(express.static("public"));
+```
+
+If `public/logo.png` exists, it can normally be accessed through `/logo.png`.
+
+Remember: `express.static()` serves files from a configured directory.
+
+## Q10. What is `express.json()` middleware? What did `body-parser` used to do?
+
+Expected interview answer:
+
+“`express.json()` is built-in Express middleware that parses incoming requests containing JSON payloads.
+
+After parsing, the resulting JavaScript value becomes available through `req.body`.
+
+Earlier, developers commonly used the separate `body-parser` package to parse JSON and URL-encoded request bodies.
+
+From Express 4.16 onward, the JSON and URL-encoded parsing middleware are built into Express, so we can use `express.json()` and `express.urlencoded()` without installing the separate package for these capabilities.
+
+I would still validate the parsed body because parsing JSON does not guarantee that the submitted data is valid for my application.”
+
+Example:
+
+```
+app.use(express.json());
+
+app.post("/users", (req, res) => {
+  console.log(req.body);
+  res.status(201).json({ message: "User received" });
+});
+```
+
+Remember: `express.json()` parses JSON; validation is still required.
+
+## Q11. What is the order of middleware execution? Does order matter?
+
+Expected interview answer:
+
+“Yes, the order of middleware registration matters because Express processes applicable middleware and route handlers in the order they are registered.
+
+For example, body-parsing middleware should generally be registered before routes that need `req.body`.
+
+Similarly, authentication middleware should execute before protected route handlers.
+
+A typical structure includes common middleware first, route handlers next, a 404 handler after the routes, and error-handling middleware at the end.
+
+If the required middleware is registered after a route, that route may execute before the middleware has had a chance to process the request.”
+
+Example:
+
+```
+app.use(express.json());
+
+app.use("/api/users", userRoutes);
+
+app.use((req, res) => {
+  res.status(404).json({ error: "Route not found" });
+});
+
+app.use(errorHandler);
+```
+
+Remember: Register middleware in the order required by the request-processing flow.
+
+## Q12. How do you implement error-handling middleware in Express?
+
+Expected interview answer:
+
+“Express uses a special error-handling middleware signature containing four parameters: `err`, `req`, `res`, and `next`.
+
+When a route or middleware forwards an error using `next(err)`, Express skips normal middleware and passes control to an applicable error handler.
+
+I normally use centralized error handling so that errors are logged and returned using a consistent response format.
+
+I also avoid exposing stack traces or internal details to clients in production.”
+
+Example:
+
+```
+function errorHandler(err, req, res, next) {
+  console.error(err);
+
+  if (res.headersSent) {
+    return next(err);
+  }
+
+  const status = err.status || 500;
+
+  res.status(status).json({
+    error: status === 500
+      ? "Internal server error"
+      : err.message
+  });
+}
+
+app.use(errorHandler);
+```
+
+Remember: Error-handling middleware has four parameters and should generally be registered after routes.
+
+## Q13. How do you handle 404 errors in Express?
+
+Expected interview answer:
+
+“A 404 error means that the server could not find a matching resource or route for the request.
+
+In Express, I handle unmatched requests by registering a catch-all middleware after the application's routes.
+
+If none of the preceding routes sends a response, this middleware returns a 404 status code.
+
+I would keep this separate from the general error handler because an unmatched route is not necessarily an application exception.”
+
+Example:
+
+```
+app.use((req, res) => {
+  res.status(404).json({
+    error: "Route not found"
+  });
+});
+```
+
+Remember: The 404 handler should come after all routes but before the final error handler.
+
+## Q14. What is the difference between `res.json()`, `res.send()`, and `res.end()`?
+
+Expected interview answer:
+
+“These methods are used to send or finish an HTTP response, but they behave differently.
+
+`res.json()` serializes a JavaScript value as JSON and sets the appropriate content type.
+
+`res.send()` sends a response body and generally determines the content type based on the body supplied.
+
+`res.end()` is a lower-level response-ending method. It can finish a response without a body or after writing raw response data.
+
+For JSON APIs, I generally use `res.json()` because it clearly communicates that the response is JSON.”
+
+Example:
+
+```
+res.json({ name: "Rahul" });
+
+res.send("Request successful");
+
+res.status(204).end();
+```
+
+Remember: `res.json()` sends JSON, `res.send()` sends a response body, and `res.end()` ends the response.
+
+## Q15. What is `res.locals`? What is it used for?
+
+Expected interview answer:
+
+“`res.locals` is an object used to store variables that are available during a particular request-response cycle.
+
+These values can be accessed by subsequent middleware and route handlers associated with that response, and they are commonly used when rendering server-side templates.
+
+For example, authentication middleware might store information about the current user in `res.locals`, allowing a template to display the user's name.
+
+Because `res.locals` is associated with an individual response, it is useful for request-specific data rather than application-wide state.”
+
+Example:
+
+```
+app.use((req, res, next) => {
+  res.locals.appName = "My Application";
+  next();
+});
+```
+
+Remember: `res.locals` stores data for the current request-response cycle, often for use in templates.
+
+## Q16. How do you implement request timeout middleware?
+
+Expected interview answer:
+
+“A request timeout defines how long the application is willing to wait for a request or operation to complete.
+
+In Express, I would distinguish between an incoming request timeout, an outgoing response timeout, and a timeout for a downstream operation such as a database or external API call.
+
+For downstream operations, I would set an appropriate deadline and cancel the operation if the underlying API supports cancellation.
+
+If the server needs to send a timeout response, I would first ensure that the response has not already been sent or ended. I would avoid indiscriminately destroying the request because that can prevent the client from receiving a useful response.”
+
+Example of a simple response deadline:
+
+```
+function timeoutMiddleware(req, res, next) {
+  const timer = setTimeout(() => {
+    if (!res.headersSent && !res.writableEnded) {
+      res.status(503).json({
+        error: "Request processing timed out"
+      });
+    }
+  }, 10000);
+
+  res.on("finish", () => clearTimeout(timer));
+  res.on("close", () => clearTimeout(timer));
+
+  next();
+}
+```
+
+This is a simplified example; production implementations should also cancel the underlying operation and ensure timed-out work cannot continue unnecessarily.
+
+Remember: A timeout policy should define the deadline, stop unnecessary work when possible, and avoid sending duplicate responses.
+
+## Q17. What are `express-async-errors` and `express-async-handler`? Why are they needed?
+
+Expected interview answer:
+
+“These tools help handle errors from asynchronous Express route handlers.
+
+For example, suppose an async route handler awaits a database query and that query rejects. If the rejection is not propagated to Express's error-handling mechanism, the application may not return the expected error response.
+
+`express-async-handler` wraps an async route handler and forwards rejected errors to `next()`.
+
+`express-async-errors` uses a different approach by patching Express behavior to propagate asynchronous errors.
+
+The need depends on the Express version. Express 4 applications commonly use a wrapper or explicit error forwarding, while Express 5 automatically forwards rejected Promises returned by route handlers and middleware.”
+
+Example:
+
+```
+const asyncHandler = require("express-async-handler");
+
+app.get(
+  "/users/:id",
+  asyncHandler(async (req, res) => {
+    const user = await getUserById(req.params.id);
+
+    if (!user) {
+      return res.status(404).json({
+        error: "User not found"
+      });
+    }
+
+    res.json(user);
+  })
+);
+```
+
+Remember: These tools help route asynchronous failures into centralized error handling; the exact requirement depends on your Express version.
+
+## Q18. What is Helmet? What HTTP headers does it set?
+
+Expected interview answer:
+
+“Helmet is middleware that helps improve the security of an Express application by configuring various HTTP response headers.
+
+Depending on its configuration and version, it can set headers such as Content Security Policy, `X-Content-Type-Options`, `X-Frame-Options`, and Strict-Transport-Security.
+
+These headers help reduce certain risks, such as content-type sniffing and clickjacking, and can strengthen browser-side security controls.
+
+I would typically include Helmet in a production Express application, while reviewing and configuring its policies according to the application's requirements.”
+
+Example:
+
+```
+const helmet = require("helmet");
+
+app.use(helmet());
+```
+
+Remember: Helmet helps configure security-related HTTP headers; it does not replace input validation, authorization, or other security controls.
+
+## Q19. What is Morgan? What does request logging look like in production?
+
+Expected interview answer:
+
+“Morgan is HTTP request-logging middleware for Express.
+
+It can log information such as the HTTP method, requested URL, response status code, response size, and response time.
+
+For example, if an API starts returning slow responses or frequent errors, request logs help us identify affected endpoints and investigate the issue.
+
+In production, I would configure a suitable log format and integrate it with the application's broader logging and monitoring system.
+
+I would also avoid logging sensitive information such as passwords, access tokens, or private request payloads.”
+
+Example:
+
+```
+const morgan = require("morgan");
+
+app.use(morgan("combined"));
+```
+
+Remember: Morgan records HTTP request details that help with debugging and monitoring.
+
+## Q20. What is `compression` middleware? What does it do?
+
+Expected interview answer:
+
+“The `compression` middleware reduces the size of HTTP response bodies by compressing eligible responses, commonly using gzip or deflate.
+
+Smaller responses can reduce network transfer time and bandwidth usage, especially for larger JSON responses or text-based content.
+
+However, compression consumes CPU resources, so the benefit depends on the response size, content type, network conditions, and server capacity.
+
+I would evaluate it for suitable responses and configure the application to avoid unnecessary compression of already-compressed content.”
+
+Example:
+
+```
+const compression = require("compression");
+
+app.use(compression());
+```
+
+Remember: Compression can reduce payload size and network cost, but it introduces CPU overhead.
+
+## Q21. What is CORS middleware? When and how do you configure it?
+
+Expected interview answer:
+
+“CORS stands for Cross-Origin Resource Sharing. It is a browser security mechanism that controls whether web pages from one origin can access resources from another origin.
+
+In Express, we can configure CORS using the `cors` middleware.
+
+For example, if my React frontend runs on one origin and my Express API runs on another, I can configure the API to allow requests from the frontend's origin.
+
+I would explicitly configure allowed origins, methods, headers, and credentials according to the application's requirements.
+
+For production, I would avoid unnecessarily broad policies and remember that CORS is not a replacement for authentication or authorization.”
+
+Example:
+
+```
+const cors = require("cors");
+
+app.use(cors({
+  origin: "https://my-frontend.example.com",
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE"]
+}));
+```
+
+Remember: CORS controls browser cross-origin access; it does not authenticate users or block all non-browser clients.
+
+## Q22. How do you implement rate limiting in Express?
+
+Expected interview answer:
+
+“Rate limiting restricts how many requests a client can make within a specific period.
+
+It helps protect an API from excessive traffic, accidental request loops, and certain forms of abuse.
+
+In Express, I can use middleware such as `express-rate-limit` to define a time window and a maximum request count.
+
+When the client exceeds the limit, the middleware can return HTTP `429 Too Many Requests`.
+
+For a distributed deployment with multiple application instances, I would use a shared store such as Redis so that the rate limit is coordinated across instances.”
+
+Example:
+
+```
+const rateLimit = require("express-rate-limit");
+
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 100
+});
+
+app.use("/api", limiter);
+```
+
+Remember: Rate limiting controls request frequency; distributed deployments often need shared rate-limit state.
+
+## Q23. How do you validate request bodies in Express?
+
+Expected interview answer:
+
+“Request-body validation ensures that incoming data follows the structure and rules expected by the application.
+
+For example, when creating a user, I might require a valid email address and a non-empty name.
+
+I can implement validation using libraries such as Joi, Zod, or express-validator. Typically, I create validation middleware that checks the request body before the controller executes.
+
+If validation fails, I return an appropriate client error response, usually `400 Bad Request` or `422 Unprocessable Content`, depending on the API's error-handling convention.
+
+This improves data quality and prevents invalid input from reaching the business-logic and database layers.”
+
+Example using Joi:
+
+```
+const Joi = require("joi");
+
+const userSchema = Joi.object({
+  name: Joi.string().required(),
+  email: Joi.string().email().required()
+});
+
+function validateUser(req, res, next) {
+  const { error } = userSchema.validate(req.body);
+
+  if (error) {
+    return res.status(400).json({
+      error: error.message
+    });
+  }
+
+  next();
+}
+```
+
+Remember: Validate incoming data before executing business logic or database operations.
+
+## Q24. What is graceful shutdown in an Express application? How do you implement it?
+
+Expected interview answer:
+
+“Graceful shutdown means stopping an application without unnecessarily interrupting requests that are already being processed.
+
+When a deployment platform sends a signal such as `SIGTERM`, I would stop accepting new connections, allow active requests to finish within a defined period, and close resources such as database connections.
+
+I would also implement a timeout so that the application does not wait forever for a connection or request to finish.
+
+This is important in production deployments because it helps reduce failed requests and ensures that resources are released correctly.”
+
+Example:
+
+```
+const http = require("node:http");
+const app = require("./app");
+
+const server = http.createServer(app);
+
+server.listen(3000);
+
+process.on("SIGTERM", () => {
+  server.close(async () => {
+    // Close the database pool and other resources here.
+    process.exit(0);
+  });
+});
+```
+
+This is a simplified illustration. A production implementation should also handle shutdown timeouts and cleanup failures.
+
+Remember: Stop new connections, drain active work, release resources, and then terminate.
+
+## Q25. What is the difference between `app.listen()` and `http.createServer(app).listen()`?
+
+Expected interview answer:
+
+“`app.listen()` is a convenience method provided by Express. It creates an HTTP server using the Express application and starts listening on the specified port.
+
+Alternatively, I can create the server explicitly using `http.createServer(app)` and then call `listen()` on that server.
+
+Both approaches can serve the same Express application.
+
+The explicit approach gives me direct access to the underlying HTTP server, which is useful when integrating WebSocket servers or configuring certain server-level features.”
+
+Example:
+
+```
+// Convenience approach
+app.listen(3000);
+```
+
+```
+// Explicit approach
+const http = require("node:http");
+
+const server = http.createServer(app);
+
+server.listen(3000);
+```
+
+Remember: `app.listen()` is convenient; explicit server creation offers more control over the underlying HTTP server.
+
+## Q26. How would you structure a large Express application?
+
+Expected interview answer:
+
+“For a large Express application, I would separate the code into layers based on their responsibilities.
+
+The routes directory would define API endpoints, controllers would handle HTTP request and response logic, services would contain business logic, and models or repositories would handle database access.
+
+I would keep reusable middleware, configuration, and utility functions in separate directories.
+
+For example, when creating a user, the route would call the controller, the controller would invoke the service, and the service would interact with the repository or database layer.
+
+This structure improves maintainability, testing, and separation of concerns.”
+
+Example structure:
+
+```
+src/
+├── routes/
+├── controllers/
+├── services/
+├── models/
+├── repositories/
+├── middleware/
+├── config/
+├── utils/
+├── app.js
+└── server.js
+```
+
+Remember: Separate routing, HTTP handling, business logic, and data access.
+
+## Q27. What is the difference between `res.cookie()` and setting the `Set-Cookie` header manually?
+
+Expected interview answer:
+
+“Both approaches can send cookies to the client, but `res.cookie()` is a higher-level Express helper.
+
+It allows me to set a cookie's value and configure options such as `httpOnly`, `secure`, `sameSite`, `path`, and `maxAge`.
+
+If I manually set the `Set-Cookie` header, I must construct the cookie header correctly and handle its attributes myself.
+
+I generally prefer `res.cookie()` because it is simpler and less error-prone. For authentication cookies, I would carefully configure security attributes based on the deployment requirements.”
+
+Example:
+
+```
+res.cookie("sessionId", "example-value", {
+  httpOnly: true,
+  secure: true,
+  sameSite: "lax",
+  maxAge: 60 * 60 * 1000
+});
+```
+
+Remember: `res.cookie()` handles cookie formatting and options more conveniently than manually building a header.
+
+## Q28. How do you handle file uploads in Express using Multer?
+
+Expected interview answer:
+
+“Multer is middleware that handles `multipart/form-data` requests, which are commonly used for file uploads.
+
+It allows us to configure whether uploaded files are stored in memory or on disk and provides access to uploaded-file information through properties such as `req.file` or `req.files`.
+
+For example, if a user uploads a profile image, I can configure a Multer middleware and attach it to the relevant upload route.
+
+In production, I would also enforce file-size limits, validate allowed file types, generate safe filenames, and consider storing larger files in object storage rather than the application server's local disk.”
+
+Example:
+
+```
+const multer = require("multer");
+
+const upload = multer({
+  dest: "uploads/",
+  limits: {
+    fileSize: 5 * 1024 * 1024
+  }
+});
+
+app.post("/upload", upload.single("avatar"), (req, res) => {
+  res.json({
+    filename: req.file.filename
+  });
+});
+```
+
+Remember: Multer parses multipart uploads; file-size limits and file validation are important security controls.
+
+## Q29. What is `express-session`? How does it work?
+
+Expected interview answer:
+
+“`express-session` is Express middleware that manages server-side sessions across multiple HTTP requests.
+
+When a session is created, the server stores session data and sends the client a cookie containing a session identifier. The client sends that cookie with subsequent requests, allowing the server to associate the request with the existing session.
+
+For example, after a successful login, the application can store the user's session information and use it to recognize subsequent authenticated requests.
+
+In production, I would configure an appropriate session store, such as Redis, instead of relying on the default in-memory store, which is not suitable for most production deployments.”
+
+Example:
+
+```
+const session = require("express-session");
+
+app.use(session({
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    httpOnly: true,
+    secure: true,
+    sameSite: "lax"
+  }
+}));
+```
+
+Remember: Session data stays on the server; the cookie normally identifies the session.
+
+# Section 6: REST API Design
+
+## Q30. What is REST? What are the six constraints of REST architecture?
+
+Expected interview answer:
+
+“REST stands for Representational State Transfer. It is an architectural style used to design networked applications and APIs around resources and their representations.
+
+REST defines six architectural constraints.
+
+First, client-server separation keeps the user interface separate from the server's data and business logic.
+
+Second, statelessness means each request contains the information required to process it without relying on stored client context from an earlier request.
+
+Third, cacheability specifies that responses should indicate whether they can be cached.
+
+Fourth, the uniform interface provides a consistent way to identify and interact with resources.
+
+Fifth, the layered-system constraint allows intermediaries such as proxies and gateways.
+
+Sixth, code-on-demand allows servers to provide executable code to clients, but this constraint is optional.
+
+Following these constraints can make an API easier to scale, evolve, and maintain.”
+
+Remember: Client-server, statelessness, cacheability, uniform interface, layered system, and optional code-on-demand.
+
+## Q31. What is the difference between REST and RPC?
+
+Expected interview answer:
+
+“REST and RPC are two different architectural approaches for designing APIs.
+
+REST is generally resource-oriented. It exposes resources through URLs and uses HTTP methods such as GET, POST, PUT, and DELETE to interact with them.
+
+RPC, or Remote Procedure Call, is action-oriented. It focuses on invoking operations or functions on a remote system.
+
+For example, a REST API might use `GET /users/123` to retrieve a user, whereas an RPC-style API might expose an operation named `getUser`.
+
+REST uses standard HTTP semantics around resources, while RPC focuses on requesting specific operations. The appropriate choice depends on the application's requirements and communication model.”
+
+Remember: REST emphasizes resources; RPC emphasizes operations.
+
+## Q32. What is statelessness in REST? Why is it important?
+
+Expected interview answer:
+
+“Statelessness means that the server does not depend on stored conversational context from previous client requests to understand the current request.
+
+Each request must contain the information needed to process it, such as the resource identifier, required parameters, and authentication credentials.
+
+This makes it easier to distribute requests across multiple server instances because any suitable instance can process a request without depending on session state held by another instance.
+
+For example, an authenticated REST API can validate an access token supplied with each request rather than relying on in-memory client context stored on a specific server.
+
+Statelessness improves scalability and simplifies deployment, although the server can still maintain application data in its database.”
+
+Remember: Statelessness concerns client-request context, not whether the application stores data in a database.
+
+## Q33. What does idempotency mean? Which HTTP methods are idempotent?
+
+Expected interview answer:
+
+“An operation is idempotent when performing the same request multiple times has the same intended effect on the server as performing it once.
+
+For example, sending the same PUT request several times with the same representation should leave the resource in the same intended state.
+
+The HTTP methods GET, HEAD, PUT, DELETE, OPTIONS, and TRACE are defined as idempotent in terms of their intended semantics. POST is not generally idempotent.
+
+This is important in backend development because network failures can lead clients to retry requests. Idempotent operations are easier to retry safely, provided the implementation follows the intended semantics.”
+
+Remember: Idempotency means repeating an operation does not keep changing its intended effect—not that every response must be identical.
+
+## Q34. What is the difference between PUT and PATCH?
+
+Expected interview answer:
+
+“The main difference is how they are used to modify a resource.
+
+PUT is generally used to replace the resource representation at a known URL. Depending on the API design, it can also create a resource at that URL if it does not exist.
+
+PATCH is used to apply partial modifications to an existing resource.
+
+For example, if a user has a name, email, and phone number, a PUT request may submit the intended complete representation, while a PATCH request may change only the phone number.
+
+PUT is defined as idempotent. PATCH is not necessarily idempotent because its behavior depends on the patch instructions and implementation.”
+
+Remember: PUT generally replaces a resource representation; PATCH applies partial modifications.
+
+## Q35. When do you use POST versus PUT?
+
+Expected interview answer:
+
+“I use POST when submitting data for processing or creating a resource where the server commonly determines the resource URL.
+
+I use PUT when the client knows the target resource URL and wants to create or replace the resource representation at that URL.
+
+For example, `POST /users` can create a user and allow the server to assign an ID. A request to `PUT /users/123` can replace the representation of the user identified by `123`.
+
+The important distinction is that POST is not generally idempotent, while PUT is intended to be idempotent.”
+
+Remember: POST commonly creates a server-identified resource or triggers processing; PUT targets a known resource URL.
+
+## Q36. What HTTP status codes should you use? Give examples from 2xx, 3xx, 4xx, and 5xx.
+
+Expected interview answer:
+
+“HTTP status codes communicate the outcome of an API request.
+
+The 2xx range indicates success. For example, `200 OK` means the request succeeded, `201 Created` indicates successful resource creation, and `204 No Content` indicates success without a response body.
+
+The 3xx range indicates redirection or a related response, such as `301 Moved Permanently` or `304 Not Modified`.
+
+The 4xx range indicates that the request has an issue from the client's perspective. Examples include `400 Bad Request`, `401 Unauthorized`, `403 Forbidden`, `404 Not Found`, and `429 Too Many Requests`.
+
+The 5xx range indicates a server-side failure, such as `500 Internal Server Error`, `502 Bad Gateway`, or `503 Service Unavailable`.
+
+I choose the status code that best describes the result rather than returning 200 for every outcome.”
+
+| Range | Meaning                               | Examples                                 |
+| ----- | ------------------------------------- | ---------------------------------------- |
+| 2xx   | Success                               | `200`, `201`, `204`                      |
+| 3xx   | Redirection or cache-related response | `301`, `302`, `304`                      |
+| 4xx   | Client request issue                  | `400`, `401`, `403`, `404`, `409`, `429` |
+| 5xx   | Server-side failure                   | `500`, `502`, `503`                      |
+
+Remember: Correct status codes help clients handle API responses consistently.
+
+## Q37. When do you return 200 versus 201 versus 204?
+
+Expected interview answer:
+
+“I use `200 OK` when the request succeeds and I want to return a response body containing the result.
+
+I use `201 Created` when the request successfully creates a resource. The response may include the created resource and a `Location` header identifying it.
+
+I use `204 No Content` when the operation succeeds but there is no response body to return.
+
+For example, retrieving a user would typically return 200, creating a user would typically return 201, and deleting a user without returning any content could return 204.”
+
+Remember: `200` = successful response, `201` = resource created, `204` = successful response without content.
+
+## Q38. When do you return 400 versus 401 versus 403 versus 404 versus 422 versus 409?
+
+Expected interview answer:
+
+“These status codes represent different kinds of request failures.
+
+`400 Bad Request` is appropriate when the request is malformed or cannot be processed as submitted.
+
+`401 Unauthorized` is used when authentication is missing or invalid.
+
+`403 Forbidden` means the server understood the request but refuses to authorize the operation.
+
+`404 Not Found` means the requested resource or endpoint cannot be found.
+
+`422 Unprocessable Content` can be used when the request is syntactically valid but fails semantic validation.
+
+`409 Conflict` indicates that the request conflicts with the current state of the resource, such as a duplicate operation or a version conflict.
+
+I would use a consistent error-handling policy across the API so that clients can respond to errors predictably.”
+
+Remember: The important distinction is whether the request is malformed, unauthenticated, forbidden, missing a resource, semantically invalid, or conflicting with current state.
+
+## Q39. What is HATEOAS?
+
+Expected interview answer:
+
+“HATEOAS stands for Hypermedia as the Engine of Application State. It is a REST architectural constraint in which API responses include links that guide the client toward related resources or available actions.
+
+For example, when an API returns an order, its response might include links to view the customer or cancel the order if cancellation is allowed.
+
+This allows clients to discover certain navigation options dynamically instead of hardcoding every possible URL.
+
+HATEOAS is a formal REST principle, although many practical REST APIs implement it only partially or do not use it.”
+
+Example response:
+
+```
+{
+  "id": 123,
+  "status": "pending",
+  "links": {
+    "self": "/orders/123",
+    "cancel": "/orders/123/cancel"
+  }
+}
+```
+
+Remember: HATEOAS uses links in responses to guide clients through available resources and actions.
+
+## Q40. How do you version a REST API? What strategies can you use?
+
+Expected interview answer:
+
+“API versioning allows us to introduce changes to an API without unexpectedly breaking existing clients.
+
+One common approach is URI versioning, where the version appears in the URL, such as `/api/v1/users` and `/api/v2/users`.
+
+Another approach is header versioning, where the client specifies the desired API version through a request header.
+
+We can also use a query parameter, such as `?version=2`.
+
+I would choose a strategy based on the application's client requirements, compatibility policy, and operational needs. I would also define a deprecation process so older clients have time to migrate.”
+
+Remember: URI versioning is explicit and easy to understand; header versioning keeps the URL independent of the version.
+
+## Q41. How do you design pagination for a REST API? Explain offset-based versus cursor-based pagination.
+
+Expected interview answer:
+
+“Pagination allows an API to return a large collection in smaller, manageable portions instead of sending every record in one response.
+
+Offset-based pagination uses parameters such as `offset` and `limit`. It is simple to implement but can become inefficient for large offsets, and the results can shift when records are inserted or deleted.
+
+Cursor-based pagination uses a cursor representing a position in the result set. It is often more suitable for large or frequently changing datasets because it avoids skipping through increasingly large offsets.
+
+I would choose the approach according to data size, ordering requirements, consistency expectations, and query performance.”
+
+Examples:
+
+Offset-based:
+
+```
+GET /users?offset=0&limit=20
+```
+
+Cursor-based:
+
+```
+GET /users?cursor=abc123&limit=20
+```
+
+Remember: Offset pagination is simple; cursor pagination is often better for large, frequently updated collections.
+
+## Q42. What is cursor-based pagination? When is it better than offset-based pagination?
+
+Expected interview answer:
+
+“Cursor-based pagination uses a pointer to the position of the last item returned, allowing the next request to continue from that position.
+
+For example, an API might return 20 records and provide a cursor for retrieving the next 20 records.
+
+It is especially useful for large datasets and frequently updated collections, such as social-media feeds, because it avoids relying on large offset values.
+
+A well-designed cursor is usually opaque to the client and is based on a stable ordering, such as a unique ID or a timestamp combined with a unique ID.
+
+It still requires careful query design, but it can improve performance and reduce inconsistencies caused by records being inserted or deleted.”
+
+Remember: Cursor pagination continues from a stable position instead of skipping an offset.
+
+## Q43. How do you design filtering, sorting, and searching for a REST API?
+
+Expected interview answer:
+
+“I generally use query parameters to support filtering, sorting, and searching in a REST API.
+
+Filtering restricts the results based on specific conditions, such as `status=active` or `role=admin`.
+
+Sorting controls the order of the returned records, such as sorting by creation date or name.
+
+Searching looks for records that match a keyword or query, for example through a `q` parameter.
+
+I would validate the query parameters, allow only supported fields and sort directions, and use parameterized database queries to prevent injection risks.”
+
+Example:
+
+```
+GET /users?status=active&sort=-created_at&q=shubham
+```
+
+Remember: Filtering narrows the results, sorting orders them, and searching finds matching records.
+
+## Q44. What is the difference between `/users/:id/posts` and `/posts?userId=:id`?
+
+Expected interview answer:
+
+“Both endpoints can return posts belonging to a particular user, but they represent the relationship differently.
+
+`/users/:id/posts` treats posts as a nested resource under a user. It clearly communicates that the posts belong to that particular user.
+
+`/posts?userId=:id` treats posts as a collection and filters the collection by user ID.
+
+I would use nested routes when the parent-child relationship is central to the API, and query parameters when I need flexible filtering across the collection.
+
+I would also avoid deeply nested URLs because they can become difficult to maintain.”
+
+Remember: Nested URLs emphasize resource relationships; query parameters filter a collection.
+
+## Q45. What is a request/response envelope versus a plain JSON body? When would you use each?
+
+Expected interview answer:
+
+“A response envelope wraps the main response data inside a standard structure, potentially including metadata and error information.
+
+For example, an API response might contain `success`, `data`, `meta`, and `errors` fields.
+
+A plain JSON response returns the resource directly without an additional wrapper.
+
+An envelope can be helpful when responses need consistent pagination metadata, status information, or structured errors. However, it adds some extra payload and nesting.
+
+I would choose a response format that meets the API's requirements and apply it consistently so that clients know how to process the results.”
+
+Example of an envelope:
+
+```
+{
+  "success": true,
+  "data": {
+    "id": 123,
+    "name": "Shubham"
+  },
+  "meta": null,
+  "errors": null
+}
+```
+
+Remember: An envelope provides a consistent wrapper for data and metadata; plain JSON keeps the response simpler.
+
+## Q46. How do you handle partial responses or field selection in a REST API?
+
+Expected interview answer:
+
+“Partial responses allow clients to request only the fields they need, which can reduce response size and unnecessary data transfer.
+
+For example, a client might request `/users?fields=id,name,email` instead of receiving every field associated with the user.
+
+The API validates the requested fields and returns only the allowed fields.
+
+I would implement field selection using an explicit allowlist so that clients cannot request sensitive internal fields.
+
+This can improve efficiency, especially when resources contain large nested structures.”
+
+Example:
+
+```
+GET /users?fields=id,name,email
+```
+
+Remember: Field selection reduces payload size, but the API must enforce which fields clients are allowed to access.
+
+## Q47. How do you design a batch API endpoint?
+
+Expected interview answer:
+
+“A batch API endpoint allows clients to submit multiple operations in a single HTTP request.
+
+For example, instead of sending several separate requests to create or update records, the client can submit an array of operations to one batch endpoint.
+
+The server processes each operation and returns the corresponding results.
+
+When designing a batch endpoint, I would define whether operations execute sequentially or concurrently, how partial failures are reported, and whether the batch needs transactional behavior.
+
+I would also set limits on the number and size of operations to prevent excessive resource consumption.”
+
+Example request:
+
+```
+{
+  "operations": [
+    {
+      "method": "POST",
+      "path": "/users",
+      "body": {
+        "name": "Amit"
+      }
+    },
+    {
+      "method": "PATCH",
+      "path": "/users/123",
+      "body": {
+        "active": true
+      }
+    }
+  ]
+}
+```
+
+Remember: A batch endpoint reduces request overhead but needs clear rules for ordering, failures, validation, and transactions.
+
+## Q48. How do you implement API rate limiting? What headers do you return?
+
+Expected interview answer:
+
+“API rate limiting restricts the number of requests a client can make during a defined time window.
+
+I would normally implement it using middleware that tracks requests by an appropriate key, such as an authenticated API key or client IP address.
+
+If the client exceeds the configured limit, the API returns `429 Too Many Requests`.
+
+The response can include headers that communicate the limit, the remaining quota, and when the limit resets. Examples of commonly used header names are `X-RateLimit-Limit`, `X-RateLimit-Remaining`, and `X-RateLimit-Reset`.
+
+For a distributed system, I would use a shared store such as Redis when rate-limit state needs to be consistent across application instances.”
+
+Remember: Return `429` when a client exceeds the allowed request rate, and communicate the applicable limit where appropriate.
+
+## Q49. What is an API idempotency key? When is it used?
+
+Expected interview answer:
+
+“An idempotency key is a unique identifier supplied by a client so that repeated submissions of the same logical operation can be recognized by the server.
+
+It is particularly useful for operations such as payments or order creation, where a client may retry a request after a network timeout without knowing whether the original request succeeded.
+
+The server stores the key with the operation's result. If the same key is received again for the same operation, the server can return the previously recorded result rather than performing the operation again.
+
+A robust implementation needs to handle concurrent requests with the same key and define how long keys are retained.”
+
+Example:
+
+```
+POST /payments
+Idempotency-Key: 3f6a8c7b-unique-value
+```
+
+Remember: Idempotency keys help prevent duplicate execution when clients retry important operations.
+
+## Q50. How do you document a REST API using Swagger, OpenAPI, or Postman?
+
+Expected interview answer:
+
+“I would document a REST API by describing its endpoints, HTTP methods, parameters, authentication requirements, request bodies, response schemas, and possible status codes.
+
+OpenAPI provides a standard specification for describing HTTP APIs. We can write the specification in YAML or JSON, or generate it from code annotations or other tooling.
+
+Swagger UI can display interactive API documentation based on an OpenAPI document, allowing developers to explore and test endpoints.
+
+Postman collections are also useful for documenting requests, organizing test cases, and sharing practical API examples with the team.”
+
+Remember: OpenAPI describes the API contract; Swagger UI presents interactive documentation; Postman helps organize and test requests.
+
+## Q51. What is OpenAPI/Swagger? How do you generate documentation from code?
+
+Expected interview answer:
+
+“OpenAPI is a specification for describing HTTP APIs, including endpoints, request parameters, schemas, authentication, and responses.
+
+Swagger is a set of tools associated with working with API specifications, including Swagger UI, which displays interactive documentation.
+
+We can create an OpenAPI specification manually or generate parts of it from code annotations using tools such as `swagger-jsdoc`. In some TypeScript applications, tools such as `tsoa` can generate API descriptions from controllers and type information.
+
+We can then serve the generated specification through Swagger UI so that developers can explore endpoints and understand how to use them.”
+
+Remember: OpenAPI defines the API description format; Swagger tools help create, display, and work with it.
+
+## Q52. How do you handle CORS in a REST API?
+
+Expected interview answer:
+
+“CORS controls whether browser-based applications from one origin are permitted to access resources from another origin.
+
+In a REST API, I configure the appropriate allowed origins, HTTP methods, headers, and credential behavior.
+
+For requests that require a preflight check, the browser sends an OPTIONS request to determine whether the actual request is permitted. The API must return suitable CORS headers in response.
+
+In Express, I would commonly configure the `cors` middleware instead of manually managing every header.
+
+I would make the policy restrictive enough for the application's requirements and remember that CORS does not replace authentication or authorization.”
+
+Example:
+
+```
+const cors = require("cors");
+
+app.use(cors({
+  origin: ["https://app.example.com"],
+  methods: ["GET", "POST", "PATCH", "DELETE"]
+}));
+```
+
+Remember: Configure CORS deliberately and ensure browser requests receive the appropriate headers.
+
+## Q53. What is the difference between a monolithic API and a BFF (Backend for Frontend)?
+
+Expected interview answer:
+
+“A monolithic API is a backend API that serves the application's clients through a shared service or codebase.
+
+A Backend for Frontend, or BFF, is an architectural pattern in which we build a backend layer tailored to a particular frontend experience.
+
+For example, a web application and a mobile application may need different response structures or different combinations of data. A BFF can aggregate information from several backend services and return a response optimized for the specific client.
+
+This can reduce over-fetching and avoid requiring the frontend to make many separate requests.
+
+However, introducing a BFF also adds another service or layer to maintain, so I would use it when the client-specific benefits justify the additional complexity.”
+
+Remember: A monolithic API provides a shared backend interface; a BFF tailors backend behavior to the needs of a particular frontend.
+
+# Final Revision Sheet
+
+Use this table to revise the key concepts before an interview.
+
+| Topic             | Main point                                               |
+| ----------------- | -------------------------------------------------------- |
+| Express.js        | Simplifies routing and server-side request handling      |
+| Middleware        | Processes requests in a defined order                    |
+| `next()`          | Passes control to the next handler                       |
+| `app.use()`       | Registers middleware                                     |
+| `req.params`      | Route parameters                                         |
+| `req.query`       | URL query parameters                                     |
+| `req.body`        | Parsed request payload                                   |
+| `express.json()`  | Parses JSON payloads                                     |
+| Error middleware  | Uses `(err, req, res, next)`                             |
+| 404 handler       | Handles unmatched requests                               |
+| Helmet            | Configures security-related headers                      |
+| Morgan            | Logs HTTP requests                                       |
+| Compression       | Reduces eligible response payload sizes                  |
+| CORS              | Controls browser cross-origin access                     |
+| Rate limiting     | Restricts request frequency                              |
+| Graceful shutdown | Stops connections and releases resources safely          |
+| REST              | Resource-oriented API architectural style                |
+| Statelessness     | Each request carries the required client context         |
+| Idempotency       | Repeated operations have the same intended effect        |
+| PUT vs PATCH      | Replace representation versus partial modification       |
+| HTTP status codes | Communicate request outcomes                             |
+| Pagination        | Returns large collections in smaller portions            |
+| HATEOAS           | Uses response links to guide API navigation              |
+| API versioning    | Supports evolution without unexpectedly breaking clients |
+| Idempotency key   | Prevents duplicate processing on retries                 |
+| OpenAPI           | Standard API-description specification                   |
+| BFF               | Backend layer tailored to a frontend experience          |
+
+## What to prioritize for interviews
+
+Focus first on middleware execution order, centralized error handling, request parameters, authentication middleware, CORS, rate limiting, and REST status codes. These concepts often connect directly to the work involved in building and debugging Express APIs.
+
+Next, practise PUT versus PATCH, idempotency, pagination, API versioning, and graceful shutdown. For each topic, aim to explain what it means, why it matters, and how you would apply it in a real backend project.
 ---
 
 ## 7. Authentication & Authorization
