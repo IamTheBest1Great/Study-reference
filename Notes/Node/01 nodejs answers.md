@@ -38,131 +38,640 @@
 
 ### Architecture & Runtime
 
-**Q1: What is Node.js? How is it different from a browser's JavaScript environment?**  
-Node.js is an open-source, cross-platform JavaScript runtime environment that executes JavaScript code outside a web browser. It uses the V8 engine (same as Chrome) to parse and run JavaScript, but adds a set of C++ bindings (via libuv) to provide access to operating system features like file I/O, networking, and concurrency. Unlike the browser, Node.js has no DOM, no `window` object, but has `global`, `process`, and built-in modules like `fs`, `http`, `path`. It is primarily used for server-side applications.
+# Node.js Backend Interview Questions — Interview-Ready Answers
 
-**Q2: Explain the Node.js architecture. What are its key components? (V8, libuv, event loop, thread pool)**  
-Node.js architecture comprises:
-- **V8**: JavaScript engine that compiles JS into native machine code.
-- **libuv**: Cross-platform C library providing the event loop, asynchronous I/O operations (file system, networking, DNS), and a thread pool for blocking operations.
-- **Event loop**: Core of the concurrency model, orchestrating callbacks and I/O events.
-- **Thread pool (default size 4)**: Used by libuv for tasks that cannot be done asynchronously at the OS level (e.g., file system operations, DNS lookups, some crypto operations).
-- **Bindings & addons**: Allow JS to call C/C++ libraries.
+These are the answers to all 30 questions in your attached document, “Node.js Core Fundamentals — Architecture & Runtime.” I’ve rewritten them in natural spoken English, as I would expect you to explain them in a technical interview.
 
-Together, they enable non-blocking I/O and high concurrency.
+The goal is to help you understand and explain each answer confidently, rather than memorize textbook definitions.
 
-**Q3: What is the V8 engine? What does it do in the context of Node.js?**  
-V8 is Google's open-source high-performance JavaScript and WebAssembly engine, written in C++. In Node.js, V8 compiles and executes JavaScript code. It also manages memory (heap allocation, garbage collection) and optimises code through Just-In-Time (JIT) compilation, including hidden classes and inline caching. Node.js extends V8 with additional C++ objects and functions to interact with the system.
+# Section 1: Node.js Core Fundamentals
 
-**Q4: What is libuv? What role does it play in Node.js?**  
-libuv is a multi-platform support library with a focus on asynchronous I/O. It provides the event loop, async file system operations, child processes, signal handling, threading pool, and cross‑platform networking. Almost all I/O operations in Node.js are delegated to libuv, which returns results via callbacks on the event loop.
+## Q1. What is Node.js? How is it different from a browser's JavaScript environment?
 
-**Q5: Why is Node.js single-threaded? What does that mean practically?**  
-Node.js uses a single-threaded event loop model to handle JavaScript execution. This means your application code runs in one thread. However, the underlying I/O is non-blocking and offloaded to libuv and the operating system, which can use multiple threads under the hood. Practical implication: CPU-intensive tasks block the event loop, degrading performance, while I/O-intensive tasks scale well without the overhead of multi-threaded concurrency locks.
+Expected interview answer:
 
-**Q6: If Node.js is single-threaded, how does it handle thousands of concurrent requests?**  
-Through asynchronous, non-blocking I/O. When a request triggers an I/O operation (e.g., reading a file, querying a DB), Node.js registers a callback and continues processing other requests. Once the I/O completes, the callback is queued in the event loop and executed when the stack is clear. This allows handling many concurrent connections with a single thread, unlike thread-per-request models.
+“Node.js is an open-source, cross-platform JavaScript runtime environment that allows us to execute JavaScript outside the browser.
 
-**Q7: What is non-blocking I/O? Give a concrete example.**  
-Non-blocking I/O means that an I/O call returns immediately without waiting for the operation to complete. The result is handled via a callback, promise, or event.  
-Example: `fs.readFile('/data.txt', (err, data) => { ... })` returns immediately; the callback runs after the file is read, without blocking other code.
+It uses Google's V8 engine to execute JavaScript and provides additional features to interact with the operating system, such as file handling, networking, and database connectivity.
 
-**Q8: What is the difference between blocking and non-blocking code?**  
-- **Blocking**: Synchronous operations that halt the execution of further JavaScript until they complete (e.g., `fs.readFileSync`).  
-- **Non-blocking**: Asynchronous operations that allow the program to continue immediately, processing the result later (e.g., `fs.readFile` with callback). Blocking code freezes the event loop, causing poor concurrency.
+The main difference is that browsers provide objects like `window` and the DOM for interacting with web pages, whereas Node.js provides objects like `process`, `global`, and built-in modules such as `fs`, `http`, and `path`.
 
-**Q9: What are the advantages and disadvantages of Node.js over Java or PHP for backend development?**  
-Advantages:
-- High concurrency for I/O-heavy workloads with a single-threaded event loop.
-- JavaScript on both frontend and backend, enabling code sharing and faster development.
-- Lightweight and fast startup.
-- Rich ecosystem (npm).
+Node.js is mainly used for backend development, REST APIs, real-time applications, and other server-side applications.”
 
-Disadvantages:
-- Not suited for CPU-bound tasks (can block the event loop).
-- Callback-based code can become complex (mitigated with promises/async-await).
-- Single-threaded; true parallelism requires worker threads or clustering.
-- Immature compared to Java for enterprise-scale multi-threaded applications.
+Remember: Node.js = JavaScript runtime + V8 + server-side APIs.
 
-**Q10: When should you NOT use Node.js? What workloads is it poor for?**  
-- CPU-intensive applications (e.g., heavy image/video processing, complex mathematical computations) because they block the event loop.
-- Applications requiring long-running computations per request (can be offloaded to worker threads but adds complexity).
-- Very simple CRUD apps where performance is not a concern and language ecosystem preference matters.
-- Systems where strict static typing at scale is mandatory (though TypeScript mitigates this).
+## Q2. Explain the Node.js architecture. What are its key components?
 
-**Q11: What is the Node.js thread pool? What operations use it? What is its default size?**  
-The thread pool is a set of worker threads managed by libuv. It handles tasks that cannot be performed asynchronously by the OS (file system operations, DNS lookups, `crypto` operations like `pbkdf2`, `zlib` compression). Default size is 4, configurable via `UV_THREADPOOL_SIZE` environment variable.
+Expected interview answer:
 
-**Q12: How do you change the thread pool size in Node.js?**  
-Set the environment variable `UV_THREADPOOL_SIZE` before starting the process, e.g., `UV_THREADPOOL_SIZE=8 node app.js`. The maximum is 1024. It must be set before the event loop initializes.
+“Node.js architecture consists of several important components.
 
-**Q13: What is `process` in Node.js? What are the key properties and methods on it?**  
-`process` is a global object providing information about, and control over, the current Node.js process. Key properties: `process.env`, `process.argv`, `process.pid`, `process.platform`, `process.version`, `process.versions`. Methods: `process.exit([code])`, `process.nextTick(callback)`, `process.cwd()`, `process.chdir()`, `process.memoryUsage()`, `process.uptime()`, `process.kill(pid)`, `process.on('uncaughtException')`, `process.stdin`, `process.stdout`, `process.stderr`.
+First, V8 is the JavaScript engine that compiles and executes JavaScript code. Second, libuv provides the event loop, asynchronous I/O support, and a thread pool for certain operations.
 
-**Q14: What is `global` in Node.js? How does it differ from `window` in the browser?**  
-`global` is the global namespace object in Node.js, analogous to `window` in browsers. Variables declared without `var/let/const` become properties of `global`. In Node.js, `globalThis` is the standard reference. Unlike browsers, `global` does not represent a visible window, and there is no DOM. `global.setTimeout`, `global.console`, `global.process` are available globally without prefixing `global`.
+The event loop coordinates the execution of callbacks and asynchronous operations. The libuv thread pool handles operations such as many file-system tasks, certain DNS lookups, and some cryptographic operations.
 
-**Q15: What is the difference between `process.exit()` and throwing an uncaught error?**  
-- `process.exit([code])` immediately terminates the process with the given exit code, bypassing any cleanup handlers (unless synchronous `exit` listeners are set).  
-- An uncaught error (or exception) causes the event loop to stop, but the `'uncaughtException'` event is emitted, allowing last-resort logging or cleanup. Then the process will exit with code 1. `process.exit()` is abrupt; uncaught errors can trigger graceful shutdown if handled.
+Node.js also uses C++ bindings to connect JavaScript with lower-level system functionality.
 
-**Q16: What is `process.nextTick()`? How does it compare to `setImmediate()`?**  
-`process.nextTick(callback)` defers a callback to be invoked immediately after the current operation completes, before any I/O events or timers fire. It runs on the microtask queue.  
-`setImmediate(callback)` executes the callback on the check phase of the event loop, after I/O callbacks. `nextTick` fires before `setImmediate` and even before `Promise.then()` in the same phase.
+Together, these components allow Node.js to handle many concurrent I/O operations efficiently without requiring a separate JavaScript thread for every request.”
 
-**Q17: What is `NODE_ENV`? Why is it important?**  
-`NODE_ENV` is an environment variable conventionally used to indicate the execution environment (e.g., `development`, `production`, `test`). Many libraries (Express, React) optimize their behaviour based on its value, enabling/disabling caching, error messages, logging levels. Setting `NODE_ENV=production` in production enables performance optimizations in Express.
+Remember: V8 executes JavaScript; libuv helps manage asynchronous operations and the event loop.
 
-**Q18: How do you read environment variables in Node.js? What is `dotenv`?**  
-`process.env.VARIABLE_NAME` reads the environment variable.  
-`dotenv` is a zero-dependency module that loads variables from a `.env` file into `process.env`. It is used in development to avoid hardcoding secrets; in production, variables are typically set in the host environment.
+## Q3. What is the V8 engine? What does it do in Node.js?
 
-**Q19: What is REPL in Node.js? What is it useful for?**  
-REPL (Read-Eval-Print Loop) is an interactive shell that executes JavaScript line-by-line. Start it by typing `node` in terminal. Useful for quick prototyping, debugging, testing code snippets, and exploring modules.
+Expected interview answer:
 
-**Q20: What is the purpose of `package.json`? What are its key fields?**  
-`package.json` is a manifest file for a Node.js project. It contains metadata and configuration: `name`, `version`, `description`, `main` (entry point), `scripts`, `dependencies`, `devDependencies`, `engines`, `license`, `repository`, etc. It enables reproducible builds and npm package management.
+“V8 is Google's open-source JavaScript engine, written in C++. It is used by Chrome and Node.js to execute JavaScript code.
 
-**Q21: What is `package-lock.json`? Why should it be committed to source control?**  
-`package-lock.json` locks the exact dependency tree and versions for reproducibility. Committing it ensures that all developers and CI/CD environments install the same versions, preventing inconsistencies and "works on my machine" issues.
+V8 compiles and optimizes JavaScript, including using Just-In-Time compilation to improve execution performance. It also manages JavaScript memory and garbage collection.
 
-**Q22: What is the difference between `dependencies` and `devDependencies`?**  
-- `dependencies`: packages required to run the application in production (e.g., Express, database drivers).  
-- `devDependencies`: packages needed only for development/testing (e.g., Jest, ESLint, TypeScript). They are not installed when `NODE_ENV=production` or using `npm install --production`.
+However, V8 itself does not provide all the server-side functionality. Node.js adds APIs and bindings that allow JavaScript to interact with the file system, network, processes, and other operating-system resources.”
 
-**Q23: What is semantic versioning? What is the difference between `^1.2.3` and `~1.2.3`?**  
-Semantic versioning uses the format `MAJOR.MINOR.PATCH`.  
-- `^1.2.3` (caret): allows updates that do not change the left-most non-zero digit; permits MINOR and PATCH changes (>=1.2.3 <2.0.0).  
-- `~1.2.3` (tilde): allows only PATCH-level changes (>=1.2.3 <1.3.0).
+Remember: V8 executes JavaScript; Node.js adds the runtime capabilities needed for backend development.
 
-**Q24: What is `npm audit`? When should you run it?**  
-`npm audit` scans the project for known vulnerabilities in dependencies and suggests fixes. Run it regularly during development, after adding new packages, and in CI pipelines to prevent deploying insecure code.
+## Q4. What is libuv? What role does it play in Node.js?
 
-**Q25: What is the difference between `npm install` and `npm ci`? When do you use `npm ci`?**  
-- `npm install` reads `package.json`, generates/updates `package-lock.json`, and installs packages.  
-- `npm ci` (clean install) requires an existing `package-lock.json`, deletes `node_modules`, and installs exactly as locked. It is faster and deterministic; recommended in CI/CD environments to ensure consistent builds.
+Expected interview answer:
 
-**Q26: How does Node.js handle uncaught exceptions? What is `process.on('uncaughtException')`?**  
-When an exception is thrown and not caught, Node.js emits an `'uncaughtException'` event on the `process` object. If a listener is attached, the process will not exit automatically, but continuing after an uncaught exception is dangerous (the application may be in an inconsistent state). It should only be used for logging and graceful shutdown, followed by `process.exit(1)`.
+“libuv is a cross-platform C library that provides the event loop and asynchronous I/O capabilities used by Node.js.
 
-**Q27: What is `process.on('unhandledRejection')`? When is it triggered?**  
-It is emitted when a Promise rejection is not handled by a `.catch()` or an `await` in an async function. In recent Node.js versions (>=15), unhandled rejections will terminate the process unless handled. Use this event to log and alert, then exit.
+For example, when our application needs to read a file or perform another asynchronous operation, Node.js can delegate the work to the operating system or the libuv thread pool, depending on the operation.
 
-**Q28: What is the difference between `__dirname` and `__filename`?**  
-- `__dirname`: returns the absolute directory path of the current module file.  
-- `__filename`: returns the absolute file path of the current module, including the file name.  
-Both are available in CommonJS modules; in ES modules, use `import.meta.url` equivalent.
+While the operation is in progress, JavaScript can continue processing other work. When the result becomes available, the associated callback or continuation can execute through the event loop.
 
-**Q29: What is `process.argv`? How do you parse CLI arguments?**  
-`process.argv` is an array containing the command-line arguments passed to the Node.js process. Index 0 is the Node executable path, index 1 is the script path, and subsequent indices are the arguments. For complex parsing, libraries like `yargs`, `commander` are used.
+So, libuv is one of the main components that enables Node.js to handle concurrent operations efficiently.”
 
-**Q30: How do you gracefully shut down a Node.js server?**  
-Graceful shutdown involves:
-1. Stop accepting new connections (close the server with `server.close()`).
-2. Drain ongoing requests (track connections and wait for them to finish).
-3. Clean up resources (database connections, caches, file handles).
-4. `process.exit(0)` after everything is closed.  
-Use signal handlers (`SIGTERM`, `SIGINT`). Tools like `stoppable` or manual tracking of active connections help.
+Remember: libuv manages the event loop and coordinates many asynchronous operations.
+
+## Q5. Why is Node.js single-threaded? What does that mean practically?
+
+Expected interview answer:
+
+“Node.js normally executes our JavaScript application code on a single main thread, which is coordinated by the event loop.
+
+This does not mean that the entire Node.js runtime uses only one thread. The operating system and libuv's thread pool can perform certain operations separately.
+
+The advantage is that Node.js can handle many I/O operations without creating a separate application thread for every request.
+
+However, CPU-intensive JavaScript can block the event loop and delay other requests. For such workloads, we can consider worker threads, multiple processes, or an external processing service.”
+
+Remember: Single-threaded JavaScript execution does not mean the entire Node.js runtime is single-threaded.
+
+## Q6. If Node.js is single-threaded, how does it handle thousands of concurrent requests?
+
+Expected interview answer:
+
+“Node.js achieves high concurrency through asynchronous, non-blocking I/O.
+
+Suppose an Express API receives a request that needs data from PostgreSQL. Node.js starts the database operation asynchronously instead of blocking the main JavaScript thread while waiting for the result.
+
+During that time, the event loop can process other requests. Once the database operation completes, the application continues processing the result and sends the response.
+
+This allows one Node.js process to manage many concurrent requests efficiently, especially when the application spends much of its time waiting for I/O.
+
+However, actual capacity depends on workload, available resources, database capacity, and how efficiently the application is implemented.”
+
+Remember: Node.js doesn't wait idly for I/O; it can process other work while the operation is pending.
+
+## Q7. What is non-blocking I/O? Give a concrete example.
+
+Expected interview answer:
+
+“Non-blocking I/O means that our application does not have to stop executing JavaScript while waiting for an I/O operation to finish.
+
+For example, when we use `fs.readFile()` to read a file asynchronously, Node.js can continue executing other code while the file is being read.
+
+When the operation completes, the callback receives the result or error.
+
+This approach improves concurrency because the main JavaScript thread does not remain occupied simply waiting for an I/O operation.”
+
+Example:
+
+```
+const fs = require("node:fs");
+
+fs.readFile("data.txt", "utf8", (err, data) => {
+  if (err) {
+    console.error(err);
+    return;
+  }
+
+  console.log(data);
+});
+
+console.log("Reading file...");
+```
+
+Here, `"Reading file..."` can print before the file contents are available.
+
+## Q8. What is the difference between blocking and non-blocking code?
+
+Expected interview answer:
+
+“The main difference is whether the operation prevents further JavaScript execution while it is running.
+
+Blocking code makes the current JavaScript execution wait until the operation completes. For example, `fs.readFileSync()` blocks the thread while reading a file.
+
+Non-blocking code allows the application to continue executing other JavaScript while an asynchronous operation is pending. For example, `fs.readFile()` can read a file asynchronously.
+
+In a backend server, excessive blocking operations can increase response times and reduce the number of requests the server can handle efficiently.”
+
+| Blocking                          | Non-blocking                           |
+| --------------------------------- | -------------------------------------- |
+| Waits for the operation to finish | Allows other work while I/O is pending |
+| Can delay other requests          | Supports higher I/O concurrency        |
+| Example: `fs.readFileSync()`      | Example: `fs.readFile()`               |
+
+## Q9. What are the advantages and disadvantages of Node.js over Java or PHP for backend development?
+
+Expected interview answer:
+
+“One major advantage of Node.js is its ability to handle a large number of concurrent I/O operations using asynchronous, non-blocking programming.
+
+It also allows teams to use JavaScript on both the frontend and backend, and its npm ecosystem provides many packages for application development.
+
+Another advantage is that Node.js is well suited for APIs, real-time applications, and services that frequently interact with databases or external APIs.
+
+However, CPU-intensive JavaScript can block the event loop if it is not handled appropriately. Asynchronous code can also become difficult to manage if it is poorly structured, although Promises and `async/await` help with this.
+
+Compared with Java, the best choice depends on the workload, language ecosystem, concurrency requirements, and the team's expertise. Node.js is not automatically better or worse than Java or PHP for every application.”
+
+Remember: Node.js is especially useful for I/O-heavy applications; CPU-heavy workloads require more careful design.
+
+## Q10. When should you NOT use Node.js? What workloads is it poor for?
+
+Expected interview answer:
+
+“I would be careful about choosing Node.js for workloads that require heavy CPU computation on the main JavaScript thread.
+
+For example, complex mathematical calculations, intensive image processing, or video processing could block the event loop and delay other requests.
+
+However, this does not mean Node.js cannot be used for these applications. We can offload CPU-intensive tasks to worker threads, child processes, or separate processing services.
+
+The decision depends on the workload, performance requirements, and the additional complexity introduced by that architecture.”
+
+Remember: The main concern is running heavy CPU-bound work directly on the event-loop thread.
+
+## Q11. What is the Node.js thread pool? What operations use it? What is its default size?
+
+Expected interview answer:
+
+“The Node.js thread pool is managed by libuv and allows certain operations to execute on worker threads instead of blocking the main JavaScript thread.
+
+Operations that commonly use it include many file-system operations, `crypto` operations such as `pbkdf2`, `zlib` compression, and certain DNS operations.
+
+The default thread-pool size is four threads. We can configure it using the `UV_THREADPOOL_SIZE` environment variable.
+
+It is important to understand that not every asynchronous operation uses this thread pool. For example, much network I/O is handled using operating-system facilities rather than a thread from the libuv pool.”
+
+Remember: Default pool size = 4. The thread pool is separate from the main JavaScript thread.
+
+## Q12. How do you change the thread pool size in Node.js?
+
+Expected interview answer:
+
+“We can configure the libuv thread-pool size using the `UV_THREADPOOL_SIZE` environment variable.
+
+For example, on a Unix-like system, we can start our application like this:
+
+```
+UV_THREADPOOL_SIZE=8 node app.js
+```
+
+This configures the pool to use eight threads instead of the default four.
+
+We should set the variable before Node.js initializes the thread pool. Increasing the pool size is not automatically beneficial because it can increase resource usage and thread contention. I would tune it only after identifying that thread-pool saturation is a real bottleneck.”
+
+Remember: Configure `UV_THREADPOOL_SIZE` before startup, and measure performance before increasing it.
+
+## Q13. What is `process` in Node.js? What are its key properties and methods?
+
+Expected interview answer:
+
+“`process` is a global object that provides information about the currently running Node.js process and allows us to interact with it.
+
+For example, `process.env` lets us access environment variables, `process.argv` provides command-line arguments, and `process.pid` gives us the process ID.
+
+We can also use `process.cwd()` to get the current working directory, `process.memoryUsage()` to inspect memory usage, and `process.uptime()` to check how long the process has been running.
+
+These properties and methods are useful for application configuration, debugging, monitoring, and process management.”
+
+Remember: `process` gives us information about and control over the running Node.js process.
+
+## Q14. What is `global` in Node.js? How does it differ from `window` in the browser?
+
+Expected interview answer:
+
+“`global` is the global object in Node.js, whereas `window` is commonly associated with the browser's window environment.
+
+In a browser, JavaScript can use browser APIs such as the DOM to interact with web pages. Node.js does not provide the browser DOM by default; instead, it provides server-side APIs, such as file-system and process APIs.
+
+Node.js also supports `globalThis`, which is the standard cross-environment reference to the global object.
+
+One important point is that variables declared inside a Node.js module using `const`, `let`, or `var` do not automatically become properties of `global`.”
+
+Example:
+
+```
+console.log(globalThis === global); // true in Node.js
+console.log(typeof window);         // "undefined" by default in Node.js
+```
+
+Remember: Browser → `window` and DOM APIs. Node.js → `global`, `process`, and server-side APIs.
+
+## Q15. What is the difference between `process.exit()` and throwing an uncaught error?
+
+Expected interview answer:
+
+“`process.exit()` explicitly terminates the Node.js process with a specified exit code. For example, `process.exit(1)` indicates that the process is exiting because of an error.
+
+An uncaught exception occurs when an error is thrown and is not handled by the application. Depending on the runtime behavior and any installed handlers, it can result in the process terminating.
+
+The important difference is that calling `process.exit()` directly can terminate the process before pending asynchronous operations have completed.
+
+In production, I would prefer proper error handling and graceful shutdown where possible. If an uncaught exception leaves the application in an unsafe state, I would log the error, perform appropriate cleanup, and allow the process to restart through the process manager.”
+
+Remember: Avoid using `process.exit()` as a routine error-handling mechanism because it can interrupt pending work.
+
+## Q16. What is `process.nextTick()`? How does it compare to `setImmediate()`?
+
+Expected interview answer:
+
+“Both `process.nextTick()` and `setImmediate()` allow us to schedule a callback to run later, but they run at different points in Node.js execution.
+
+`process.nextTick()` schedules a callback to run after the current operation finishes, before Node.js continues to the next event-loop phase.
+
+`setImmediate()` schedules a callback to run in the check phase of the event loop, which follows the poll phase.
+
+One important difference is that repeatedly scheduling `process.nextTick()` callbacks can starve the event loop and delay I/O processing.
+
+I would use these methods only when I need their specific scheduling behavior rather than treating them as interchangeable.”
+
+Example:
+
+```
+process.nextTick(() => {
+  console.log("nextTick");
+});
+
+setImmediate(() => {
+  console.log("setImmediate");
+});
+
+console.log("sync");
+```
+
+The synchronous message prints first, followed by the `nextTick` callback and then the `setImmediate` callback in this example.
+
+Remember: `nextTick` runs before the next event-loop phase; `setImmediate` runs in the check phase.
+
+## Q17. What is `NODE_ENV`? Why is it important?
+
+Expected interview answer:
+
+“`NODE_ENV` is an environment variable commonly used to identify the application's environment, such as development, production, or testing.
+
+For example, when deploying an Express application, we can set `NODE_ENV=production` so that Express and other libraries can use their production-specific behavior.
+
+It can also help us configure logging, debugging, and other environment-dependent settings.
+
+I would normally configure it through the deployment environment rather than hardcoding it in the source code.”
+
+Example:
+
+```
+NODE_ENV=production node app.js
+```
+
+Remember: `NODE_ENV` helps distinguish development, testing, and production configurations.
+
+## Q18. How do you read environment variables in Node.js? What is `dotenv`?
+
+Expected interview answer:
+
+“In Node.js, we can access environment variables using `process.env`.
+
+For example, if our application needs a database URL or API key, we can read it using `process.env.DATABASE_URL` or `process.env.API_KEY`.
+
+The `dotenv` package is commonly used during local development to load variables from a `.env` file into `process.env`.
+
+This helps us keep configuration separate from application code. In production, environment variables are commonly provided by the deployment platform or a secrets-management system.
+
+Sensitive `.env` files should not be committed to source control.”
+
+Example:
+
+```
+require("dotenv").config();
+
+const port = process.env.PORT || 3000;
+```
+
+Remember: `process.env` reads configuration; `dotenv` loads local `.env` configuration.
+
+## Q19. What is REPL in Node.js? What is it useful for?
+
+Expected interview answer:
+
+“REPL stands for Read-Eval-Print Loop. It is an interactive environment that allows us to execute JavaScript statements directly from the terminal.
+
+We can start it by running the `node` command without specifying a file.
+
+It reads our input, evaluates the code, displays the result, and waits for the next input.
+
+REPL is useful for quickly testing JavaScript expressions, checking how built-in modules work, trying small pieces of code, and debugging simple problems without creating a separate file.”
+
+Example:
+
+```
+node
+```
+
+Then enter:
+
+```
+2 + 3
+```
+
+The output will be:
+
+```
+5
+```
+
+Remember: REPL is useful for quickly experimenting with JavaScript in the terminal.
+
+## Q20. What is the purpose of `package.json`? What are its key fields?
+
+Expected interview answer:
+
+“`package.json` is the main configuration and manifest file for a Node.js project.
+
+It contains project information such as the name and version, scripts for running commands, dependencies, development dependencies, and other configuration.
+
+For example, we can define a `start` script to run our application or a `dev` script to start the development server.
+
+It also specifies package-related settings, including the module system through fields such as `type`.
+
+Overall, `package.json` helps manage dependencies, scripts, and project configuration in a consistent way.”
+
+Example:
+
+```
+{
+  "name": "my-backend",
+  "version": "1.0.0",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js"
+  },
+  "dependencies": {
+    "express": "^5.0.0"
+  }
+}
+```
+
+Remember: `package.json` defines project metadata, scripts, dependencies, and configuration.
+
+## Q21. What is `package-lock.json`? Why should it be committed to source control?
+
+Expected interview answer:
+
+“`package-lock.json` records the resolved dependency tree, including the specific versions of installed packages and their dependencies.
+
+Even if `package.json` permits a range of versions, the lock file records the versions selected for that installation.
+
+Committing the lock file helps developers and CI/CD pipelines install a consistent dependency tree, reducing differences between local and production environments.
+
+This is especially useful when deploying applications because it makes dependency installation more reproducible.”
+
+Remember: `package.json` describes dependency requirements; `package-lock.json` records the resolved dependency tree.
+
+## Q22. What is the difference between `dependencies` and `devDependencies`?
+
+Expected interview answer:
+
+“The main difference is the purpose of the packages.
+
+`dependencies` contains packages required by the application at runtime. For example, Express and a PostgreSQL driver are typically production dependencies.
+
+`devDependencies` contains packages used mainly during development, testing, linting, or building. Examples include Jest, ESLint, and development tools.
+
+When deploying an application, we can configure the installation process to omit development dependencies if they are not needed at runtime.
+
+Separating these dependencies makes the project's requirements clearer and can reduce the installed production package set.”
+
+Example:
+
+```
+npm install express
+npm install --save-dev jest
+```
+
+Remember: Production runtime packages go in `dependencies`; development and testing tools generally go in `devDependencies`.
+
+## Q23. What is semantic versioning? What is the difference between `^1.2.3` and `~1.2.3`?
+
+Expected interview answer:
+
+“Semantic versioning uses three main numbers: MAJOR, MINOR, and PATCH.
+
+The major version represents incompatible changes, the minor version represents backward-compatible functionality, and the patch version represents backward-compatible bug fixes.
+
+In `package.json`, the caret and tilde symbols specify which versions npm is allowed to select within a version range.
+
+For example, `^1.2.3` allows compatible updates below version `2.0.0`, while `~1.2.3` allows patch updates below version `1.3.0`.
+
+These ranges help us manage dependency updates without automatically accepting every new major version.”
+
+| Version  | Meaning                                         |
+| -------- | ----------------------------------------------- |
+| `1.2.3`  | Exact version when no range operator is present |
+| `^1.2.3` | `>=1.2.3` and `<2.0.0`                          |
+| `~1.2.3` | `>=1.2.3` and `<1.3.0`                          |
+
+Remember: Caret generally permits minor and patch updates for a non-zero major version; tilde permits patch updates.
+
+## Q24. What is `npm audit`? When should you run it?
+
+Expected interview answer:
+
+“`npm audit` checks the project's installed dependency tree against known security vulnerability information.
+
+It identifies vulnerable packages and reports details about the issues, including available remediation options when applicable.
+
+I would run it after adding or updating dependencies and include dependency security checks in the CI/CD process.
+
+However, I would review the suggested fixes before applying them because an automatic fix can sometimes introduce breaking changes or require dependency upgrades.”
+
+Example:
+
+```
+npm audit
+```
+
+To attempt applicable fixes:
+
+```
+npm audit fix
+```
+
+Remember: `npm audit` identifies known dependency vulnerabilities; fixes should be reviewed and tested.
+
+## Q25. What is the difference between `npm install` and `npm ci`? When do you use `npm ci`?
+
+Expected interview answer:
+
+“Both commands install Node.js dependencies, but they serve slightly different purposes.
+
+`npm install` installs dependencies based on `package.json` and can update the lock file when necessary.
+
+`npm ci` is intended for clean, reproducible installations. It requires a compatible lock file, removes the existing `node_modules` directory, and installs the dependency versions recorded in the lock file.
+
+I would generally use `npm install` during normal development and `npm ci` in CI/CD pipelines, where I want dependency installation to be consistent with the committed lock file.”
+
+Remember: `npm install` is convenient for development; `npm ci` is generally preferred for reproducible automated builds.
+
+## Q26. How does Node.js handle uncaught exceptions? What is `process.on('uncaughtException')`?
+
+Expected interview answer:
+
+“An uncaught exception occurs when JavaScript throws an error that is not handled by an appropriate `try/catch` block or other error-handling mechanism.
+
+Node.js provides the `uncaughtException` process event, which can be used as a last-resort mechanism to record the error and begin shutdown procedures.
+
+However, continuing to run an application after an unexpected uncaught exception may be unsafe because its state could be inconsistent.
+
+In production, I would log the error, perform the necessary cleanup, and allow the process to exit so that a process manager or orchestration platform can restart it.
+
+I would not use this handler as a replacement for normal application-level error handling.”
+
+Remember: Catch expected errors normally; use `uncaughtException` only for last-resort handling and shutdown.
+
+## Q27. What is `process.on('unhandledRejection')`? When is it triggered?
+
+Expected interview answer:
+
+“An unhandled promise rejection happens when a Promise is rejected and the application does not attach appropriate rejection handling.
+
+For example, if an asynchronous database operation fails and I neither await it inside suitable error handling nor attach a `.catch()` handler, it may result in an unhandled rejection.
+
+Node.js provides the `unhandledRejection` process event to help applications detect and log these situations. The process behavior also depends on the Node.js version and runtime configuration; in modern Node.js, an unhandled rejection can cause the process to terminate.
+
+In production code, I would handle expected asynchronous errors using `try/catch` with `async/await` or Promise rejection handlers rather than relying on this event.”
+
+Example:
+
+```
+async function getData() {
+  try {
+    const result = await fetchData();
+    return result;
+  } catch (error) {
+    console.error("Failed to fetch data:", error);
+    throw error;
+  }
+}
+```
+
+Remember: Handle Promise rejections at the appropriate point in the application; do not rely on a global event to replace proper error handling.
+
+## Q28. What is the difference between `__dirname` and `__filename`?
+
+Expected interview answer:
+
+“Both `__dirname` and `__filename` are available in CommonJS modules and provide absolute path information about the current module.
+
+`__dirname` gives the absolute path of the directory containing the current file, whereas `__filename` gives the absolute path of the current file itself, including its filename.
+
+For example, if my file is located at `/app/routes/user.js`, `__dirname` would be `/app/routes` and `__filename` would be `/app/routes/user.js`.
+
+In ES modules, these CommonJS variables are not available by default. We can use `import.meta.url` and Node.js URL and path utilities to achieve equivalent results.”
+
+Example:
+
+```
+console.log(__dirname);
+console.log(__filename);
+```
+
+Remember: `__dirname` = containing directory; `__filename` = complete file path.
+
+## Q29. What is `process.argv`? How do you parse command-line arguments?
+
+Expected interview answer:
+
+“`process.argv` is an array containing the command-line arguments passed to the running Node.js process.
+
+The first element is normally the Node.js executable path, and the second element is the script path. Any additional arguments appear after those two elements.
+
+We can use these arguments to customize application behavior without modifying the source code. For more complex command-line interfaces, we can use libraries such as Commander or Yargs.”
+
+Example:
+
+```
+console.log(process.argv);
+```
+
+Run:
+
+```
+node app.js development
+```
+
+We can access the custom argument with:
+
+```
+const environment = process.argv[2];
+
+console.log(environment);
+```
+
+Output:
+
+```
+development
+```
+
+Remember: `process.argv[2]` is commonly the first custom argument supplied to a script.
+
+## Q30. How do you gracefully shut down a Node.js server?
+
+Expected interview answer:
+
+“Graceful shutdown means stopping a server safely without unnecessarily interrupting requests that are already being processed.
+
+For example, when a deployment platform sends a `SIGTERM` signal, I would first stop accepting new connections. I would then allow ongoing requests to finish within an appropriate shutdown period.
+
+After that, I would close resources such as database connections and other application resources.
+
+Once cleanup is complete, the process can exit. I would also implement a timeout so that the application does not remain stuck indefinitely if some requests or connections fail to close.
+
+This is important during production deployments and restarts because it helps reduce failed requests and resource leaks.”
+
+A simplified example using Node.js HTTP server:
+
+```
+const http = require("node:http");
+
+const server = http.createServer((req, res) => {
+  res.end("Hello World");
+});
+
+server.listen(3000, () => {
+  console.log("Server running on port 3000");
+});
+
+process.on("SIGTERM", () => {
+  console.log("Shutting down...");
+
+  server.close(() => {
+    console.log("Server closed");
+    process.exit(0);
+  });
+});
+```
+
 
 ---
 
