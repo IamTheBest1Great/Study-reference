@@ -1530,87 +1530,620 @@ These are particularly useful because they test not just your knowledge of defin
 
 ### Streams
 
-**Q: What are streams in Node.js? Why are they important?**  
-Streams are objects that let you read data from a source or write data to a destination continuously. They process data piece by piece (chunks), keeping memory usage low and enabling backpressure handling. Important for I/O operations with large amounts of data (files, network).
+# Node.js Backend Interview Questions — Interview-Ready Answers
 
-**Q: What are the 4 types of streams? Give an example of each.**  
-1. **Readable**: `fs.createReadStream()` — data can be read from it.  
-2. **Writable**: `fs.createWriteStream()` — data can be written to it.  
-3. **Duplex**: `net.Socket` — both readable and writable.  
-4. **Transform**: `zlib.createGzip()` — a Duplex stream that modifies or transforms data as it passes through.
+## Section 3: Streams and Buffers
 
-**Q: How do you read a large file in Node.js without running out of memory?**  
-Use `fs.createReadStream()` with an appropriate `highWaterMark` and pipe it to a writable stream or process chunks via the `'data'` event, without loading the entire file into memory.
+These answers follow your provided questions and are rewritten in natural spoken English, as you would explain them during a technical interview. I’ve included practical examples for the implementation-based questions.
 
-**Q: What is `pipe()`? How does it work internally?**  
-`pipe()` connects a readable stream to a writable stream, automatically managing the flow and backpressure. It reads from the readable, writes to the writable, and pauses/resumes the readable when the writable's buffer is full, preventing memory bloat. It returns the destination stream to enable chaining.
+# Part A: Streams
 
-**Q: What is backpressure in Node.js streams? How do you handle it?**  
-Backpressure occurs when a writable stream cannot process data as fast as it is being provided, causing a buildup. `pipe()` handles it by pausing the readable. Manually, listen for the `'drain'` event on the writable and call `readable.resume()` or use `readable.pipe(writable)`. When implementing custom streams, respect the return value of `write()` (false indicates backpressure) and wait for `'drain'`.
+## Q1. What are streams in Node.js? Why are they important?
 
-**Q: What is the difference between flowing mode and paused mode in readable streams?**  
-- **Flowing mode**: data is automatically pushed to the consumer via the `'data'` event. You attach a `'data'` listener or call `resume()`.  
-- **Paused mode**: you must call `read()` explicitly to read chunks. A readable starts in paused mode; adding a `'data'` listener switches to flowing.
+Expected interview answer:
 
-**Q: What is `pipeline()` and how does it differ from `pipe()`? Why is `pipeline()` preferred?**  
-`stream.pipeline(source, ...transforms, destination, callback)` pipes streams together and properly handles errors and cleanup. Unlike `pipe()`, it automatically destroys all streams if one errors, preventing resource leaks. `pipeline` is the modern, safer alternative.
+“Streams in Node.js allow us to read or write data in smaller chunks instead of loading the entire data into memory at once.
 
-**Q: How do you implement a custom Transform stream?**  
-Extend `Transform` and implement `_transform(chunk, encoding, callback)`.
-```javascript
-const { Transform } = require('stream');
-const upperCaseTransform = new Transform({
-  transform(chunk, encoding, callback) {
-    this.push(chunk.toString().toUpperCase());
-    callback();
+They are especially useful when working with large files, network requests, or large amounts of data.
+
+For example, if I need to process a file that is several gigabytes in size, loading the entire file into memory could consume a lot of RAM. Instead, I can use a stream to process the file chunk by chunk.
+
+Streams help reduce memory consumption and support backpressure, which allows the data producer and consumer to work at different speeds.”
+
+Remember: Streams process data incrementally, which helps reduce memory usage.
+
+## Q2. What are the four types of streams in Node.js? Give an example of each.
+
+Expected interview answer:
+
+“Node.js provides four main types of streams: Readable, Writable, Duplex, and Transform.
+
+A Readable stream allows us to read data from a source. For example, `fs.createReadStream()` reads data from a file.
+
+A Writable stream allows us to write data to a destination. For example, `fs.createWriteStream()` writes data to a file.
+
+A Duplex stream supports both reading and writing independently. For example, a network socket created using `net.Socket` can send and receive data.
+
+A Transform stream is a type of Duplex stream that modifies data as it passes through. For example, `zlib.createGzip()` compresses data.
+
+These streams allow us to build efficient data-processing pipelines.”
+
+| Stream type | Purpose                              | Example                  |
+| ----------- | ------------------------------------ | ------------------------ |
+| Readable    | Read data                            | `fs.createReadStream()`  |
+| Writable    | Write data                           | `fs.createWriteStream()` |
+| Duplex      | Read and write                       | `net.Socket`             |
+| Transform   | Transform data while passing through | `zlib.createGzip()`      |
+
+Remember: Readable = read, Writable = write, Duplex = both, Transform = both plus transformation.
+
+## Q3. How do you read a large file in Node.js without running out of memory?
+
+Expected interview answer:
+
+“To read a large file efficiently, I would use `fs.createReadStream()` instead of loading the entire file using `fs.readFile()`.
+
+A readable stream reads the file in smaller chunks, which allows me to process the data incrementally.
+
+If I need to save the processed data to another file, I can pipe the readable stream into a writable stream.
+
+I can also adjust the `highWaterMark` option according to the requirements. This helps control buffering, although the overall memory usage also depends on the other streams and processing logic.”
+
+Example:
+
+```
+const fs = require("node:fs");
+
+const readStream = fs.createReadStream("large-file.txt");
+const writeStream = fs.createWriteStream("output.txt");
+
+readStream.pipe(writeStream);
+
+writeStream.on("finish", () => {
+  console.log("File copied successfully");
+});
+
+readStream.on("error", console.error);
+writeStream.on("error", console.error);
+```
+
+Remember: Use streams when processing large files to avoid loading the entire file into memory.
+
+## Q4. What is `pipe()`? How does it work internally?
+
+Expected interview answer:
+
+“`pipe()` connects a readable stream to a writable stream and transfers data from the source to the destination.
+
+As data becomes available, it is written to the destination in chunks. An important feature of `pipe()` is that it manages backpressure automatically.
+
+For example, if the writable stream cannot process data as quickly as the readable stream produces it, `pipe()` pauses the readable stream and resumes it when the destination can accept more data.
+
+This helps prevent excessive buffering and memory consumption.
+
+The method also returns the destination stream, allowing us to chain streams together. However, `pipe()` alone does not provide the same comprehensive error handling and cleanup as `pipeline()`.”
+
+Example:
+
+```
+const fs = require("node:fs");
+
+fs.createReadStream("input.txt")
+  .pipe(fs.createWriteStream("output.txt"));
+```
+
+Remember: `pipe()` connects streams and manages data flow and backpressure.
+
+## Q5. What is backpressure in Node.js streams? How do you handle it?
+
+Expected interview answer:
+
+“Backpressure occurs when a data consumer cannot process incoming data as quickly as the producer generates it.
+
+For example, a file-reading stream might produce data faster than a network connection can send it. If the application continues accumulating data without controlling the flow, memory usage can increase significantly.
+
+Node.js streams handle this through buffering and backpressure mechanisms. When using `pipe()`, the readable stream is automatically paused and resumed as necessary.
+
+When writing data manually, I check the return value of `writable.write()`. If it returns `false`, I wait for the writable stream's `drain` event before writing more data.
+
+This allows the producer to respect the consumer's capacity.”
+
+Example:
+
+```
+const canContinue = writable.write(chunk);
+
+if (!canContinue) {
+  writable.once("drain", () => {
+    // Continue writing more data
+  });
+}
+```
+
+Remember: When `write()` returns `false`, stop writing temporarily and wait for `drain`.
+
+## Q6. What is the difference between flowing mode and paused mode in readable streams?
+
+Expected interview answer:
+
+“Readable streams have two main reading modes: flowing mode and paused mode.
+
+In flowing mode, data is automatically delivered to the consumer through events such as `data`.
+
+In paused mode, data is not automatically emitted continuously. We can request chunks explicitly using the `read()` method.
+
+For example, adding a `data` event listener usually switches a readable stream into flowing mode, whereas using `read()` allows us to retrieve data manually in paused mode.
+
+The choice depends on whether I want data to be delivered automatically or prefer more explicit control over reading.”
+
+Example of flowing mode:
+
+```
+readStream.on("data", chunk => {
+  console.log(chunk);
+});
+```
+
+Example of paused mode:
+
+```
+readStream.on("readable", () => {
+  let chunk;
+
+  while ((chunk = readStream.read()) !== null) {
+    console.log(chunk);
   }
 });
 ```
 
-**Q: What is the `highWaterMark` option in streams?**  
-`highWaterMark` sets the internal buffer size limit (in bytes for binary streams, object count for object mode). When the buffer reaches this threshold, the stream signals backpressure (writable returns false, readable pauses).
+Remember: Flowing mode delivers chunks automatically; paused mode gives the consumer explicit control over reading.
 
-**Q: How do you handle errors in a piped stream chain?**  
-Attach an `'error'` listener to each stream in the chain, or use `pipeline()` which propagates errors to its callback. Without this, errors can silently crash the process.
+## Q7. What is `pipeline()`? How does it differ from `pipe()`? Why is `pipeline()` preferred?
 
-**Q: What are object mode streams?**  
-Streams in object mode handle JavaScript objects instead of Buffers/strings. Activated by `{ objectMode: true }`. Each chunk is a discrete object. Used for streaming database records or structured data.
+Expected interview answer:
 
-**Q: What is the difference between `stream.Readable.from()` and creating a custom readable?**  
-`stream.Readable.from(iterable)` creates a readable from an iterable (array, generator) simply. A custom readable requires extending `Readable` and implementing `_read()`. The former is convenient for wrapping existing data sources.
+“Both `pipe()` and `pipeline()` connect streams to transfer data between them, but `pipeline()` provides more comprehensive error handling and cleanup.
 
-**Q: When would you use streams vs loading a file entirely into memory?**  
-Use streams when the file is larger than the available memory, or when you want to process data incrementally (e.g., transformation, compression, network transfer). Loading into memory is simpler for small files.
+With `pipe()`, we may need to manage errors on individual streams and ensure that resources are cleaned up correctly if something fails.
 
-**Q: What is `zlib`? How do you compress/decompress data using streams?**  
-`zlib` provides compression/decompression functionality (gzip, deflate, brotli). Use `zlib.createGzip()` as a transform stream:
-```javascript
-const gzip = zlib.createGzip();
-fs.createReadStream('input.txt').pipe(gzip).pipe(fs.createWriteStream('output.txt.gz'));
+With `pipeline()`, Node.js coordinates the stream chain, propagates errors to the callback or returned Promise, and performs appropriate cleanup when an error occurs.
+
+For example, when reading a file, compressing it, and writing the compressed result to another file, I would generally prefer `pipeline()` because it is safer to use in production.”
+
+Example:
+
+```
+const fs = require("node:fs");
+const zlib = require("node:zlib");
+const { pipeline } = require("node:stream");
+
+pipeline(
+  fs.createReadStream("input.txt"),
+  zlib.createGzip(),
+  fs.createWriteStream("output.txt.gz"),
+  error => {
+    if (error) {
+      console.error("Pipeline failed:", error);
+      return;
+    }
+
+    console.log("Compression completed");
+  }
+);
 ```
 
-### Buffers
+Remember: `pipe()` connects streams; `pipeline()` additionally provides coordinated error propagation and cleanup.
 
-**Q: What is a Buffer in Node.js? How does it differ from an array?**  
-Buffer is a class that provides a way to work with raw binary data directly. It is a fixed-size chunk of memory allocated outside the V8 heap. Unlike JavaScript arrays, Buffer stores bytes (0-255), is not resizable, and has methods to read/write integers, floats, etc. It is the foundation of I/O data handling.
+## Q8. How do you implement a custom Transform stream?
 
-**Q: Why does Node.js need Buffers? What is binary data?**  
-Buffers are needed because JavaScript originally did not handle binary data efficiently. Node.js deals with TCP streams, file system, etc., which involve raw bytes. Buffers provide a fast, native way to manipulate these bytes.
+Expected interview answer:
 
-**Q: How do you create a Buffer? What is the difference between `Buffer.alloc()` and `Buffer.allocUnsafe()`?**  
-- `Buffer.alloc(size)`: creates a buffer of given size filled with zeros (safe, initialised).  
-- `Buffer.allocUnsafe(size)`: allocates memory without initialization, may contain old sensitive data, but is faster. Use only when you will immediately overwrite the buffer.
+“A Transform stream is a type of Duplex stream that allows us to modify data as it passes from the readable side to the writable side.
 
-**Q: How do you convert between a Buffer and a string?**  
-- Buffer to string: `buf.toString('utf8')`  
-- String to Buffer: `Buffer.from('hello', 'utf8')`
+To create one, I can use the `Transform` class from Node.js's stream module and implement the `transform()` method.
 
-**Q: What is encoding? What are the common encodings in Node.js? (`utf8`, `base64`, `hex`, `binary`)**  
-Encoding specifies the character encoding used to interpret binary data into strings. Common: `utf8` (default), `base64`, `hex`, `latin1` (binary). Different encodings represent bytes differently.
+This method receives a chunk of data, processes it, and passes the resulting data forward.
 
-**Q: How do you convert a file to base64 using Buffers?**  
-Read file into a Buffer, then convert to base64: `const base64 = fs.readFileSync(file).toString('base64');`  
-For large files, use streams: read chunk, convert, and concatenate base64 strings (careful with newlines).
+For example, if I want to convert incoming text to uppercase, I can create a custom Transform stream that processes each chunk and outputs the uppercase version.”
+
+Example:
+
+```
+const { Transform } = require("node:stream");
+
+const upperCaseTransform = new Transform({
+  transform(chunk, encoding, callback) {
+    callback(null, chunk.toString().toUpperCase());
+  }
+});
+
+upperCaseTransform.on("data", chunk => {
+  console.log(chunk.toString());
+});
+
+upperCaseTransform.write("hello node.js");
+upperCaseTransform.end();
+```
+
+Output:
+
+```
+HELLO NODE.JS
+```
+
+Remember: Implement `transform()` to process each incoming chunk and pass the result through the callback or stream.
+
+## Q9. What is the `highWaterMark` option in Node.js streams?
+
+Expected interview answer:
+
+“`highWaterMark` specifies the buffering threshold used by a stream.
+
+For regular streams handling binary data, the value is measured in bytes. For object-mode streams, it represents the number of objects.
+
+When the writable stream's buffered data reaches its threshold, calling `write()` can return `false`, signalling that the producer should slow down until the stream emits `drain`.
+
+For readable streams, the threshold influences how much data is buffered before the stream signals that it has enough data available.
+
+I can adjust `highWaterMark` to suit the application, but it is important to understand that it is a buffering threshold, not a strict maximum on the total memory consumed by the application.”
+
+Example:
+
+```
+const fs = require("node:fs");
+
+const readStream = fs.createReadStream("large-file.txt", {
+  highWaterMark: 16 * 1024
+});
+```
+
+Here, the configured threshold is 16 KiB.
+
+Remember: `highWaterMark` controls stream buffering behavior; it does not impose a strict limit on total memory consumption.
+
+## Q10. How do you handle errors in a piped stream chain?
+
+Expected interview answer:
+
+“Errors need to be handled carefully when working with streams because a failure in one stream can affect the entire data-processing operation.
+
+When using `pipe()`, I can attach error listeners to the relevant streams and implement appropriate cleanup.
+
+However, for a chain involving multiple streams, I generally prefer `pipeline()` because it propagates errors through a single callback or Promise and performs coordinated cleanup.
+
+For example, if a file-reading stream fails while compressing a file, I want the application to report the error rather than incorrectly treating the operation as successful.”
+
+Example:
+
+```
+const fs = require("node:fs");
+const zlib = require("node:zlib");
+const { pipeline } = require("node:stream");
+
+pipeline(
+  fs.createReadStream("input.txt"),
+  zlib.createGzip(),
+  fs.createWriteStream("output.txt.gz"),
+  error => {
+    if (error) {
+      console.error("Stream error:", error);
+      return;
+    }
+
+    console.log("Operation completed successfully");
+  }
+);
+```
+
+Remember: Prefer `pipeline()` for stream chains when you need coordinated error handling and cleanup.
+
+## Q11. What are object-mode streams?
+
+Expected interview answer:
+
+“By default, Node.js streams generally work with strings, Buffers, or other supported binary data representations.
+
+Object-mode streams allow a stream to process individual JavaScript values as chunks instead of treating the data as a continuous sequence of bytes.
+
+We enable this behavior using the `objectMode: true` option.
+
+For example, if I am processing database records one at a time, an object-mode stream can pass each record as a separate object.
+
+This is useful for structured-data processing pipelines, but I still need to consider buffering and backpressure when handling large amounts of data.”
+
+Example:
+
+```
+const { Readable } = require("node:stream");
+
+const records = Readable.from(
+  [{ id: 1 }, { id: 2 }, { id: 3 }],
+  { objectMode: true }
+);
+
+records.on("data", record => {
+  console.log(record);
+});
+```
+
+Remember: Object-mode streams treat each JavaScript object as an individual chunk.
+
+## Q12. What is the difference between `stream.Readable.from()` and creating a custom readable stream?
+
+Expected interview answer:
+
+“`Readable.from()` allows us to create a readable stream from an existing iterable or asynchronous iterable, such as an array or a generator.
+
+It is convenient when the data source is already represented as an iterable and I want to expose it as a stream.
+
+A custom readable stream gives us more control over how the data is generated or retrieved. We can extend the `Readable` class and implement the `_read()` method to supply data when the stream requests it.
+
+For example, I might use `Readable.from()` to stream records produced by a generator, but create a custom readable stream when integrating with a specialized data source that needs custom reading behavior.”
+
+Example using `Readable.from()`:
+
+```
+const { Readable } = require("node:stream");
+
+const stream = Readable.from(["Node", "Express", "PostgreSQL"]);
+
+stream.on("data", chunk => {
+  console.log(chunk.toString());
+});
+```
+
+Remember: Use `Readable.from()` for existing iterables; create a custom readable when you need more control over the data source.
+
+## Q13. When would you use streams instead of loading a file entirely into memory?
+
+Expected interview answer:
+
+“I would use streams when working with large files or when the data can be processed incrementally.
+
+For example, if I need to compress a large file, transfer it over a network, or process its contents line by line, a stream allows me to work with chunks instead of loading the entire file into memory.
+
+This reduces memory pressure and can allow processing to begin before the entire input has been read.
+
+For a small file that comfortably fits into memory, reading the entire file may be simpler and perfectly reasonable.
+
+So, I would choose based on the file size, processing requirements, memory constraints, and complexity of the implementation.”
+
+Remember: Streams are especially useful for large or incremental workloads; loading small files into memory is often simpler.
+
+## Q14. What is `zlib`? How do you compress or decompress data using streams?
+
+Expected interview answer:
+
+“`zlib` is a built-in Node.js module that provides compression and decompression functionality.
+
+It supports formats such as gzip and deflate, as well as Brotli compression and decompression through the appropriate APIs.
+
+For example, if I need to compress a large file, I can create a readable stream from the original file, pass it through `zlib.createGzip()`, and write the compressed output to another file.
+
+Because compression happens through a Transform stream, I can process the data incrementally instead of loading the complete file into memory.”
+
+Example of compression:
+
+```
+const fs = require("node:fs");
+const zlib = require("node:zlib");
+const { pipeline } = require("node:stream");
+
+pipeline(
+  fs.createReadStream("input.txt"),
+  zlib.createGzip(),
+  fs.createWriteStream("input.txt.gz"),
+  error => {
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    console.log("File compressed successfully");
+  }
+);
+```
+
+For decompression, replace `zlib.createGzip()` with `zlib.createGunzip()` and write to the destination file.
+
+Remember: `zlib` provides compression and decompression, and streams allow these operations to process data incrementally.
+
+# Part B: Buffers
+
+## Q15. What is a Buffer in Node.js? How does it differ from an array?
+
+Expected interview answer:
+
+“A Buffer is a Node.js type used to work with raw binary data, such as data read from files or received over a network.
+
+A Buffer stores bytes, with each byte having a value between 0 and 255. It provides methods for converting data to strings and reading or writing binary values.
+
+A regular JavaScript array is a general-purpose collection that can hold different types of JavaScript values. A Buffer, by contrast, is a byte-oriented structure with a fixed length.
+
+Buffers are especially useful in Node.js because many file-system and networking operations work with binary data.”
+
+Example:
+
+```
+const buffer = Buffer.from([72, 101, 108, 108, 111]);
+
+console.log(buffer);
+console.log(buffer.toString("utf8"));
+```
+
+Output:
+
+```
+<Buffer 48 65 6c 6c 6f>
+Hello
+```
+
+Remember: An array stores general JavaScript values; a Buffer is designed for byte-oriented binary data.
+
+## Q16. Why does Node.js need Buffers? What is binary data?
+
+Expected interview answer:
+
+“Binary data is data represented as a sequence of bytes rather than only as human-readable text.
+
+Node.js frequently interacts with files, network connections, images, audio, and other resources that contain raw bytes.
+
+Buffers provide an efficient way to store and manipulate those bytes in Node.js.
+
+For example, when a server receives an image upload, the content consists of binary data. A Buffer allows the application to access those bytes and pass them to other APIs or process them as required.”
+
+Remember: Buffers make it possible to work directly with the raw bytes used by files, networks, and other binary-data sources.
+
+## Q17. How do you create a Buffer? What is the difference between `Buffer.alloc()` and `Buffer.allocUnsafe()`?
+
+Expected interview answer:
+
+“We can create Buffers using methods such as `Buffer.from()`, `Buffer.alloc()`, and `Buffer.allocUnsafe()`.
+
+`Buffer.from()` creates a Buffer from existing data, such as a string or an array of byte values.
+
+`Buffer.alloc()` creates a Buffer of a specified size and initializes all its bytes to zero.
+
+`Buffer.allocUnsafe()` allocates a Buffer without first initializing its contents, which can be faster in some situations. However, the Buffer may contain old memory contents, so I must overwrite the relevant bytes before reading or exposing them.
+
+For most normal application code, I would prefer `Buffer.alloc()` when allocating an empty buffer because it is safer.”
+
+Example:
+
+```
+const safeBuffer = Buffer.alloc(5);
+
+const bufferFromString = Buffer.from("Hello", "utf8");
+
+const unsafeBuffer = Buffer.allocUnsafe(5);
+
+// Initialize every byte before using it.
+unsafeBuffer.fill(0);
+
+console.log(safeBuffer);
+console.log(bufferFromString.toString("utf8"));
+console.log(unsafeBuffer);
+```
+
+Remember: `Buffer.alloc()` initializes memory; `Buffer.allocUnsafe()` requires care because its initial contents are not guaranteed to be zero.
+
+## Q18. How do you convert between a Buffer and a string?
+
+Expected interview answer:
+
+“We can convert a string into a Buffer using `Buffer.from()`, specifying an encoding such as UTF-8.
+
+To convert a Buffer back into a string, we use its `toString()` method and specify the encoding.
+
+For example, if I receive text from a file or network connection as a Buffer, I can convert it into a readable string using UTF-8.
+
+However, if the underlying data is binary, such as an image, I should not assume that converting it to UTF-8 will preserve its meaning. I would use the appropriate representation and encoding for the data.”
+
+Example:
+
+```
+const buffer = Buffer.from("Hello Node.js", "utf8");
+
+console.log(buffer);
+
+const text = buffer.toString("utf8");
+
+console.log(text);
+```
+
+Remember: Use `Buffer.from()` to create a Buffer from a string and `buffer.toString()` to decode it.
+
+## Q19. What is encoding? What are the common encodings in Node.js?
+
+Expected interview answer:
+
+“Encoding defines how data is represented or interpreted when converting between bytes and strings.
+
+For example, UTF-8 is commonly used to represent text. Base64 and hexadecimal are commonly used to represent binary bytes as text.
+
+In Node.js, UTF-8 is the default encoding for many Buffer string-conversion operations. We can also use `base64`, `hex`, and `latin1`, among other supported encodings.
+
+The correct encoding depends on the type of data and how it is represented. If we use the wrong encoding, the resulting string may be incorrect or the data may not be interpreted as intended.
+
+One detail worth remembering is that Node.js's `binary` encoding name is an alias for `latin1` and does not represent a separate general-purpose binary encoding.”
+
+Example:
+
+```
+const buffer = Buffer.from("Hello", "utf8");
+
+console.log(buffer.toString("utf8"));
+console.log(buffer.toString("hex"));
+console.log(buffer.toString("base64"));
+```
+
+Output:
+
+```
+Hello
+48656c6c6f
+SGVsbG8=
+```
+
+Remember: UTF-8 represents text; Base64 and hexadecimal provide text representations of bytes.
+
+## Q20. How do you convert a file to Base64 using Buffers?
+
+Expected interview answer:
+
+“To convert a file to Base64, I can read its contents into a Buffer and then call `toString('base64')`.
+
+For a small file, `fs.readFile()` is a convenient option because it returns the file contents as a Buffer when no text encoding is specified.
+
+For a large file, reading the entire file into memory may be inefficient. In that case, I would use a streaming approach and ensure that the Base64 encoding is handled correctly across chunk boundaries.”
+
+Example for a small file:
+
+```
+const fs = require("node:fs");
+
+fs.readFile("image.png", (error, buffer) => {
+  if (error) {
+    console.error(error);
+    return;
+  }
+
+  const base64 = buffer.toString("base64");
+
+  console.log(base64);
+});
+```
+
+Remember: Read the file into a Buffer, then call `toString('base64')`. For large files, use a properly implemented streaming encoder.
+
+# Quick Revision Sheet
+
+Use this table to recall the main point of each concept before an interview.
+
+| Concept                | Key point                                           |
+| ---------------------- | --------------------------------------------------- |
+| Streams                | Read and write data incrementally                   |
+| Four stream types      | Readable, Writable, Duplex, Transform               |
+| `pipe()`               | Connects streams and manages backpressure           |
+| Backpressure           | Slows the producer when the consumer cannot keep up |
+| Flowing mode           | Automatically emits data chunks                     |
+| Paused mode            | Allows controlled reading using `read()`            |
+| `pipeline()`           | Stream chaining with coordinated errors and cleanup |
+| `highWaterMark`        | Controls buffering thresholds                       |
+| Object mode            | Each chunk can be a JavaScript object               |
+| `Readable.from()`      | Creates a readable stream from an iterable          |
+| `zlib`                 | Provides compression and decompression              |
+| Buffer                 | Stores raw bytes                                    |
+| `Buffer.alloc()`       | Allocates and zero-initializes memory               |
+| `Buffer.allocUnsafe()` | Allocates without initialization                    |
+| Encoding               | Defines how bytes and strings are represented       |
+| Base64                 | Represents binary bytes as text                     |
+
+## Recommended interview preparation order
+
+Start with streams and backpressure because they demonstrate how Node.js manages memory and asynchronous data processing. Next, practise `pipe()` versus `pipeline()`, the four types of streams, and custom Transform streams. Finally, revise Buffers, encodings, and Base64 conversion.
+
+The strongest interview answers explain what the concept does, why it is useful, and when you would use it in a real backend application.
 
 ---
 
