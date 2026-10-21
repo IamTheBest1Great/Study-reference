@@ -686,6 +686,7 @@ process.on("SIGTERM", () => {
 This section covers 27 questions from your attached document. The answers follow the original question order and are written in the style you should use when answering an interviewer: explain the concept, describe how it works, and give a practical example when appropriate.
 
 # Part A: Event Loop Phases
+<img width="1224" height="1285" alt="image" src="https://github.com/user-attachments/assets/2d39025d-309c-462b-a93d-48ef03b0bec7" />
 
 ## Q1. Explain the Node.js event loop in detail. What are its phases?
 
@@ -705,20 +706,51 @@ Remember: The event loop coordinates asynchronous work; it does not make CPU-int
 
 ## Q2. What are the six phases of the Node.js event loop? Describe each.
 
-Expected interview answer:
+### Interview Answer
 
-“The Node.js event loop has six main phases, and each phase handles a particular category of callbacks.
+“The Node.js event loop has six phases. Each phase handles a different type of work.
 
-1. Timers: Executes callbacks whose `setTimeout()` or `setInterval()` thresholds have been reached.
-2. Pending callbacks: Executes certain I/O callbacks deferred to a later loop iteration, such as some TCP-related error callbacks.
-3. Idle and prepare: Used internally by libuv for event-loop preparation.
-4. Poll: Processes I/O-related events and callbacks. It can also wait for new I/O events when appropriate.
-5. Check: Executes callbacks scheduled using `setImmediate()`.
-6. Close callbacks: Executes certain close-event callbacks, such as a socket's `close` event.
+1\. Timers: Runs callbacks when `setTimeout()` or `setInterval()` timers are ready to execute.
 
-The loop moves between these phases as the application runs. Promise callbacks and `process.nextTick()` callbacks are handled through separate scheduling queues rather than being additional event-loop phases.”
+2\. Pending callbacks: Runs certain I/O callbacks that were postponed from an earlier loop cycle, such as some TCP error callbacks.
 
-Remember this order:
+3\. Idle and prepare: Performs internal preparation for the next stages. This work is handled by Node.js's underlying system, libuv.
+
+4\. Poll: Processes available I/O events and their callbacks, such as handling incoming network data. If there is no work to process, it can wait for new I/O events.
+
+Example:
+
+- A client sends a request to your Node.js server.
+- Data arrives over the network.
+- Node.js processes the relevant I/O event and callback.
+
+Think: Poll = Handle available I/O work and, when appropriate, wait for more.
+
+5\. Check: Runs callbacks scheduled using `setImmediate()`.
+
+6\. Close callbacks: Runs callbacks for certain closing events, such as when a network socket closes.
+
+These phases help Node.js manage asynchronous operations efficiently without blocking the main JavaScript thread while waiting for I/O.”
+
+### Important Difference: Poll vs. Pending Callbacks
+
+Poll phase — handles I/O work
+
+- Processes available I/O events and their callbacks.
+- May wait for new I/O events when there is no work to process.
+- Example: Processing incoming network data.
+
+Think: Poll = Handle available I/O work and, when appropriate, wait for more.
+
+Pending callbacks phase — handles certain postponed callbacks
+
+- Runs certain I/O callbacks deferred from an earlier event-loop iteration.
+- Example: Some TCP error callbacks.
+- A callback deferred to a later iteration can execute when the pending callbacks phase processes it.
+
+Think: Pending callbacks = Handle certain I/O callbacks postponed from an earlier cycle.
+
+### Remember the Order
 
 `Timers → Pending callbacks → Idle/Prepare → Poll → Check → Close callbacks`
 
