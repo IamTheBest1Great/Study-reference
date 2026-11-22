@@ -1,0 +1,6482 @@
+# Node.js Backend Interview Questions — Theoretical / Conceptual
+
+A consolidated, deduplicated collection of **conceptual and theoretical Node.js backend interview questions**, compiled from the Node.js study-reference files and organized section-wise. Hands-on coding/implementation tasks and real-world scenario questions are in their own companion documents.
+
+**Total unique questions: 506**
+
+## Table of Contents
+
+- [Core Fundamentals & Runtime (V8, libuv, process, modules)](#core-fundamentals-runtime-v8-libuv-process-modules) (73)
+  - [1. Can you starve the event loop using `process.nextTick()`? How?](#1-can-you-starve-the-event-loop-using-processnexttick-how)
+  - [2. Can you use `require()` inside a conditional statement? Can you use `import` conditionally?](#2-can-you-use-require-inside-a-conditional-statement-can-you-use-import-conditionally)
+  - [3. Explain the Node.js architecture. What are its key components?](#3-explain-the-nodejs-architecture-what-are-its-key-components)
+  - [4. How can you handle uncaught exceptions in Node.js?](#4-how-can-you-handle-uncaught-exceptions-in-nodejs)
+  - [5. How can you manage and schedule tasks in a Node.js application?](#5-how-can-you-manage-and-schedule-tasks-in-a-nodejs-application)
+  - [6. How can you manage environment variables in Node.js applications?](#6-how-can-you-manage-environment-variables-in-nodejs-applications)
+  - [7. How can you profile a Node.js application for performance bottlenecks?](#7-how-can-you-profile-a-nodejs-application-for-performance-bottlenecks)
+  - [8. How can you scale a Node.js application?](#8-how-can-you-scale-a-nodejs-application)
+  - [9. How can you secure a Node.js application from common vulnerabilities?](#9-how-can-you-secure-a-nodejs-application-from-common-vulnerabilities)
+  - [10. How can you use environment variables to configure a Node.js application?](#10-how-can-you-use-environment-variables-to-configure-a-nodejs-application)
+  - [11. How do you communicate between a parent and child process?](#11-how-do-you-communicate-between-a-parent-and-child-process)
+  - [12. How do you detect and fix memory leaks in Node.js?](#12-how-do-you-detect-and-fix-memory-leaks-in-nodejs)
+  - [13. How do you read a large file in Node.js without running out of memory?](#13-how-do-you-read-a-large-file-in-nodejs-without-running-out-of-memory)
+  - [14. How do you read environment variables in Node.js? What is `dotenv`?](#14-how-do-you-read-environment-variables-in-nodejs-what-is-dotenv)
+  - [15. How do you use ES Modules in Node.js? What is `"type": "module"` in `package.json`?](#15-how-do-you-use-es-modules-in-nodejs-what-is-type-module-in-packagejson)
+  - [16. How does Node.js handle asynchronous operations?](#16-how-does-nodejs-handle-asynchronous-operations)
+  - [17. How does Node.js handle errors in asynchronous code?](#17-how-does-nodejs-handle-errors-in-asynchronous-code)
+  - [18. How does Node.js handle uncaught exceptions? What is `process.on('uncaughtException')`?](#18-how-does-nodejs-handle-uncaught-exceptions-what-is-processonuncaughtexception)
+  - [19. How does Node.js manage modules and dependencies?](#19-how-does-nodejs-manage-modules-and-dependencies)
+  - [20. How does Node.js resolve module paths? Explain the module resolution algorithm.](#20-how-does-nodejs-resolve-module-paths-explain-the-module-resolution-algorithm)
+  - [21. How does the master process distribute connections to workers in Cluster mode? (round-robin)](#21-how-does-the-master-process-distribute-connections-to-workers-in-cluster-mode-round-robin)
+  - [22. What are object-mode streams?](#22-what-are-object-mode-streams)
+  - [23. What are some tools for monitoring Node.js applications?](#23-what-are-some-tools-for-monitoring-nodejs-applications)
+  - [24. What are streams in Node.js? Why are they important?](#24-what-are-streams-in-nodejs-why-are-they-important)
+  - [25. What are the common causes of memory leaks in Node.js?](#25-what-are-the-common-causes-of-memory-leaks-in-nodejs)
+  - [26. What are the different ways to manage dependencies in Node.js?](#26-what-are-the-different-ways-to-manage-dependencies-in-nodejs)
+  - [27. What are the main features of Node.js?](#27-what-are-the-main-features-of-nodejs)
+  - [28. What is `__esModule` interop?](#28-what-is-esmodule-interop)
+  - [29. What is `detached: true` option in `spawn()`?](#29-what-is-detached-true-option-in-spawn)
+  - [30. What is `dns` module? What are `dns.lookup()` vs `dns.resolve()`?](#30-what-is-dns-module-what-are-dnslookup-vs-dnsresolve)
+  - [31. What is `global` in Node.js? How does it differ from `window` in the browser?](#31-what-is-global-in-nodejs-how-does-it-differ-from-window-in-the-browser)
+  - [32. What is `npm audit`? When should you run it?](#32-what-is-npm-audit-when-should-you-run-it)
+  - [33. What is `package-lock.json`? Why should it be committed to source control?](#33-what-is-package-lockjson-why-should-it-be-committed-to-source-control)
+  - [34. What is `process.argv`? How do you parse command-line arguments?](#34-what-is-processargv-how-do-you-parse-command-line-arguments)
+  - [35. What is `process.memoryUsage()`? What do `heapUsed`, `heapTotal`, `rss`, `external` mean?](#35-what-is-processmemoryusage-what-do-heapused-heaptotal-rss-external-mean)
+  - [36. What is `process.nextTick()`? Give a practical use case.](#36-what-is-processnexttick-give-a-practical-use-case)
+  - [37. What is `process.nextTick()`? How does it compare to `setImmediate()`?](#37-what-is-processnexttick-how-does-it-compare-to-setimmediate)
+  - [38. What is `process.on('unhandledRejection')`? When is it triggered?](#38-what-is-processonunhandledrejection-when-is-it-triggered)
+  - [39. What is `process` in Node.js? What are its key properties and methods?](#39-what-is-process-in-nodejs-what-are-its-key-properties-and-methods)
+  - [40. What is `tsconfig.json`? What are the key compiler options? (`strict`, `target`, `module`, `outDir`, `paths`)](#40-what-is-tsconfigjson-what-are-the-key-compiler-options-strict-target-module-outdir-paths)
+  - [41. What is a 12-factor app? Which factors are most relevant to Node.js?](#41-what-is-a-12-factor-app-which-factors-are-most-relevant-to-nodejs)
+  - [42. What is a circular dependency in Node.js modules? How does Node.js handle it?](#42-what-is-a-circular-dependency-in-nodejs-modules-how-does-nodejs-handle-it)
+  - [43. What is a race condition in asynchronous Node.js code? Give an example.](#43-what-is-a-race-condition-in-asynchronous-nodejs-code-give-an-example)
+  - [44. What is GitHub Actions? How do you set up a basic CI pipeline for a Node.js app?](#44-what-is-github-actions-how-do-you-set-up-a-basic-ci-pipeline-for-a-nodejs-app)
+  - [45. What is IPC (Inter-Process Communication) in Node.js?](#45-what-is-ipc-inter-process-communication-in-nodejs)
+  - [46. What is libuv? What role does it play in Node.js?](#46-what-is-libuv-what-role-does-it-play-in-nodejs)
+  - [47. What is Node.js and why is it used?](#47-what-is-nodejs-and-why-is-it-used)
+  - [48. What is Node.js's role in microservices architecture?](#48-what-is-nodejss-role-in-microservices-architecture)
+  - [49. What is Node.js? How is it different from a browser's JavaScript environment?](#49-what-is-nodejs-how-is-it-different-from-a-browsers-javascript-environment)
+  - [50. What is REPL in Node.js? What is it useful for?](#50-what-is-repl-in-nodejs-what-is-it-useful-for)
+  - [51. What is semantic versioning? What is the difference between `^1.2.3` and `~1.2.3`?](#51-what-is-semantic-versioning-what-is-the-difference-between-123-and-123)
+  - [52. What is statelessness in REST? Why is it important?](#52-what-is-statelessness-in-rest-why-is-it-important)
+  - [53. What is the `_id` field? How is an ObjectId generated?](#53-what-is-the-id-field-how-is-an-objectid-generated)
+  - [54. What is the `worker_threads` module? What problem does it solve?](#54-what-is-the-workerthreads-module-what-problem-does-it-solve)
+  - [55. What is the CommonJS module system?](#55-what-is-the-commonjs-module-system)
+  - [56. What is the CommonJS module system? How does `require()` work internally?](#56-what-is-the-commonjs-module-system-how-does-require-work-internally)
+  - [57. What is the difference between `__dirname` and `__filename`?](#57-what-is-the-difference-between-dirname-and-filename)
+  - [58. What is the difference between `dependencies` and `devDependencies`?](#58-what-is-the-difference-between-dependencies-and-devdependencies)
+  - [59. What is the difference between `module.exports` and `exports`?](#59-what-is-the-difference-between-moduleexports-and-exports)
+  - [60. What is the difference between `npm install` and `npm ci`? When do you use `npm ci`?](#60-what-is-the-difference-between-npm-install-and-npm-ci-when-do-you-use-npm-ci)
+  - [61. What is the difference between `process.exit()` and throwing an uncaught error?](#61-what-is-the-difference-between-processexit-and-throwing-an-uncaught-error)
+  - [62. What is the difference between CommonJS and ES Modules?](#62-what-is-the-difference-between-commonjs-and-es-modules)
+  - [63. What is the order of execution of `process.nextTick`, `Promise.then`, `setImmediate`, and `setTimeout(0)`?](#63-what-is-the-order-of-execution-of-processnexttick-promisethen-setimmediate-and-settimeout0)
+  - [64. What is the purpose of `npm` and how does it differ from `yarn`?](#64-what-is-the-purpose-of-npm-and-how-does-it-differ-from-yarn)
+  - [65. What is the purpose of `package.json`? What are its key fields?](#65-what-is-the-purpose-of-packagejson-what-are-its-key-fields)
+  - [66. What is the purpose of the `process` object in Node.js?](#66-what-is-the-purpose-of-the-process-object-in-nodejs)
+  - [67. What is the purpose of the `require` function in Node.js?](#67-what-is-the-purpose-of-the-require-function-in-nodejs)
+  - [68. What is the role of `package.json` in a Node.js project?](#68-what-is-the-role-of-packagejson-in-a-nodejs-project)
+  - [69. What is the V8 engine? What does it do in Node.js?](#69-what-is-the-v8-engine-what-does-it-do-in-nodejs)
+  - [70. When should you use `process.on('uncaughtException')`? What are the risks?](#70-when-should-you-use-processonuncaughtexception-what-are-the-risks)
+  - [71. When should you use `process.on('unhandledRejection')`?](#71-when-should-you-use-processonunhandledrejection)
+  - [72. When would you use streams instead of loading a file entirely into memory?](#72-when-would-you-use-streams-instead-of-loading-a-file-entirely-into-memory)
+  - [73. You notice your Node.js service's memory is growing unboundedly in production. How do you investigate?](#73-you-notice-your-nodejs-services-memory-is-growing-unboundedly-in-production-how-do-you-investigate)
+- [Event Loop, Concurrency & Async Patterns](#event-loop-concurrency-async-patterns) (48)
+  - [74. Explain the concept of Node.js's non-blocking I/O.](#74-explain-the-concept-of-nodejss-non-blocking-io)
+  - [75. Explain the concept of Promises in Node.js.](#75-explain-the-concept-of-promises-in-nodejs)
+  - [76. Explain the event-driven architecture of Node.js.](#76-explain-the-event-driven-architecture-of-nodejs)
+  - [77. Explain the Node.js event loop in detail. What are its phases?](#77-explain-the-nodejs-event-loop-in-detail-what-are-its-phases)
+  - [78. How can you perform background tasks in Node.js?](#78-how-can-you-perform-background-tasks-in-nodejs)
+  - [79. How do you change the thread pool size in Node.js?](#79-how-do-you-change-the-thread-pool-size-in-nodejs)
+  - [80. How do you design a Node.js service for 10,000 requests per second?](#80-how-do-you-design-a-nodejs-service-for-10000-requests-per-second)
+  - [81. How do you detect event loop lag in production?](#81-how-do-you-detect-event-loop-lag-in-production)
+  - [82. How do you profile a Node.js application? What tools do you use?](#82-how-do-you-profile-a-nodejs-application-what-tools-do-you-use)
+  - [83. How do you propagate errors through a Promise chain?](#83-how-do-you-propagate-errors-through-a-promise-chain)
+  - [84. How do you run multiple asynchronous operations in parallel in Node.js?](#84-how-do-you-run-multiple-asynchronous-operations-in-parallel-in-nodejs)
+  - [85. How do you test a function that uses `setTimeout`? (fake timers: `jest.useFakeTimers()`)](#85-how-do-you-test-a-function-that-uses-settimeout-fake-timers-jestusefaketimers)
+  - [86. How do you use generics in service classes and repositories?](#86-how-do-you-use-generics-in-service-classes-and-repositories)
+  - [87. How does `require()` differ from `import()` in terms of blocking vs non-blocking?](#87-how-does-require-differ-from-import-in-terms-of-blocking-vs-non-blocking)
+  - [88. How does Node.js handle concurrency?](#88-how-does-nodejs-handle-concurrency)
+  - [89. How does Node.js handle file operations?](#89-how-does-nodejs-handle-file-operations)
+  - [90. If Node.js is single-threaded, how does it handle thousands of concurrent requests?](#90-if-nodejs-is-single-threaded-how-does-it-handle-thousands-of-concurrent-requests)
+  - [91. What are common causes of event-loop lag in production?](#91-what-are-common-causes-of-event-loop-lag-in-production)
+  - [92. What are some common patterns for handling asynchronous operations in Node.js?](#92-what-are-some-common-patterns-for-handling-asynchronous-operations-in-nodejs)
+  - [93. What are some common pitfalls when working with Node.js?](#93-what-are-some-common-pitfalls-when-working-with-nodejs)
+  - [94. What are the advantages and disadvantages of Node.js over Java or PHP for backend development?](#94-what-are-the-advantages-and-disadvantages-of-nodejs-over-java-or-php-for-backend-development)
+  - [95. What are the benefits of using Node.js for building APIs?](#95-what-are-the-benefits-of-using-nodejs-for-building-apis)
+  - [96. What are the differences between Node.js and other server-side technologies like Python and Ruby?](#96-what-are-the-differences-between-nodejs-and-other-server-side-technologies-like-python-and-ruby)
+  - [97. What are the three ways to handle asynchronous code in Node.js?](#97-what-are-the-three-ways-to-handle-asynchronous-code-in-nodejs)
+  - [98. What does `Promise.allSettled()` do that `Promise.all()` does not?](#98-what-does-promiseallsettled-do-that-promiseall-does-not)
+  - [99. What is `setImmediate()`? How is it different from `setTimeout(fn, 0)`?](#99-what-is-setimmediate-how-is-it-different-from-settimeoutfn-0)
+  - [100. What is a ReDoS (Regular Expression Denial of Service)?](#100-what-is-a-redos-regular-expression-denial-of-service)
+  - [101. What is a thread pool pattern using worker threads?](#101-what-is-a-thread-pool-pattern-using-worker-threads)
+  - [102. What is callback hell? How do you avoid it?](#102-what-is-callback-hell-how-do-you-avoid-it)
+  - [103. What is connection pooling? Why is it critical for performance under load?](#103-what-is-connection-pooling-why-is-it-critical-for-performance-under-load)
+  - [104. What is dynamic `import()`? When would you use it?](#104-what-is-dynamic-import-when-would-you-use-it)
+  - [105. What is event-loop blocking? How do you detect and fix it?](#105-what-is-event-loop-blocking-how-do-you-detect-and-fix-it)
+  - [106. What is non-blocking I/O? Give a concrete example.](#106-what-is-non-blocking-io-give-a-concrete-example)
+  - [107. What is the `clinic` tool suite? (clinic doctor, clinic flame, clinic bubbleprof)](#107-what-is-the-clinic-tool-suite-clinic-doctor-clinic-flame-clinic-bubbleprof)
+  - [108. What is the `fs` module? What are the key methods?](#108-what-is-the-fs-module-what-are-the-key-methods)
+  - [109. What is the callback pattern? What problems does it cause at scale?](#109-what-is-the-callback-pattern-what-problems-does-it-cause-at-scale)
+  - [110. What is the difference between `async/await` and `.then()` chaining?](#110-what-is-the-difference-between-asyncawait-and-then-chaining)
+  - [111. What is the difference between `await Promise.all()` and sequential `await` in a loop?](#111-what-is-the-difference-between-await-promiseall-and-sequential-await-in-a-loop)
+  - [112. What is the difference between blocking and non-blocking code?](#112-what-is-the-difference-between-blocking-and-non-blocking-code)
+  - [113. What is the difference between the microtask queue and the macrotask queue?](#113-what-is-the-difference-between-the-microtask-queue-and-the-macrotask-queue)
+  - [114. What is the Node.js thread pool? What operations use it? What is its default size?](#114-what-is-the-nodejs-thread-pool-what-operations-use-it-what-is-its-default-size)
+  - [115. What is the purpose of the `async` and `await` keywords in Node.js?](#115-what-is-the-purpose-of-the-async-and-await-keywords-in-nodejs)
+  - [116. What is the Reactor pattern? How does it relate to the event loop?](#116-what-is-the-reactor-pattern-how-does-it-relate-to-the-event-loop)
+  - [117. What is the role of the event loop in Node.js?](#117-what-is-the-role-of-the-event-loop-in-nodejs)
+  - [118. What runs first: `Promise.then()` or `setTimeout(fn, 0)`? Why?](#118-what-runs-first-promisethen-or-settimeoutfn-0-why)
+  - [119. When should you NOT use Node.js? What workloads is it poor for?](#119-when-should-you-not-use-nodejs-what-workloads-is-it-poor-for)
+  - [120. Why is Node.js single-threaded? What does that mean practically?](#120-why-is-nodejs-single-threaded-what-does-that-mean-practically)
+  - [121. Why is synchronous code like `JSON.parse()` of a huge payload dangerous?](#121-why-is-synchronous-code-like-jsonparse-of-a-huge-payload-dangerous)
+- [Streams & Buffers](#streams-buffers) (13)
+  - [122. Explain the concept of the `buffer` in Node.js.](#122-explain-the-concept-of-the-buffer-in-nodejs)
+  - [123. Explain the different types of streams in Node.js.](#123-explain-the-different-types-of-streams-in-nodejs)
+  - [124. How do you convert a file to Base64 using Buffers?](#124-how-do-you-convert-a-file-to-base64-using-buffers)
+  - [125. How do you convert between a Buffer and a string?](#125-how-do-you-convert-between-a-buffer-and-a-string)
+  - [126. What are Streams in Node.js and how are they used?](#126-what-are-streams-in-nodejs-and-how-are-they-used)
+  - [127. What are the differences between `Buffer.from()` and `Buffer.alloc()`?](#127-what-are-the-differences-between-bufferfrom-and-bufferalloc)
+  - [128. What are the four types of streams in Node.js? Give an example of each.](#128-what-are-the-four-types-of-streams-in-nodejs-give-an-example-of-each)
+  - [129. What is `pipe()`? How does it work internally?](#129-what-is-pipe-how-does-it-work-internally)
+  - [130. What is a Buffer in Node.js? How does it differ from an array?](#130-what-is-a-buffer-in-nodejs-how-does-it-differ-from-an-array)
+  - [131. What is the `highWaterMark` option in Node.js streams?](#131-what-is-the-highwatermark-option-in-nodejs-streams)
+  - [132. What is the `stream` module and how do you use it in Node.js?](#132-what-is-the-stream-module-and-how-do-you-use-it-in-nodejs)
+  - [133. What is the difference between `stream.Readable.from()` and creating a custom readable stream?](#133-what-is-the-difference-between-streamreadablefrom-and-creating-a-custom-readable-stream)
+  - [134. When should you use streaming vs buffering for large responses?](#134-when-should-you-use-streaming-vs-buffering-for-large-responses)
+- [Express.js, Middleware & REST API Design](#expressjs-middleware-rest-api-design) (56)
+  - [135. Explain the complete lifecycle of an HTTP request in a Node.js + Express application.](#135-explain-the-complete-lifecycle-of-an-http-request-in-a-nodejs-express-application)
+  - [136. Explain the concept of middleware in Express.js.](#136-explain-the-concept-of-middleware-in-expressjs)
+  - [137. Explain the purpose of `app.use()` in Express.js.](#137-explain-the-purpose-of-appuse-in-expressjs)
+  - [138. How can you handle errors in an Express.js application?](#138-how-can-you-handle-errors-in-an-expressjs-application)
+  - [139. How can you handle file uploads in a Node.js application?](#139-how-can-you-handle-file-uploads-in-a-nodejs-application)
+  - [140. How can you handle form data in Express.js?](#140-how-can-you-handle-form-data-in-expressjs)
+  - [141. How can you use sessions in a Node.js application?](#141-how-can-you-use-sessions-in-a-nodejs-application)
+  - [142. How do you design a multi-tenant Node.js SaaS application?](#142-how-do-you-design-a-multi-tenant-nodejs-saas-application)
+  - [143. How do you design filtering, sorting, and searching for a REST API?](#143-how-do-you-design-filtering-sorting-and-searching-for-a-rest-api)
+  - [144. How do you design pagination for a REST API? Explain offset-based versus cursor-based pagination.](#144-how-do-you-design-pagination-for-a-rest-api-explain-offset-based-versus-cursor-based-pagination)
+  - [145. How do you document a REST API using Swagger, OpenAPI, or Postman?](#145-how-do-you-document-a-rest-api-using-swagger-openapi-or-postman)
+  - [146. How do you prevent brute-force login attacks?](#146-how-do-you-prevent-brute-force-login-attacks)
+  - [147. How do you serve static files in Express?](#147-how-do-you-serve-static-files-in-express)
+  - [148. How do you test error handling middleware?](#148-how-do-you-test-error-handling-middleware)
+  - [149. How do you type `req`, `res`, `next` in an Express route with TypeScript?](#149-how-do-you-type-req-res-next-in-an-express-route-with-typescript)
+  - [150. How do you validate request bodies in Express?](#150-how-do-you-validate-request-bodies-in-express)
+  - [151. How do you version a REST API? What strategies can you use?](#151-how-do-you-version-a-rest-api-what-strategies-can-you-use)
+  - [152. What are `express-async-errors` and `express-async-handler`? Why are they needed?](#152-what-are-express-async-errors-and-express-async-handler-why-are-they-needed)
+  - [153. What are HTTP status codes and how do you use them in Express.js?](#153-what-are-http-status-codes-and-how-do-you-use-them-in-expressjs)
+  - [154. What are Mongoose middleware (pre/post hooks)? Give 3 use cases.](#154-what-are-mongoose-middleware-prepost-hooks-give-3-use-cases)
+  - [155. What are the best practices for structuring a Node.js application?](#155-what-are-the-best-practices-for-structuring-a-nodejs-application)
+  - [156. What are the differences between `req.query`, `req.params`, and `req.body` in Express.js?](#156-what-are-the-differences-between-reqquery-reqparams-and-reqbody-in-expressjs)
+  - [157. What does `next()` do in middleware? What happens if you don't call it?](#157-what-does-next-do-in-middleware-what-happens-if-you-dont-call-it)
+  - [158. What is `Apollo Server`? How do you set it up with Express?](#158-what-is-apollo-server-how-do-you-set-it-up-with-express)
+  - [159. What is `compression` middleware? What does it do?](#159-what-is-compression-middleware-what-does-it-do)
+  - [160. What is `compression` middleware? What is the trade-off of enabling it?](#160-what-is-compression-middleware-what-is-the-trade-off-of-enabling-it)
+  - [161. What is `express-session`? How does it work?](#161-what-is-express-session-how-does-it-work)
+  - [162. What is `express.json()` middleware? What did `body-parser` used to do?](#162-what-is-expressjson-middleware-what-did-body-parser-used-to-do)
+  - [163. What is `hpp` (HTTP Parameter Pollution)? How do you protect against it?](#163-what-is-hpp-http-parameter-pollution-how-do-you-protect-against-it)
+  - [164. What is `morgan`? What log format would you use in production?](#164-what-is-morgan-what-log-format-would-you-use-in-production)
+  - [165. What is `NODE_ENV`? Why is it important?](#165-what-is-nodeenv-why-is-it-important)
+  - [166. What is `res.locals`? What is it used for?](#166-what-is-reslocals-what-is-it-used-for)
+  - [167. What is `zlib` module? How do you gzip a response in Express?](#167-what-is-zlib-module-how-do-you-gzip-a-response-in-express)
+  - [168. What is CORS and how can you handle it in a Node.js application?](#168-what-is-cors-and-how-can-you-handle-it-in-a-nodejs-application)
+  - [169. What is CORS middleware? When and how do you configure it?](#169-what-is-cors-middleware-when-and-how-do-you-configure-it)
+  - [170. What is CORS? How do you configure it securely?](#170-what-is-cors-how-do-you-configure-it-securely)
+  - [171. What is cursor-based pagination? When is it better than offset-based pagination?](#171-what-is-cursor-based-pagination-when-is-it-better-than-offset-based-pagination)
+  - [172. What is declaration merging? How do you extend `Request` type in Express?](#172-what-is-declaration-merging-how-do-you-extend-request-type-in-express)
+  - [173. What is Express.js and how does it enhance Node.js?](#173-what-is-expressjs-and-how-does-it-enhance-nodejs)
+  - [174. What is Express.js? Why is it used with Node.js?](#174-what-is-expressjs-why-is-it-used-with-nodejs)
+  - [175. What is HTTPS? How do you force HTTPS in Express?](#175-what-is-https-how-do-you-force-https-in-express)
+  - [176. What is IoC (Inversion of Control)?](#176-what-is-ioc-inversion-of-control)
+  - [177. What is middleware in Express.js and how is it used?](#177-what-is-middleware-in-expressjs-and-how-is-it-used)
+  - [178. What is middleware in Express? How does the middleware chain work?](#178-what-is-middleware-in-express-how-does-the-middleware-chain-work)
+  - [179. What is OWASP Top 10? Which items are most relevant to Node.js APIs?](#179-what-is-owasp-top-10-which-items-are-most-relevant-to-nodejs-apis)
+  - [180. What is the Decorator pattern? How does it relate to Express middleware?](#180-what-is-the-decorator-pattern-how-does-it-relate-to-express-middleware)
+  - [181. What is the difference between `app.listen()` and `http.createServer(app).listen()`?](#181-what-is-the-difference-between-applisten-and-httpcreateserverapplisten)
+  - [182. What is the difference between `app.use()` and `app.get()` / `app.post()`?](#182-what-is-the-difference-between-appuse-and-appget-apppost)
+  - [183. What is the difference between `res.cookie()` and setting the `Set-Cookie` header manually?](#183-what-is-the-difference-between-rescookie-and-setting-the-set-cookie-header-manually)
+  - [184. What is the difference between `throw` and `next(err)` in Express?](#184-what-is-the-difference-between-throw-and-nexterr-in-express)
+  - [185. What is the difference between application-level, router-level, and error-handling middleware?](#185-what-is-the-difference-between-application-level-router-level-and-error-handling-middleware)
+  - [186. What is the Middleware pattern? How is it different from traditional OOP patterns?](#186-what-is-the-middleware-pattern-how-is-it-different-from-traditional-oop-patterns)
+  - [187. What is the order of middleware execution? Does order matter?](#187-what-is-the-order-of-middleware-execution-does-order-matter)
+  - [188. What is the principle of least privilege? How do you apply it in API design?](#188-what-is-the-principle-of-least-privilege-how-do-you-apply-it-in-api-design)
+  - [189. What is the Proxy pattern? When is it used in Node.js? (caching, rate limiting)](#189-what-is-the-proxy-pattern-when-is-it-used-in-nodejs-caching-rate-limiting)
+  - [190. What is the request-response lifecycle in Express?](#190-what-is-the-request-response-lifecycle-in-express)
+- [Authentication & Authorization](#authentication-authorization) (21)
+  - [191. How do you invalidate/revoke a JWT before it expires?](#191-how-do-you-invalidaterevoke-a-jwt-before-it-expires)
+  - [192. How does JWT authentication work end-to-end? (sign, send, verify)](#192-how-does-jwt-authentication-work-end-to-end-sign-send-verify)
+  - [193. What are the security risks of JWT? How do you mitigate them?](#193-what-are-the-security-risks-of-jwt-how-do-you-mitigate-them)
+  - [194. What is `crypto.timingSafeEqual()`? Why is it important for authentication?](#194-what-is-cryptotimingsafeequal-why-is-it-important-for-authentication)
+  - [195. What is a JWT secret? How long should it be? How do you rotate it?](#195-what-is-a-jwt-secret-how-long-should-it-be-how-do-you-rotate-it)
+  - [196. What is ABAC (Attribute-Based Access Control)?](#196-what-is-abac-attribute-based-access-control)
+  - [197. What is JWT (JSON Web Token)? What are its three parts?](#197-what-is-jwt-json-web-token-what-are-its-three-parts)
+  - [198. What is OAuth 2.0? What are the 4 grant types?](#198-what-is-oauth-20-what-are-the-4-grant-types)
+  - [199. What is OpenAPI/Swagger? How do you generate documentation from code?](#199-what-is-openapiswagger-how-do-you-generate-documentation-from-code)
+  - [200. What is OpenID Connect (OIDC)? How does it extend OAuth 2.0?](#200-what-is-openid-connect-oidc-how-does-it-extend-oauth-20)
+  - [201. What is Passport.js and how is it used with Node.js?](#201-what-is-passportjs-and-how-is-it-used-with-nodejs)
+  - [202. What is session-based authentication vs token-based authentication?](#202-what-is-session-based-authentication-vs-token-based-authentication)
+  - [203. What is sticky session? When do you need it?](#203-what-is-sticky-session-when-do-you-need-it)
+  - [204. What is the Authorization Code flow with PKCE? When is it used?](#204-what-is-the-authorization-code-flow-with-pkce-when-is-it-used)
+  - [205. What is the difference between `HS256` and `RS256` signing algorithms in JWT?](#205-what-is-the-difference-between-hs256-and-rs256-signing-algorithms-in-jwt)
+  - [206. What is the difference between access token and refresh token?](#206-what-is-the-difference-between-access-token-and-refresh-token)
+  - [207. What is the difference between authentication and authorization?](#207-what-is-the-difference-between-authentication-and-authorization)
+  - [208. What is the Mongoose `session` and how do you use it for transactions?](#208-what-is-the-mongoose-session-and-how-do-you-use-it-for-transactions)
+  - [209. What is the purpose of the `jsonwebtoken` library in Node.js?](#209-what-is-the-purpose-of-the-jsonwebtoken-library-in-nodejs)
+  - [210. What is the Strategy pattern? Give a Node.js example.](#210-what-is-the-strategy-pattern-give-a-nodejs-example)
+  - [211. When do you return 400 versus 401 versus 403 versus 404 versus 422 versus 409?](#211-when-do-you-return-400-versus-401-versus-403-versus-404-versus-422-versus-409)
+- [Databases — MongoDB & Mongoose](#databases-mongodb-mongoose) (38)
+  - [212. Explain how you would perform CRUD operations in a Node.js application.](#212-explain-how-you-would-perform-crud-operations-in-a-nodejs-application)
+  - [213. How do you define validation in a Mongoose schema?](#213-how-do-you-define-validation-in-a-mongoose-schema)
+  - [214. How do you paginate results in Mongoose efficiently?](#214-how-do-you-paginate-results-in-mongoose-efficiently)
+  - [215. How do you test database interactions? (in-memory DB, test containers, mocking)](#215-how-do-you-test-database-interactions-in-memory-db-test-containers-mocking)
+  - [216. How do you tune V8 garbage collection? (`--max-old-space-size`, `--expose-gc`)](#216-how-do-you-tune-v8-garbage-collection-max-old-space-size-expose-gc)
+  - [217. How do you type a MongoDB document with Mongoose + TypeScript?](#217-how-do-you-type-a-mongodb-document-with-mongoose-typescript)
+  - [218. How does Node.js manage and optimize garbage collection?](#218-how-does-nodejs-manage-and-optimize-garbage-collection)
+  - [219. What are documents and collections in MongoDB?](#219-what-are-documents-and-collections-in-mongodb)
+  - [220. What are MongoDB transactions? When are they used?](#220-what-are-mongodb-transactions-when-are-they-used)
+  - [221. What are MongoDB write concerns and read concerns?](#221-what-are-mongodb-write-concerns-and-read-concerns)
+  - [222. What are Mongoose virtuals?](#222-what-are-mongoose-virtuals)
+  - [223. What are the common MongoDB data types?](#223-what-are-the-common-mongodb-data-types)
+  - [224. What are the different types of databases you can use with Node.js?](#224-what-are-the-different-types-of-databases-you-can-use-with-nodejs)
+  - [225. What is `$lookup`? How does it perform a join?](#225-what-is-lookup-how-does-it-perform-a-join)
+  - [226. What is `lean()` in Mongoose? When should you use it?](#226-what-is-lean-in-mongoose-when-should-you-use-it)
+  - [227. What is `populate()` in Mongoose? How does it work? What are its limitations?](#227-what-is-populate-in-mongoose-how-does-it-work-what-are-its-limitations)
+  - [228. What is a BSON document? How does it differ from JSON?](#228-what-is-a-bson-document-how-does-it-differ-from-json)
+  - [229. What is a covered query in MongoDB?](#229-what-is-a-covered-query-in-mongodb)
+  - [230. What is a mass assignment vulnerability? How do you prevent it?](#230-what-is-a-mass-assignment-vulnerability-how-do-you-prevent-it)
+  - [231. What is a Mongoose schema? What is a model?](#231-what-is-a-mongoose-schema-what-is-a-model)
+  - [232. What is a replica set? How does failover work?](#232-what-is-a-replica-set-how-does-failover-work)
+  - [233. What is an index in MongoDB? Why are indexes important?](#233-what-is-an-index-in-mongodb-why-are-indexes-important)
+  - [234. What is discriminator in Mongoose?](#234-what-is-discriminator-in-mongoose)
+  - [235. What is Docker Compose? How do you use it for a Node.js + MongoDB + Redis stack?](#235-what-is-docker-compose-how-do-you-use-it-for-a-nodejs-mongodb-redis-stack)
+  - [236. What is garbage collection in Node.js? How does V8's GC work?](#236-what-is-garbage-collection-in-nodejs-how-does-v8s-gc-work)
+  - [237. What is MongoDB Atlas? How does it differ from self-hosted MongoDB?](#237-what-is-mongodb-atlas-how-does-it-differ-from-self-hosted-mongodb)
+  - [238. What is MongoDB? How does it differ from relational databases?](#238-what-is-mongodb-how-does-it-differ-from-relational-databases)
+  - [239. What is Mongoose and how does it simplify MongoDB interactions?](#239-what-is-mongoose-and-how-does-it-simplify-mongodb-interactions)
+  - [240. What is Mongoose? Why use it instead of the native MongoDB driver?](#240-what-is-mongoose-why-use-it-instead-of-the-native-mongodb-driver)
+  - [241. What is NoSQL injection (MongoDB injection)? How do you prevent it?](#241-what-is-nosql-injection-mongodb-injection-how-do-you-prevent-it)
+  - [242. What is sharding in MongoDB? What problem does it solve?](#242-what-is-sharding-in-mongodb-what-problem-does-it-solve)
+  - [243. What is the aggregation pipeline? Name 5 common stages and what they do.](#243-what-is-the-aggregation-pipeline-name-5-common-stages-and-what-they-do)
+  - [244. What is the difference between `save()` and `updateOne()` in Mongoose?](#244-what-is-the-difference-between-save-and-updateone-in-mongoose)
+  - [245. What is the difference between SQL and NoSQL databases?](#245-what-is-the-difference-between-sql-and-nosql-databases)
+  - [246. What is the explain() method? How do you use it to diagnose slow queries?](#246-what-is-the-explain-method-how-do-you-use-it-to-diagnose-slow-queries)
+  - [247. What is the oplog?](#247-what-is-the-oplog)
+  - [248. What types of indexes does MongoDB support?](#248-what-types-of-indexes-does-mongodb-support)
+  - [249. When would you choose PostgreSQL over MongoDB?](#249-when-would-you-choose-postgresql-over-mongodb)
+- [Databases — SQL, PostgreSQL & ORMs](#databases-sql-postgresql-orms) (17)
+  - [250. How do you prevent SQL injection using a query builder?](#250-how-do-you-prevent-sql-injection-using-a-query-builder)
+  - [251. What are ACID properties? Explain each.](#251-what-are-acid-properties-explain-each)
+  - [252. What are database migrations? How do you manage schema migrations in a Node.js app?](#252-what-are-database-migrations-how-do-you-manage-schema-migrations-in-a-nodejs-app)
+  - [253. What are the trade-offs between using an ORM vs raw SQL in a high-performance Node.js app?](#253-what-are-the-trade-offs-between-using-an-orm-vs-raw-sql-in-a-high-performance-nodejs-app)
+  - [254. What is `pg` vs `pg-pool` vs Knex.js vs Sequelize vs Prisma? When to use each?](#254-what-is-pg-vs-pg-pool-vs-knexjs-vs-sequelize-vs-prisma-when-to-use-each)
+  - [255. What is a transaction? How do you use one in Node.js?](#255-what-is-a-transaction-how-do-you-use-one-in-nodejs)
+  - [256. What is an index in PostgreSQL? What is the trade-off of over-indexing?](#256-what-is-an-index-in-postgresql-what-is-the-trade-off-of-over-indexing)
+  - [257. What is an ORM? What are its advantages and disadvantages?](#257-what-is-an-orm-what-are-its-advantages-and-disadvantages)
+  - [258. What is correlation ID / request ID? How do you propagate it across async calls?](#258-what-is-correlation-id-request-id-how-do-you-propagate-it-across-async-calls)
+  - [259. What is EXPLAIN ANALYZE in PostgreSQL?](#259-what-is-explain-analyze-in-postgresql)
+  - [260. What is Knex.js? When would you use it over an ORM?](#260-what-is-knexjs-when-would-you-use-it-over-an-orm)
+  - [261. What is Prisma? How does it differ from Sequelize?](#261-what-is-prisma-how-does-it-differ-from-sequelize)
+  - [262. What is Sequelize? How do you define a model and associations?](#262-what-is-sequelize-how-do-you-define-a-model-and-associations)
+  - [263. What is SQL injection? How do you prevent it in Node.js?](#263-what-is-sql-injection-how-do-you-prevent-it-in-nodejs)
+  - [264. What is the active record pattern vs the data mapper pattern?](#264-what-is-the-active-record-pattern-vs-the-data-mapper-pattern)
+  - [265. What is the difference between Redis `WATCH/MULTI/EXEC` and a transaction?](#265-what-is-the-difference-between-redis-watchmultiexec-and-a-transaction)
+  - [266. What is the Prisma schema? What is the Prisma client?](#266-what-is-the-prisma-schema-what-is-the-prisma-client)
+- [Caching & Redis](#caching-redis) (22)
+  - [267. How can you optimize the performance of a Node.js application?](#267-how-can-you-optimize-the-performance-of-a-nodejs-application)
+  - [268. How do you connect to Redis from Node.js? (`ioredis` vs `node-redis`)](#268-how-do-you-connect-to-redis-from-nodejs-ioredis-vs-node-redis)
+  - [269. How do you scale `socket.io` across multiple servers? (Redis adapter)](#269-how-do-you-scale-socketio-across-multiple-servers-redis-adapter)
+  - [270. How do you scale a Node.js application to handle high traffic?](#270-how-do-you-scale-a-nodejs-application-to-handle-high-traffic)
+  - [271. How do you set a key with a TTL (expiration) in Redis?](#271-how-do-you-set-a-key-with-a-ttl-expiration-in-redis)
+  - [272. How do you share state across multiple Node.js instances? (Redis, sticky sessions)](#272-how-do-you-share-state-across-multiple-nodejs-instances-redis-sticky-sessions)
+  - [273. What are common Redis anti-patterns to avoid?](#273-what-are-common-redis-anti-patterns-to-avoid)
+  - [274. What are Redis data types? When would you use each?](#274-what-are-redis-data-types-when-would-you-use-each)
+  - [275. What is a cache stampede (thundering herd)? How do you prevent it?](#275-what-is-a-cache-stampede-thundering-herd-how-do-you-prevent-it)
+  - [276. What is a Redis pipeline? What problem does it solve?](#276-what-is-a-redis-pipeline-what-problem-does-it-solve)
+  - [277. What is Bull/BullMQ? How does it use Redis as a backend?](#277-what-is-bullbullmq-how-does-it-use-redis-as-a-backend)
+  - [278. What is cache invalidation? What are the common strategies?](#278-what-is-cache-invalidation-what-are-the-common-strategies)
+  - [279. What is inline caching in V8? How does it affect performance?](#279-what-is-inline-caching-in-v8-how-does-it-affect-performance)
+  - [280. What is module-level singleton pattern (leveraging module cache)?](#280-what-is-module-level-singleton-pattern-leveraging-module-cache)
+  - [281. What is Redis Cluster? What is Redis Sentinel?](#281-what-is-redis-cluster-what-is-redis-sentinel)
+  - [282. What is Redis Lua scripting? When is it useful?](#282-what-is-redis-lua-scripting-when-is-it-useful)
+  - [283. What is Redis persistence? What is the difference between RDB and AOF?](#283-what-is-redis-persistence-what-is-the-difference-between-rdb-and-aof)
+  - [284. What is Redis Pub/Sub? How does it differ from a message queue?](#284-what-is-redis-pubsub-how-does-it-differ-from-a-message-queue)
+  - [285. What is Redis? What data structures does it support?](#285-what-is-redis-what-data-structures-does-it-support)
+  - [286. What is the cache-aside pattern? How does it differ from write-through and write-behind?](#286-what-is-the-cache-aside-pattern-how-does-it-differ-from-write-through-and-write-behind)
+  - [287. What is the difference between `DEL` and `UNLINK` in Redis?](#287-what-is-the-difference-between-del-and-unlink-in-redis)
+  - [288. What is the difference between Redis as a cache vs as a database vs as a message broker?](#288-what-is-the-difference-between-redis-as-a-cache-vs-as-a-database-vs-as-a-message-broker)
+- [Error Handling & Logging](#error-handling-logging) (12)
+  - [289. How do you redact sensitive fields (passwords, tokens) from logs?](#289-how-do-you-redact-sensitive-fields-passwords-tokens-from-logs)
+  - [290. What are some best practices for error handling in Node.js applications?](#290-what-are-some-best-practices-for-error-handling-in-nodejs-applications)
+  - [291. What is `AsyncLocalStorage`? How do you use it for request context propagation?](#291-what-is-asynclocalstorage-how-do-you-use-it-for-request-context-propagation)
+  - [292. What is `pipeline()`? How does it differ from `pipe()`? Why is `pipeline()` preferred?](#292-what-is-pipeline-how-does-it-differ-from-pipe-why-is-pipeline-preferred)
+  - [293. What is a sidecar pattern?](#293-what-is-a-sidecar-pattern)
+  - [294. What is domain error handling in Node.js? (deprecated, but may be asked)](#294-what-is-domain-error-handling-in-nodejs-deprecated-but-may-be-asked)
+  - [295. What is Morgan? What does request logging look like in production?](#295-what-is-morgan-what-does-request-logging-look-like-in-production)
+  - [296. What is Pino? Why is it faster than Winston?](#296-what-is-pino-why-is-it-faster-than-winston)
+  - [297. What is structured logging? Why is it better than `console.log` in production?](#297-what-is-structured-logging-why-is-it-better-than-consolelog-in-production)
+  - [298. What is the Command pattern?](#298-what-is-the-command-pattern)
+  - [299. What is the error-first callback convention?](#299-what-is-the-error-first-callback-convention)
+  - [300. What is Winston? How do you configure transports, log levels, and formatters?](#300-what-is-winston-how-do-you-configure-transports-log-levels-and-formatters)
+- [Security](#security) (13)
+  - [301. What are some common security issues in Node.js applications?](#301-what-are-some-common-security-issues-in-nodejs-applications)
+  - [302. What are the security implications of using third-party modules in Node.js?](#302-what-are-the-security-implications-of-using-third-party-modules-in-nodejs)
+  - [303. What are the security risks of using `exec()` with user input?](#303-what-are-the-security-risks-of-using-exec-with-user-input)
+  - [304. What does `helmet.js` do? Which headers does it set?](#304-what-does-helmetjs-do-which-headers-does-it-set)
+  - [305. What is a Content Security Policy (CSP)?](#305-what-is-a-content-security-policy-csp)
+  - [306. What is bcrypt? How do you hash and compare passwords with it?](#306-what-is-bcrypt-how-do-you-hash-and-compare-passwords-with-it)
+  - [307. What is CSRF (Cross-Site Request Forgery)? How do you prevent it?](#307-what-is-csrf-cross-site-request-forgery-how-do-you-prevent-it)
+  - [308. What is Helmet? What HTTP headers does it set?](#308-what-is-helmet-what-http-headers-does-it-set)
+  - [309. What is persisted queries?](#309-what-is-persisted-queries)
+  - [310. What is salting a password? Why is it necessary?](#310-what-is-salting-a-password-why-is-it-necessary)
+  - [311. What is the `vm` module in Node.js? What are its security implications?](#311-what-is-the-vm-module-in-nodejs-what-are-its-security-implications)
+  - [312. What is the difference between encryption and hashing?](#312-what-is-the-difference-between-encryption-and-hashing)
+  - [313. What is XSS (Cross-Site Scripting)? How do you prevent it in a Node.js API?](#313-what-is-xss-cross-site-scripting-how-do-you-prevent-it-in-a-nodejs-api)
+- [Performance, Scaling & Clustering](#performance-scaling-clustering) (11)
+  - [314. How can you use `pm2` for managing Node.js processes?](#314-how-can-you-use-pm2-for-managing-nodejs-processes)
+  - [315. How do you use PM2 in cluster mode?](#315-how-do-you-use-pm2-in-cluster-mode)
+  - [316. What is `--heap-prof` and `--cpu-prof` in Node.js?](#316-what-is-heap-prof-and-cpu-prof-in-nodejs)
+  - [317. What is a memory leak and how can you prevent it in Node.js?](#317-what-is-a-memory-leak-and-how-can-you-prevent-it-in-nodejs)
+  - [318. What is horizontal vs vertical scaling? Which does Node.js lean toward?](#318-what-is-horizontal-vs-vertical-scaling-which-does-nodejs-lean-toward)
+  - [319. What is PM2? What are its key features?](#319-what-is-pm2-what-are-its-key-features)
+  - [320. What is PM2? What are its key features? How is it different from raw `node`?](#320-what-is-pm2-what-are-its-key-features-how-is-it-different-from-raw-node)
+  - [321. What is stateless architecture? Why is it necessary for horizontal scaling?](#321-what-is-stateless-architecture-why-is-it-necessary-for-horizontal-scaling)
+  - [322. What is the difference between `npm start` and using PM2 in production?](#322-what-is-the-difference-between-npm-start-and-using-pm2-in-production)
+  - [323. What is the difference between clustering and worker threads?](#323-what-is-the-difference-between-clustering-and-worker-threads)
+  - [324. What is the Node.js Cluster module? How does it work?](#324-what-is-the-nodejs-cluster-module-how-does-it-work)
+- [Worker Threads & Child Processes](#worker-threads-child-processes) (5)
+  - [325. How do worker threads communicate? (`MessageChannel`, `postMessage`, `workerData`)](#325-how-do-worker-threads-communicate-messagechannel-postmessage-workerdata)
+  - [326. How do worker threads share memory? What is `SharedArrayBuffer`?](#326-how-do-worker-threads-share-memory-what-is-sharedarraybuffer)
+  - [327. How do you terminate a worker thread gracefully?](#327-how-do-you-terminate-a-worker-thread-gracefully)
+  - [328. What are the limitations of worker threads?](#328-what-are-the-limitations-of-worker-threads)
+  - [329. What is the difference between CPU-bound and I/O-bound operations? How does Node.js handle each?](#329-what-is-the-difference-between-cpu-bound-and-io-bound-operations-how-does-nodejs-handle-each)
+- [File System & Built-in Modules](#file-system-built-in-modules) (8)
+  - [330. Explain the difference between `fs.readFile` and `fs.createReadStream`.](#330-explain-the-difference-between-fsreadfile-and-fscreatereadstream)
+  - [331. How do you recursively read a directory in Node.js?](#331-how-do-you-recursively-read-a-directory-in-nodejs)
+  - [332. What is `fs.promises`? How does it differ from callback-based `fs`?](#332-what-is-fspromises-how-does-it-differ-from-callback-based-fs)
+  - [333. What is `fs.stat()` vs `fs.lstat()`?](#333-what-is-fsstat-vs-fslstat)
+  - [334. What is `fs.watch()` vs `fs.watchFile()`? What are their limitations?](#334-what-is-fswatch-vs-fswatchfile-what-are-their-limitations)
+  - [335. What is directory traversal? How do you prevent it?](#335-what-is-directory-traversal-how-do-you-prevent-it)
+  - [336. What is the difference between `fs.readFile()` and `fs.createReadStream()`? When to use each?](#336-what-is-the-difference-between-fsreadfile-and-fscreatereadstream-when-to-use-each)
+  - [337. What is the difference between a built-in module, an npm package, and a local module?](#337-what-is-the-difference-between-a-built-in-module-an-npm-package-and-a-local-module)
+- [WebSockets & Real-Time Communication](#websockets-real-time-communication) (13)
+  - [338. How do you authenticate a WebSocket connection?](#338-how-do-you-authenticate-a-websocket-connection)
+  - [339. How do you test WebSocket handlers?](#339-how-do-you-test-websocket-handlers)
+  - [340. What are the limitations of SSE vs WebSockets?](#340-what-are-the-limitations-of-sse-vs-websockets)
+  - [341. What is `socket.io` namespace?](#341-what-is-socketio-namespace)
+  - [342. What is `socket.io` room? How does it enable group messaging?](#342-what-is-socketio-room-how-does-it-enable-group-messaging)
+  - [343. What is `socket.io`? How does it differ from raw WebSockets?](#343-what-is-socketio-how-does-it-differ-from-raw-websockets)
+  - [344. What is a heartbeat/ping-pong in WebSockets? Why is it needed?](#344-what-is-a-heartbeatping-pong-in-websockets-why-is-it-needed)
+  - [345. What is a WebSocket? How does the WebSocket handshake work?](#345-what-is-a-websocket-how-does-the-websocket-handshake-work)
+  - [346. What is SSE? How does it work?](#346-what-is-sse-how-does-it-work)
+  - [347. What is the `ws` package? When would you use it over `socket.io`?](#347-what-is-the-ws-package-when-would-you-use-it-over-socketio)
+  - [348. What is the difference between WebSockets, HTTP long polling, and Server-Sent Events (SSE)?](#348-what-is-the-difference-between-websockets-http-long-polling-and-server-sent-events-sse)
+  - [349. What is the Service layer pattern? How does it separate concerns from controllers?](#349-what-is-the-service-layer-pattern-how-does-it-separate-concerns-from-controllers)
+  - [350. When would you use WebSockets vs SSE vs polling?](#350-when-would-you-use-websockets-vs-sse-vs-polling)
+- [Microservices Architecture](#microservices-architecture) (6)
+  - [351. How would you migrate a monolith Node.js app to microservices?](#351-how-would-you-migrate-a-monolith-nodejs-app-to-microservices)
+  - [352. What is a service mesh? What problems does it solve?](#352-what-is-a-service-mesh-what-problems-does-it-solve)
+  - [353. What is an API Gateway? What are its responsibilities?](#353-what-is-an-api-gateway-what-are-its-responsibilities)
+  - [354. What is service discovery? How does it work in a Node.js microservices setup?](#354-what-is-service-discovery-how-does-it-work-in-a-nodejs-microservices-setup)
+  - [355. What is the difference between a monolith and microservices?](#355-what-is-the-difference-between-a-monolith-and-microservices)
+  - [356. What is the strangler fig pattern for migrating a monolith to microservices?](#356-what-is-the-strangler-fig-pattern-for-migrating-a-monolith-to-microservices)
+- [Message Queues (RabbitMQ, Kafka, Bull)](#message-queues-rabbitmq-kafka-bull) (15)
+  - [357. How do microservices communicate? (REST/HTTP, gRPC, message queues)](#357-how-do-microservices-communicate-resthttp-grpc-message-queues)
+  - [358. What are the RabbitMQ exchange types? (direct, fanout, topic, headers)](#358-what-are-the-rabbitmq-exchange-types-direct-fanout-topic-headers)
+  - [359. What is a dead letter queue? When is it used?](#359-what-is-a-dead-letter-queue-when-is-it-used)
+  - [360. What is a Kafka topic, partition, consumer group, and offset?](#360-what-is-a-kafka-topic-partition-consumer-group-and-offset)
+  - [361. What is a message queue? Why would you use one?](#361-what-is-a-message-queue-why-would-you-use-one)
+  - [362. What is Apache Kafka? How is it different from RabbitMQ?](#362-what-is-apache-kafka-how-is-it-different-from-rabbitmq)
+  - [363. What is at-least-once vs at-most-once vs exactly-once delivery?](#363-what-is-at-least-once-vs-at-most-once-vs-exactly-once-delivery)
+  - [364. What is Kafka's message retention policy?](#364-what-is-kafkas-message-retention-policy)
+  - [365. What is message acknowledgment in RabbitMQ? What happens if a consumer crashes?](#365-what-is-message-acknowledgment-in-rabbitmq-what-happens-if-a-consumer-crashes)
+  - [366. What is message durability vs persistence in RabbitMQ?](#366-what-is-message-durability-vs-persistence-in-rabbitmq)
+  - [367. What is RabbitMQ? What are exchanges, queues, and bindings?](#367-what-is-rabbitmq-what-are-exchanges-queues-and-bindings)
+  - [368. What is the competing consumers pattern?](#368-what-is-the-competing-consumers-pattern)
+  - [369. What is the difference between a message queue and a pub/sub system?](#369-what-is-the-difference-between-a-message-queue-and-a-pubsub-system)
+  - [370. What is the Pub/Sub pattern? How is it different from Observer?](#370-what-is-the-pubsub-pattern-how-is-it-different-from-observer)
+  - [371. When would you choose Kafka over RabbitMQ?](#371-when-would-you-choose-kafka-over-rabbitmq)
+- [Testing in Node.js](#testing-in-nodejs) (8)
+  - [372. How do you mock external API calls in tests? (nock, msw, jest.fn)](#372-how-do-you-mock-external-api-calls-in-tests-nock-msw-jestfn)
+  - [373. How do you mock modules in Jest? (`jest.mock()`, `jest.spyOn()`)](#373-how-do-you-mock-modules-in-jest-jestmock-jestspyon)
+  - [374. How do you test async code in Jest?](#374-how-do-you-test-async-code-in-jest)
+  - [375. What are some popular testing frameworks for Node.js?](#375-what-are-some-popular-testing-frameworks-for-nodejs)
+  - [376. What is Jest? What is Mocha + Chai? How do they compare?](#376-what-is-jest-what-is-mocha-chai-how-do-they-compare)
+  - [377. What is TDD (Test-Driven Development)? How do you apply it in Node.js?](#377-what-is-tdd-test-driven-development-how-do-you-apply-it-in-nodejs)
+  - [378. What is the difference between a mock, stub, and spy?](#378-what-is-the-difference-between-a-mock-stub-and-spy)
+  - [379. What is the testing pyramid in Node.js context? (unit, integration, e2e)](#379-what-is-the-testing-pyramid-in-nodejs-context-unit-integration-e2e)
+- [DevOps — Docker, CI/CD & Deployment](#devops-docker-cicd-deployment) (12)
+  - [380. How do you gracefully shut down a Node.js server?](#380-how-do-you-gracefully-shut-down-a-nodejs-server)
+  - [381. How do you manage secrets in production? (env vars, Vault, AWS Secrets Manager)](#381-how-do-you-manage-secrets-in-production-env-vars-vault-aws-secrets-manager)
+  - [382. How do you optimize Docker image size for a Node.js app?](#382-how-do-you-optimize-docker-image-size-for-a-nodejs-app)
+  - [383. How do you securely store secrets in a Node.js application?](#383-how-do-you-securely-store-secrets-in-a-nodejs-application)
+  - [384. What is `testcontainers`? How does it help with integration tests?](#384-what-is-testcontainers-how-does-it-help-with-integration-tests)
+  - [385. What is a CI/CD pipeline? What does a typical Node.js CI pipeline look like?](#385-what-is-a-cicd-pipeline-what-does-a-typical-nodejs-ci-pipeline-look-like)
+  - [386. What is a health check in Docker?](#386-what-is-a-health-check-in-docker)
+  - [387. What is a microservices architecture? What are its advantages and disadvantages?](#387-what-is-a-microservices-architecture-what-are-its-advantages-and-disadvantages)
+  - [388. What is a multi-stage build in Docker? Why is it important for Node.js?](#388-what-is-a-multi-stage-build-in-docker-why-is-it-important-for-nodejs)
+  - [389. What is a rolling deployment vs blue-green deployment vs canary deployment?](#389-what-is-a-rolling-deployment-vs-blue-green-deployment-vs-canary-deployment)
+  - [390. What is Docker? What is a container vs a virtual machine?](#390-what-is-docker-what-is-a-container-vs-a-virtual-machine)
+  - [391. What is Kubernetes? What are pods, services, deployments, and ingress?](#391-what-is-kubernetes-what-are-pods-services-deployments-and-ingress)
+- [TypeScript with Node.js](#typescript-with-nodejs) (5)
+  - [392. How do you set up a TypeScript Node.js project from scratch?](#392-how-do-you-set-up-a-typescript-nodejs-project-from-scratch)
+  - [393. How do you type environment variables in TypeScript?](#393-how-do-you-type-environment-variables-in-typescript)
+  - [394. What are path aliases in TypeScript? How do you configure them for Node.js?](#394-what-are-path-aliases-in-typescript-how-do-you-configure-them-for-nodejs)
+  - [395. What is `ts-node`? What is `ts-node-dev`?](#395-what-is-ts-node-what-is-ts-node-dev)
+  - [396. What is `zod`? How does it combine runtime validation with TypeScript types?](#396-what-is-zod-how-does-it-combine-runtime-validation-with-typescript-types)
+- [Design Patterns in Node.js](#design-patterns-in-nodejs) (2)
+  - [397. What is the Repository pattern? Why is it used in Node.js backends?](#397-what-is-the-repository-pattern-why-is-it-used-in-nodejs-backends)
+  - [398. What is the Singleton pattern? When is it used in Node.js? (DB connection, config)](#398-what-is-the-singleton-pattern-when-is-it-used-in-nodejs-db-connection-config)
+- [GraphQL with Node.js](#graphql-with-nodejs) (10)
+  - [399. What are the three GraphQL operation types: query, mutation, and subscription?](#399-what-are-the-three-graphql-operation-types-query-mutation-and-subscription)
+  - [400. What is `graphql-yoga`?](#400-what-is-graphql-yoga)
+  - [401. What is a GraphQL directive? Give an example.](#401-what-is-a-graphql-directive-give-an-example)
+  - [402. What is a GraphQL schema? What is SDL (Schema Definition Language)?](#402-what-is-a-graphql-schema-what-is-sdl-schema-definition-language)
+  - [403. What is a resolver in GraphQL?](#403-what-is-a-resolver-in-graphql)
+  - [404. What is code-first vs schema-first GraphQL?](#404-what-is-code-first-vs-schema-first-graphql)
+  - [405. What is GraphQL? How does it differ from REST?](#405-what-is-graphql-how-does-it-differ-from-rest)
+  - [406. What is schema stitching vs federation?](#406-what-is-schema-stitching-vs-federation)
+  - [407. What is the difference between GraphQL subscription and polling?](#407-what-is-the-difference-between-graphql-subscription-and-polling)
+  - [408. What is the N+1 problem in GraphQL? What is DataLoader?](#408-what-is-the-n1-problem-in-graphql-what-is-dataloader)
+- [General / Miscellaneous Node.js Concepts](#general-miscellaneous-nodejs-concepts) (98)
+  - [409. Explain the use of the `url` module in Node.js.](#409-explain-the-use-of-the-url-module-in-nodejs)
+  - [410. How can you make HTTP requests in Node.js?](#410-how-can-you-make-http-requests-in-nodejs)
+  - [411. How can you parse URLs in Node.js?](#411-how-can-you-parse-urls-in-nodejs)
+  - [412. How can you use the `assert` module for testing in Node.js?](#412-how-can-you-use-the-assert-module-for-testing-in-nodejs)
+  - [413. How can you use the `debug` module in Node.js?](#413-how-can-you-use-the-debug-module-in-nodejs)
+  - [414. How do you broadcast to all connected clients vs a subset?](#414-how-do-you-broadcast-to-all-connected-clients-vs-a-subset)
+  - [415. How do you cancel an in-flight asynchronous operation using `AbortController` and `AbortSignal`?](#415-how-do-you-cancel-an-in-flight-asynchronous-operation-using-abortcontroller-and-abortsignal)
+  - [416. How do you design a batch API endpoint?](#416-how-do-you-design-a-batch-api-endpoint)
+  - [417. How do you design an API that handles both synchronous and asynchronous workflows?](#417-how-do-you-design-an-api-that-handles-both-synchronous-and-asynchronous-workflows)
+  - [418. How do you design an idempotent API?](#418-how-do-you-design-an-idempotent-api)
+  - [419. How do you distinguish between a 4xx error (client) and 5xx error (server) in your error handler?](#419-how-do-you-distinguish-between-a-4xx-error-client-and-5xx-error-server-in-your-error-handler)
+  - [420. How do you ensure data consistency across multiple microservices?](#420-how-do-you-ensure-data-consistency-across-multiple-microservices)
+  - [421. How do you optimize database queries in a Node.js app?](#421-how-do-you-optimize-database-queries-in-a-nodejs-app)
+  - [422. How does Node.js integrate with frontend frameworks like React or Angular?](#422-how-does-nodejs-integrate-with-frontend-frameworks-like-react-or-angular)
+  - [423. How does the garbage collector decide what to collect? What are generations?](#423-how-does-the-garbage-collector-decide-what-to-collect-what-are-generations)
+  - [424. What are child processes in Node.js? What are the 4 methods to create them?](#424-what-are-child-processes-in-nodejs-what-are-the-4-methods-to-create-them)
+  - [425. What are log levels? (`error`, `warn`, `info`, `http`, `verbose`, `debug`, `silly`)](#425-what-are-log-levels-error-warn-info-http-verbose-debug-silly)
+  - [426. What are snapshot tests? When are they useful in a backend context?](#426-what-are-snapshot-tests-when-are-they-useful-in-a-backend-context)
+  - [427. What are the different HTTP methods and their uses?](#427-what-are-the-different-http-methods-and-their-uses)
+  - [428. What does idempotency mean? Which HTTP methods are idempotent?](#428-what-does-idempotency-mean-which-http-methods-are-idempotent)
+  - [429. What HTTP status codes should you use? Give examples from 2xx, 3xx, 4xx, and 5xx.](#429-what-http-status-codes-should-you-use-give-examples-from-2xx-3xx-4xx-and-5xx)
+  - [430. What is `$facet`? When would you use it?](#430-what-is-facet-when-would-you-use-it)
+  - [431. What is `--inspect` flag? How do you use Chrome DevTools to profile Node.js?](#431-what-is-inspect-flag-how-do-you-use-chrome-devtools-to-profile-nodejs)
+  - [432. What is `.dockerignore`? What should you include in it?](#432-what-is-dockerignore-what-should-you-include-in-it)
+  - [433. What is `AbortController` and `AbortSignal` used for in Node.js?](#433-what-is-abortcontroller-and-abortsignal-used-for-in-nodejs)
+  - [434. What is `async_hooks`? How is `AsyncLocalStorage` built on top of it?](#434-what-is-asynchooks-how-is-asynclocalstorage-built-on-top-of-it)
+  - [435. What is `async_hooks`? What is it used for?](#435-what-is-asynchooks-what-is-it-used-for)
+  - [436. What is `Atomics`? When is it needed with `SharedArrayBuffer`?](#436-what-is-atomics-when-is-it-needed-with-sharedarraybuffer)
+  - [437. What is `beforeAll`, `beforeEach`, `afterAll`, `afterEach`?](#437-what-is-beforeall-beforeeach-afterall-aftereach)
+  - [438. What is `cls-hooked` or `AsyncLocalStorage` for log context propagation?](#438-what-is-cls-hooked-or-asynclocalstorage-for-log-context-propagation)
+  - [439. What is `CMD` vs `ENTRYPOINT` in a Dockerfile?](#439-what-is-cmd-vs-entrypoint-in-a-dockerfile)
+  - [440. What is `crypto` module? How do you generate a random token? How do you create an HMAC?](#440-what-is-crypto-module-how-do-you-generate-a-random-token-how-do-you-create-an-hmac)
+  - [441. What is `isMainThread`? How do you use it to write a single-file worker?](#441-what-is-ismainthread-how-do-you-use-it-to-write-a-single-file-worker)
+  - [442. What is `net` module? What can you build with it?](#442-what-is-net-module-what-can-you-build-with-it)
+  - [443. What is `os` module? Give 3 use cases.](#443-what-is-os-module-give-3-use-cases)
+  - [444. What is `zlib`? How do you compress or decompress data using streams?](#444-what-is-zlib-how-do-you-compress-or-decompress-data-using-streams)
+  - [445. What is a BFF (Backend for Frontend)?](#445-what-is-a-bff-backend-for-frontend)
+  - [446. What is a callback function in Node.js?](#446-what-is-a-callback-function-in-nodejs)
+  - [447. What is a deadlock? How do you prevent it?](#447-what-is-a-deadlock-how-do-you-prevent-it)
+  - [448. What is a load balancer? How does Nginx act as a reverse proxy/load balancer for Node.js?](#448-what-is-a-load-balancer-how-does-nginx-act-as-a-reverse-proxyload-balancer-for-nodejs)
+  - [449. What is a request/response envelope versus a plain JSON body? When would you use each?](#449-what-is-a-requestresponse-envelope-versus-a-plain-json-body-when-would-you-use-each)
+  - [450. What is a reverse proxy? How do you configure Nginx in front of a Node.js app?](#450-what-is-a-reverse-proxy-how-do-you-configure-nginx-in-front-of-a-nodejs-app)
+  - [451. What is a subquery? What is a CTE (Common Table Expression)?](#451-what-is-a-subquery-what-is-a-cte-common-table-expression)
+  - [452. What is a timing attack? How does `crypto.timingSafeEqual()` help?](#452-what-is-a-timing-attack-how-does-cryptotimingsafeequal-help)
+  - [453. What is an API idempotency key? When is it used?](#453-what-is-an-api-idempotency-key-when-is-it-used)
+  - [454. What is an upsert?](#454-what-is-an-upsert)
+  - [455. What is code coverage? What does 100% coverage guarantee?](#455-what-is-code-coverage-what-does-100-coverage-guarantee)
+  - [456. What is connection pooling? Why is it critical in a Node.js app?](#456-what-is-connection-pooling-why-is-it-critical-in-a-nodejs-app)
+  - [457. What is contract testing? What is Pact?](#457-what-is-contract-testing-what-is-pact)
+  - [458. What is CQRS (Command Query Responsibility Segregation)?](#458-what-is-cqrs-command-query-responsibility-segregation)
+  - [459. What is deoptimization in V8? What causes it?](#459-what-is-deoptimization-in-v8-what-causes-it)
+  - [460. What is encoding? What are the common encodings in Node.js?](#460-what-is-encoding-what-are-the-common-encodings-in-nodejs)
+  - [461. What is event sourcing?](#461-what-is-event-sourcing)
+  - [462. What is gRPC? How does it compare to REST?](#462-what-is-grpc-how-does-it-compare-to-rest)
+  - [463. What is HATEOAS?](#463-what-is-hateoas)
+  - [464. What is infrastructure as code? What is Terraform?](#464-what-is-infrastructure-as-code-what-is-terraform)
+  - [465. What is introspection? Should you disable it in production?](#465-what-is-introspection-should-you-disable-it-in-production)
+  - [466. What is mutation testing?](#466-what-is-mutation-testing)
+  - [467. What is NAPI / Node Addons? When would you write a native Node.js addon?](#467-what-is-napi-node-addons-when-would-you-write-a-native-nodejs-addon)
+  - [468. What is optimistic locking vs pessimistic locking?](#468-what-is-optimistic-locking-vs-pessimistic-locking)
+  - [469. What is prototype pollution? How can it affect a Node.js app?](#469-what-is-prototype-pollution-how-can-it-affect-a-nodejs-app)
+  - [470. What is REST? What are the six constraints of REST architecture?](#470-what-is-rest-what-are-the-six-constraints-of-rest-architecture)
+  - [471. What is SSL termination at the load balancer level?](#471-what-is-ssl-termination-at-the-load-balancer-level)
+  - [472. What is SSRF (Server-Side Request Forgery)?](#472-what-is-ssrf-server-side-request-forgery)
+  - [473. What is the `--max-old-space-size` flag? What does it control?](#473-what-is-the-max-old-space-size-flag-what-does-it-control)
+  - [474. What is the `--max-semi-space-size` flag?](#474-what-is-the-max-semi-space-size-flag)
+  - [475. What is the `path` module? What is `path.join()` vs `path.resolve()`?](#475-what-is-the-path-module-what-is-pathjoin-vs-pathresolve)
+  - [476. What is the `perf_hooks` module? How do you measure execution time with `performance.now()`?](#476-what-is-the-perfhooks-module-how-do-you-measure-execution-time-with-performancenow)
+  - [477. What is the `url` module? How do you parse a URL?](#477-what-is-the-url-module-how-do-you-parse-a-url)
+  - [478. What is the Adapter pattern? Give a Node.js use case.](#478-what-is-the-adapter-pattern-give-a-nodejs-use-case)
+  - [479. What is the bulkhead pattern?](#479-what-is-the-bulkhead-pattern)
+  - [480. What is the difference between `/users/:id/posts` and `/posts?userId=:id`?](#480-what-is-the-difference-between-usersidposts-and-postsuseridid)
+  - [481. What is the difference between `COPY` and `ADD` in a Dockerfile?](#481-what-is-the-difference-between-copy-and-add-in-a-dockerfile)
+  - [482. What is the difference between `find()` and `aggregate()`?](#482-what-is-the-difference-between-find-and-aggregate)
+  - [483. What is the difference between `INNER JOIN`, `LEFT JOIN`, `RIGHT JOIN`, `FULL OUTER JOIN`?](#483-what-is-the-difference-between-inner-join-left-join-right-join-full-outer-join)
+  - [484. What is the difference between `req.params`, `req.query`, and `req.body`?](#484-what-is-the-difference-between-reqparams-reqquery-and-reqbody)
+  - [485. What is the difference between `res.json()`, `res.send()`, and `res.end()`?](#485-what-is-the-difference-between-resjson-ressend-and-resend)
+  - [486. What is the difference between `updateOne`, `updateMany`, `replaceOne`, `findOneAndUpdate`?](#486-what-is-the-difference-between-updateone-updatemany-replaceone-findoneandupdate)
+  - [487. What is the difference between a monolithic API and a BFF (Backend for Frontend)?](#487-what-is-the-difference-between-a-monolithic-api-and-a-bff-backend-for-frontend)
+  - [488. What is the difference between B-tree, Hash, GIN, and BRIN indexes?](#488-what-is-the-difference-between-b-tree-hash-gin-and-brin-indexes)
+  - [489. What is the difference between error-first callbacks and Promises?](#489-what-is-the-difference-between-error-first-callbacks-and-promises)
+  - [490. What is the difference between flowing mode and paused mode in readable streams?](#490-what-is-the-difference-between-flowing-mode-and-paused-mode-in-readable-streams)
+  - [491. What is the difference between operational errors and programmer errors in Node.js?](#491-what-is-the-difference-between-operational-errors-and-programmer-errors-in-nodejs)
+  - [492. What is the difference between REST and RPC?](#492-what-is-the-difference-between-rest-and-rpc)
+  - [493. What is the difference between synchronous and asynchronous functions in Node.js?](#493-what-is-the-difference-between-synchronous-and-asynchronous-functions-in-nodejs)
+  - [494. What is the heap vs the stack in Node.js memory?](#494-what-is-the-heap-vs-the-stack-in-nodejs-memory)
+  - [495. What is the old space vs new space in V8 memory?](#495-what-is-the-old-space-vs-new-space-in-v8-memory)
+  - [496. What is the pipeline pattern in Node.js streams?](#496-what-is-the-pipeline-pattern-in-nodejs-streams)
+  - [497. What is the principle of least privilege in APIs?](#497-what-is-the-principle-of-least-privilege-in-apis)
+  - [498. What is the role of the `http` module in Node.js?](#498-what-is-the-role-of-the-http-module-in-nodejs)
+  - [499. What is the saga pattern? What is the difference between choreography and orchestration?](#499-what-is-the-saga-pattern-what-is-the-difference-between-choreography-and-orchestration)
+  - [500. What is tree shaking? Why does it work better with ES Modules?](#500-what-is-tree-shaking-why-does-it-work-better-with-es-modules)
+  - [501. What is V8 heap snapshot? How do you use it to debug memory leaks?](#501-what-is-v8-heap-snapshot-how-do-you-use-it-to-debug-memory-leaks)
+  - [502. What is V8's JIT (Just-In-Time) compilation? What is hidden class optimization?](#502-what-is-v8s-jit-just-in-time-compilation-what-is-hidden-class-optimization)
+  - [503. When do you return 200 versus 201 versus 204?](#503-when-do-you-return-200-versus-201-versus-204)
+  - [504. When do you use POST versus PUT?](#504-when-do-you-use-post-versus-put)
+  - [505. When would you use `execFile()` instead of `exec()`?](#505-when-would-you-use-execfile-instead-of-exec)
+  - [506. Why does Node.js need Buffers? What is binary data?](#506-why-does-nodejs-need-buffers-what-is-binary-data)
+
+---
+
+## Core Fundamentals & Runtime (V8, libuv, process, modules)
+
+### 1. Can you starve the event loop using `process.nextTick()`? How?
+
+Expected interview answer:
+
+“Yes. Event-loop starvation can happen if we continuously schedule callbacks using `process.nextTick()`.
+
+For example, if a callback schedules itself again using `process.nextTick()`, Node.js keeps processing the next-tick queue instead of progressing normally through the event-loop phases.
+
+As a result, timers and I/O callbacks can be delayed for a very long time or indefinitely.
+
+This is dangerous in a backend application because incoming requests may not receive timely responses.
+
+To prevent this, I would avoid unbounded recursive scheduling with `process.nextTick()`. For repeated work, I would consider chunking it and yielding through mechanisms such as `setImmediate()`.”
+
+Example of a problematic pattern:
+```
+
+function repeat() {
+process.nextTick(repeat);
+}
+
+repeat();
+```
+
+Remember: An endlessly replenished `nextTick` queue can starve the event loop.
+
+[↑ Back to top](#table-of-contents)
+
+### 2. Can you use `require()` inside a conditional statement? Can you use `import` conditionally?
+
+Expected interview answer:
+
+“Yes, CommonJS allows us to call `require()` inside a conditional statement because `require()` is a function.
+
+However, static ES Module `import` declarations cannot be placed inside an `if` statement or another conditional block. They are declared at the module level.
+
+If I need to load an ES Module conditionally, I can use dynamic `import()`, which returns a Promise.
+
+This is useful when a package is needed only for a particular feature or when I want to avoid loading an unnecessary module.”
+
+Example using CommonJS:
+```
+
+if (process.env.NODE_ENV === "development") {
+const logger = require("./devLogger");
+}
+```
+
+Example using dynamic import:
+```
+
+async function loadLogger() {
+if (process.env.NODE_ENV === "development") {
+const logger = await import("./devLogger.js");
+
+logger.default();
+}
+}
+
+loadLogger();
+```
+
+Remember: Conditional `require()` works in CommonJS; conditional ES Module loading uses dynamic `import()`.
+
+[↑ Back to top](#table-of-contents)
+
+### 3. Explain the Node.js architecture. What are its key components?
+
+Expected interview answer:
+
+“Node.js architecture consists of several important components.
+
+First, V8 is the JavaScript engine that compiles and executes JavaScript code. Second, libuv provides the event loop, asynchronous I/O support, and a thread pool for certain operations.
+
+The event loop coordinates the execution of callbacks and asynchronous operations. The libuv thread pool handles operations such as many file-system tasks, certain DNS lookups, and some cryptographic operations.
+
+Node.js also uses C++ bindings to connect JavaScript with lower-level system functionality.
+
+Together, these components allow Node.js to handle many concurrent I/O operations efficiently without requiring a separate JavaScript thread for every request.”
+
+Remember: V8 executes JavaScript; libuv helps manage asynchronous operations and the event loop.
+
+[↑ Back to top](#table-of-contents)
+
+### 4. How can you handle uncaught exceptions in Node.js?
+
+Use `process.on('uncaughtException', handler)` to catch errors that weren’t caught anywhere. However, after an uncaught exception, the application may be in an inconsistent state; it’s recommended to log the error, clean up resources, and exit gracefully. For production, use a process manager (like PM2) to restart the app.
+
+[↑ Back to top](#table-of-contents)
+
+### 5. How can you manage and schedule tasks in a Node.js application?
+
+Use `node-cron` or `node-schedule` for cron‑like scheduling. For recurring tasks in the same process, `setInterval` works, but consider using external job queues (Bull, Agenda) with Redis for persistence and scaling.
+
+[↑ Back to top](#table-of-contents)
+
+### 6. How can you manage environment variables in Node.js applications?
+
+Use `process.env` to access environment variables. For development, you can load them from a `.env` file using the `dotenv` package (`require('dotenv').config()`). Store secrets and configuration in environment variables; never commit `.env` to version control.
+
+[↑ Back to top](#table-of-contents)
+
+### 7. How can you profile a Node.js application for performance bottlenecks?
+
+Use `node --prof` to generate a performance profile, then analyze with `node --prof-process`. Use the Chrome DevTools inspector (`node --inspect`) and take CPU profiles. Tools like `clinic` provide visual analysis.
+
+[↑ Back to top](#table-of-contents)
+
+### 8. How can you scale a Node.js application?
+
+- **Vertical scaling**: add more resources to a single instance (limited).
+- **Horizontal scaling**: run multiple instances using the `cluster` module or process managers like PM2.
+- Use a load balancer (e.g., Nginx) to distribute traffic.
+- Use microservices and break the app into smaller services.
+
+[↑ Back to top](#table-of-contents)
+
+### 9. How can you secure a Node.js application from common vulnerabilities?
+
+- Use `helmet` middleware to set secure HTTP headers.
+- Validate and sanitize input with libraries like `Joi`.
+- Use parameterized queries or ORMs to prevent injection.
+- Implement rate limiting with `express-rate-limit`.
+- Keep dependencies updated.
+- Use HTTPS and secure cookies.
+
+[↑ Back to top](#table-of-contents)
+
+### 10. How can you use environment variables to configure a Node.js application?
+
+Access them via `process.env`. Use a `.env` file with `dotenv` for development. Different environments (dev, test, prod) can have separate configuration files, with overrides via environment variables. This keeps secrets out of code.
+
+[↑ Back to top](#table-of-contents)
+
+### 11. How do you communicate between a parent and child process?
+
+Using `child.send(message)` and the child listens with `process.on('message', ...)`. Messages are serialized using structured clone. For `spawn`, you may use stdio pipes.
+
+[↑ Back to top](#table-of-contents)
+
+### 12. How do you detect and fix memory leaks in Node.js?
+
+Detect by monitoring heap usage over time, taking snapshots, using `memwatch-next` for leak events, or APM tools. Common fixes: clear intervals/timeouts, remove event listeners, avoid global variables and closures holding references, nullify references when done.
+
+[↑ Back to top](#table-of-contents)
+
+### 13. How do you read a large file in Node.js without running out of memory?
+
+Expected interview answer:
+
+“To read a large file efficiently, I would use `fs.createReadStream()` instead of loading the entire file using `fs.readFile()`.
+
+A readable stream reads the file in smaller chunks, which allows me to process the data incrementally.
+
+If I need to save the processed data to another file, I can pipe the readable stream into a writable stream.
+
+I can also adjust the `highWaterMark` option according to the requirements. This helps control buffering, although the overall memory usage also depends on the other streams and processing logic.”
+
+Example:
+```
+
+const fs = require("node:fs");
+
+const readStream = fs.createReadStream("large-file.txt");
+const writeStream = fs.createWriteStream("output.txt");
+
+readStream.pipe(writeStream);
+
+writeStream.on("finish", () => {
+console.log("File copied successfully");
+});
+
+readStream.on("error", console.error);
+writeStream.on("error", console.error);
+```
+
+Remember: Use streams when processing large files to avoid loading the entire file into memory.
+
+[↑ Back to top](#table-of-contents)
+
+### 14. How do you read environment variables in Node.js? What is `dotenv`?
+
+Expected interview answer:
+
+“In Node.js, we can access environment variables using `process.env`.
+
+For example, if our application needs a database URL or API key, we can read it using `process.env.DATABASE_URL` or `process.env.API_KEY`.
+
+The `dotenv` package is commonly used during local development to load variables from a `.env` file into `process.env`.
+
+This helps us keep configuration separate from application code. In production, environment variables are commonly provided by the deployment platform or a secrets-management system.
+
+Sensitive `.env` files should not be committed to source control.”
+
+Example:
+```
+
+require("dotenv").config();
+
+const port = process.env.PORT || 3000;
+```
+
+Remember: `process.env` reads configuration; `dotenv` loads local `.env` configuration.
+
+[↑ Back to top](#table-of-contents)
+
+### 15. How do you use ES Modules in Node.js? What is `"type": "module"` in `package.json`?
+
+Expected interview answer:
+
+“To use ES Modules in Node.js, we can configure our project by adding `"type": "module"` to `package.json`. This tells Node.js to interpret `.js` files in that package as ES modules.
+
+Alternatively, we can use the `.mjs` file extension, which explicitly identifies a file as an ES module.
+
+Once configured, we can use `import` to import functionality and `export` or `export default` to expose functionality from our own files.
+
+For an existing project, I would check the module configuration before mixing CommonJS and ES Modules because their import and export behavior differs.”
+
+Example:
+```
+
+{
+"type": "module"
+}
+```
+
+```
+// math.js
+export function add(a, b) {
+return a + b;
+}
+```
+
+```
+// app.js
+import { add } from "./math.js";
+
+console.log(add(10, 20));
+```
+
+Remember: `"type": "module"` enables ES Module treatment for `.js` files in that package; `.mjs` explicitly identifies an ES Module. Node.js also has syntax detection for some ambiguously configured files, so setting the module type explicitly is recommended.&#x20;
+
+[image](https://www.google.com/s2/favicons?domain=https://nodejs.org\&sz=32)
+
+Node.js v26.11.1 Documentation
+
+[↑ Back to top](#table-of-contents)
+
+### 16. How does Node.js handle asynchronous operations?
+
+Node.js uses an event loop and a thread pool (libuv) to offload blocking operations (like file system, network). Asynchronous functions (e.g., `fs.readFile`) return immediately and register a callback. The event loop later processes the callback when the result is ready, keeping the main thread free for other tasks.
+
+[↑ Back to top](#table-of-contents)
+
+### 17. How does Node.js handle errors in asynchronous code?
+
+- **Callbacks**: use error‑first callbacks; check the error argument.
+- **Promises**: use `.catch()` or the second argument of `.then()`.
+- **async/await**: wrap in `try/catch`.
+- **Uncaught exceptions**: listen to `process.on('uncaughtException')` for final fallback, but should be used sparingly.
+
+[↑ Back to top](#table-of-contents)
+
+### 18. How does Node.js handle uncaught exceptions? What is `process.on('uncaughtException')`?
+
+Expected interview answer:
+
+“An uncaught exception occurs when JavaScript throws an error that is not handled by an appropriate `try/catch` block or other error-handling mechanism.
+
+Node.js provides the `uncaughtException` process event, which can be used as a last-resort mechanism to record the error and begin shutdown procedures.
+
+However, continuing to run an application after an unexpected uncaught exception may be unsafe because its state could be inconsistent.
+
+In production, I would log the error, perform the necessary cleanup, and allow the process to exit so that a process manager or orchestration platform can restart it.
+
+I would not use this handler as a replacement for normal application-level error handling.”
+
+Remember: Catch expected errors normally; use `uncaughtException` only for last-resort handling and shutdown.
+
+[↑ Back to top](#table-of-contents)
+
+### 19. How does Node.js manage modules and dependencies?
+
+Node.js uses the CommonJS module system. Each file is a module, and `module.exports` exposes its public API. Dependencies are tracked in `package.json` and installed in `node_modules`. The `require` function resolves modules by searching in `node_modules` and caches them for efficiency.
+
+[↑ Back to top](#table-of-contents)
+
+### 20. How does Node.js resolve module paths? Explain the module resolution algorithm.
+
+Expected interview answer:
+
+“Module resolution is the process Node.js uses to determine which file or package should be loaded when we import or require a module.
+
+In CommonJS, Node.js first recognizes built-in modules. For relative or absolute paths, it resolves the path to a file or supported directory entry.
+
+For package names, Node.js searches for the package in applicable `node_modules` directories, moving through parent directories as necessary.
+
+It also considers package configuration and supported file extensions when resolving modules.
+
+ES Modules follow different resolution rules in some cases, particularly for relative imports, where file extensions generally need to be specified explicitly. Package configuration can also control which entry points are available.”
+
+Example:
+```
+
+const fs = require("node:fs");       // Built-in
+const helper = require("./helper");  // Relative module
+const express = require("express");  // Installed package
+```
+
+The paths have different meanings, so Node.js resolves each one differently.
+
+Remember: Built-in modules, relative paths, and package names follow different resolution paths.
+
+[↑ Back to top](#table-of-contents)
+
+### 21. How does the master process distribute connections to workers in Cluster mode? (round-robin)
+
+On most platforms, the master listens on the port and distributes incoming connections to workers in a round-robin fashion (except Windows where workers listen directly). This balances load.
+
+[↑ Back to top](#table-of-contents)
+
+### 22. What are object-mode streams?
+
+Expected interview answer:
+
+“By default, Node.js streams generally work with strings, Buffers, or other supported binary data representations.
+
+Object-mode streams allow a stream to process individual JavaScript values as chunks instead of treating the data as a continuous sequence of bytes.
+
+We enable this behavior using the `objectMode: true` option.
+
+For example, if I am processing database records one at a time, an object-mode stream can pass each record as a separate object.
+
+This is useful for structured-data processing pipelines, but I still need to consider buffering and backpressure when handling large amounts of data.”
+
+Example:
+```
+
+const { Readable } = require("node:stream");
+
+const records = Readable.from(
+[{ id: 1 }, { id: 2 }, { id: 3 }],
+{ objectMode: true }
+);
+
+records.on("data", record => {
+console.log(record);
+});
+```
+
+Remember: Object-mode streams treat each JavaScript object as an individual chunk.
+
+[↑ Back to top](#table-of-contents)
+
+### 23. What are some tools for monitoring Node.js applications?
+
+- **PM2** – process manager with built‑in monitoring.
+- **Node.js built‑in profiler** (`--inspect`).
+- **APM tools**: New Relic, Datadog, AppDynamics.
+- **Logging**: Winston, Pino with ELK stack.
+- **Metrics**: Prometheus + Grafana.
+
+[↑ Back to top](#table-of-contents)
+
+### 24. What are streams in Node.js? Why are they important?
+
+Expected interview answer:
+
+“Streams in Node.js allow us to read or write data in smaller chunks instead of loading the entire data into memory at once.
+
+They are especially useful when working with large files, network requests, or large amounts of data.
+
+For example, if I need to process a file that is several gigabytes in size, loading the entire file into memory could consume a lot of RAM. Instead, I can use a stream to process the file chunk by chunk.
+
+Streams help reduce memory consumption and support backpressure, which allows the data producer and consumer to work at different speeds.”
+
+Remember: Streams process data incrementally, which helps reduce memory usage.
+
+[↑ Back to top](#table-of-contents)
+
+### 25. What are the common causes of memory leaks in Node.js?
+
+- Unremoved event listeners.
+- Closures retaining large objects.
+- Global variables or module-level caches that never get cleaned.
+- Unintentional reference from timers.
+- Streams not properly destroyed.
+
+[↑ Back to top](#table-of-contents)
+
+### 26. What are the different ways to manage dependencies in Node.js?
+
+- `package.json` with version ranges.
+- Lockfiles (`package-lock.json` or `yarn.lock`) for deterministic installs.
+- Use `npm ci` for clean installs in CI.
+- Use `npm audit` to check for vulnerabilities.
+- Consider using `pnpm` for disk space efficiency.
+
+[↑ Back to top](#table-of-contents)
+
+### 27. What are the main features of Node.js?
+
+- **Asynchronous & Non‑blocking I/O** – handles multiple tasks concurrently.
+- **Single‑threaded Event Loop** – uses one thread with event‑driven concurrency.
+- **V8 Engine** – compiles JavaScript to machine code for speed.
+- **NPM** – huge package ecosystem.
+- **Cross‑platform** – runs on Windows, Linux, macOS.
+
+[↑ Back to top](#table-of-contents)
+
+### 28. What is `__esModule` interop?
+
+Expected interview answer:
+
+“`__esModule` is a convention commonly used by transpilers such as Babel to identify objects that represent ES Module exports when interoperation with CommonJS is involved.
+
+For example, transpiled code may add an `__esModule` property to an exported object to indicate that the object should be treated as having ES Module-style exports, including its default export.
+
+This can help compatibility code distinguish a transpiled ES Module from a traditional CommonJS export.
+
+However, `__esModule` is a convention used by tooling rather than a general requirement of the native ES Module system. When working with CommonJS and ES Modules together, I would pay attention to how the default and named exports are represented.”
+
+Example of the convention:
+```
+
+Object.defineProperty(exports, "__esModule", {
+value: true
+});
+
+exports.default = function greet() {
+console.log("Hello");
+};
+```
+
+Remember: `__esModule` is primarily an interoperability convention used by transpilers and related tooling.
+
+[↑ Back to top](#table-of-contents)
+
+### 29. What is `detached: true` option in `spawn()`?
+
+When `detached` is true, the child process becomes the leader of a new process group and will not be terminated when the parent exits. Useful for long-running background tasks that should survive parent shutdown.
+
+[↑ Back to top](#table-of-contents)
+
+### 30. What is `dns` module? What are `dns.lookup()` vs `dns.resolve()`?
+
+- `dns.lookup()`: uses OS DNS resolver (libuv thread pool), returns IP address.
+- `dns.resolve()`: performs DNS resolution using the network, returns an array of records (A, AAAA, MX, etc.), more detailed.
+
+[↑ Back to top](#table-of-contents)
+
+### 31. What is `global` in Node.js? How does it differ from `window` in the browser?
+
+Expected interview answer:
+
+“`global` is the global object in Node.js, whereas `window` is commonly associated with the browser's window environment.
+
+In a browser, JavaScript can use browser APIs such as the DOM to interact with web pages. Node.js does not provide the browser DOM by default; instead, it provides server-side APIs, such as file-system and process APIs.
+
+Node.js also supports `globalThis`, which is the standard cross-environment reference to the global object.
+
+One important point is that variables declared inside a Node.js module using `const`, `let`, or `var` do not automatically become properties of `global`.”
+
+Example:
+```
+
+console.log(globalThis === global); // true in Node.js
+console.log(typeof window);         // "undefined" by default in Node.js
+```
+
+Remember: Browser → `window` and DOM APIs. Node.js → `global`, `process`, and server-side APIs.
+
+[↑ Back to top](#table-of-contents)
+
+### 32. What is `npm audit`? When should you run it?
+
+Expected interview answer:
+
+“`npm audit` checks the project's installed dependency tree against known security vulnerability information.
+
+It identifies vulnerable packages and reports details about the issues, including available remediation options when applicable.
+
+I would run it after adding or updating dependencies and include dependency security checks in the CI/CD process.
+
+However, I would review the suggested fixes before applying them because an automatic fix can sometimes introduce breaking changes or require dependency upgrades.”
+
+Example:
+```
+
+npm audit
+```
+
+To attempt applicable fixes:
+```
+
+npm audit fix
+```
+
+Remember: `npm audit` identifies known dependency vulnerabilities; fixes should be reviewed and tested.
+
+[↑ Back to top](#table-of-contents)
+
+### 33. What is `package-lock.json`? Why should it be committed to source control?
+
+Expected interview answer:
+
+“`package-lock.json` records the resolved dependency tree, including the specific versions of installed packages and their dependencies.
+
+Even if `package.json` permits a range of versions, the lock file records the versions selected for that installation.
+
+Committing the lock file helps developers and CI/CD pipelines install a consistent dependency tree, reducing differences between local and production environments.
+
+This is especially useful when deploying applications because it makes dependency installation more reproducible.”
+
+Remember: `package.json` describes dependency requirements; `package-lock.json` records the resolved dependency tree.
+
+[↑ Back to top](#table-of-contents)
+
+### 34. What is `process.argv`? How do you parse command-line arguments?
+
+Expected interview answer:
+
+“`process.argv` is an array containing the command-line arguments passed to the running Node.js process.
+
+The first element is normally the Node.js executable path, and the second element is the script path. Any additional arguments appear after those two elements.
+
+We can use these arguments to customize application behavior without modifying the source code. For more complex command-line interfaces, we can use libraries such as Commander or Yargs.”
+
+Example:
+```
+
+console.log(process.argv);
+```
+
+Run:
+```
+
+node app.js development
+```
+
+We can access the custom argument with:
+```
+
+const environment = process.argv[2];
+
+console.log(environment);
+```
+
+Output:
+```
+
+development
+```
+
+Remember: `process.argv[2]` is commonly the first custom argument supplied to a script.
+
+[↑ Back to top](#table-of-contents)
+
+### 35. What is `process.memoryUsage()`? What do `heapUsed`, `heapTotal`, `rss`, `external` mean?
+
+- `rss`: Resident Set Size, total memory allocated in RAM.
+- `heapTotal`: total size of V8 heap (including free).
+- `heapUsed`: actual memory used by JS objects on the heap.
+- `external`: memory used by C++ objects bound to JS (buffers, etc.). Monitor for leaks.
+
+[↑ Back to top](#table-of-contents)
+
+### 36. What is `process.nextTick()`? Give a practical use case.
+
+Expected interview answer:
+
+“`process.nextTick()` schedules a callback to run after the current JavaScript operation completes, before Node.js continues to the next event-loop phase.
+
+It can be useful when an API needs to defer a callback until the current call stack has finished, while still executing it before normal event-loop callbacks.
+
+For example, it can help an API invoke a callback asynchronously and maintain consistent behavior when the result is immediately available.
+
+However, I would use it carefully because recursively scheduling `process.nextTick()` can prevent the event loop from progressing and delay I/O operations.”
+
+Example:
+```
+
+console.log("Start");
+
+process.nextTick(() => {
+console.log("Next tick");
+});
+
+console.log("End");
+```
+
+Output:
+```
+
+Start
+End
+Next tick
+```
+
+Remember: `process.nextTick()` defers execution until the current operation finishes; it does not mean the callback executes immediately in the current call stack.
+
+[↑ Back to top](#table-of-contents)
+
+### 37. What is `process.nextTick()`? How does it compare to `setImmediate()`?
+
+Expected interview answer:
+
+“Both `process.nextTick()` and `setImmediate()` allow us to schedule a callback to run later, but they run at different points in Node.js execution.
+
+`process.nextTick()` schedules a callback to run after the current operation finishes, before Node.js continues to the next event-loop phase.
+
+`setImmediate()` schedules a callback to run in the check phase of the event loop, which follows the poll phase.
+
+One important difference is that repeatedly scheduling `process.nextTick()` callbacks can starve the event loop and delay I/O processing.
+
+I would use these methods only when I need their specific scheduling behavior rather than treating them as interchangeable.”
+
+Example:
+```
+
+process.nextTick(() => {
+console.log("nextTick");
+});
+
+setImmediate(() => {
+console.log("setImmediate");
+});
+
+console.log("sync");
+```
+
+The synchronous message prints first, followed by the `nextTick` callback and then the `setImmediate` callback in this example.
+
+Remember: `nextTick` runs before the next event-loop phase; `setImmediate` runs in the check phase.
+
+[↑ Back to top](#table-of-contents)
+
+### 38. What is `process.on('unhandledRejection')`? When is it triggered?
+
+Expected interview answer:
+
+“An unhandled promise rejection happens when a Promise is rejected and the application does not attach appropriate rejection handling.
+
+For example, if an asynchronous database operation fails and I neither await it inside suitable error handling nor attach a `.catch()` handler, it may result in an unhandled rejection.
+
+Node.js provides the `unhandledRejection` process event to help applications detect and log these situations. The process behavior also depends on the Node.js version and runtime configuration; in modern Node.js, an unhandled rejection can cause the process to terminate.
+
+In production code, I would handle expected asynchronous errors using `try/catch` with `async/await` or Promise rejection handlers rather than relying on this event.”
+
+Example:
+```
+
+async function getData() {
+try {
+const result = await fetchData();
+return result;
+} catch (error) {
+console.error("Failed to fetch data:", error);
+throw error;
+}
+}
+```
+
+Remember: Handle Promise rejections at the appropriate point in the application; do not rely on a global event to replace proper error handling.
+
+[↑ Back to top](#table-of-contents)
+
+### 39. What is `process` in Node.js? What are its key properties and methods?
+
+Expected interview answer:
+
+“`process` is a global object that provides information about the currently running Node.js process and allows us to interact with it.
+
+For example, `process.env` lets us access environment variables, `process.argv` provides command-line arguments, and `process.pid` gives us the process ID.
+
+We can also use `process.cwd()` to get the current working directory, `process.memoryUsage()` to inspect memory usage, and `process.uptime()` to check how long the process has been running.
+
+These properties and methods are useful for application configuration, debugging, monitoring, and process management.”
+
+Remember: `process` gives us information about and control over the running Node.js process.
+
+[↑ Back to top](#table-of-contents)
+
+### 40. What is `tsconfig.json`? What are the key compiler options? (`strict`, `target`, `module`, `outDir`, `paths`)
+
+`tsconfig.json` configures TypeScript compiler. Key options: `strict` enables all strict checks; `target` sets ECMAScript version; `module` (commonjs, esnext); `outDir` output directory; `rootDir` source; `paths` for module aliasing.
+
+[↑ Back to top](#table-of-contents)
+
+### 41. What is a 12-factor app? Which factors are most relevant to Node.js?
+
+12-factor app methodology for building scalable SaaS. Relevant factors: codebase in version control, dependencies explicitly declared, config in environment, backing services as attached resources, build/release/run separation, stateless processes, port binding, concurrency via process model, disposability (fast startup/graceful shutdown), dev/prod parity, logs as event streams, admin processes.
+
+[↑ Back to top](#table-of-contents)
+
+### 42. What is a circular dependency in Node.js modules? How does Node.js handle it?
+
+Expected interview answer:
+
+“A circular dependency occurs when two or more modules depend on each other, directly or indirectly.
+
+For example, module A imports module B, while module B imports module A.
+
+In CommonJS, Node.js handles this by returning the partially initialized exports of a module if that module is already being loaded. This prevents infinite loading recursion, but it can cause unexpected results if a module accesses an export before it has been initialized.
+
+ES Modules handle circular dependencies through their own linking and live-binding behavior. Accessing a binding before it has been initialized can also cause an error.
+
+To avoid these problems, I would try to reduce unnecessary dependencies between modules. If two modules share common functionality, I might move that functionality into a third module that both can import.”
+
+Conceptual example:
+```
+
+// a.js
+const b = require("./b");
+
+module.exports = {
+name: "A",
+b
+};
+```
+
+```
+// b.js
+const a = require("./a");
+
+module.exports = {
+name: "B",
+a
+};
+```
+
+Remember: Circular dependencies can expose partially initialized exports in CommonJS; reorganizing shared functionality can prevent the problem.
+
+[↑ Back to top](#table-of-contents)
+
+### 43. What is a race condition in asynchronous Node.js code? Give an example.
+
+Expected interview answer:
+
+“A race condition occurs when the result of an operation depends on the timing or ordering of concurrent activities.
+
+Even though JavaScript in a typical Node.js process executes on one main thread, asynchronous operations can still create race conditions when their execution overlaps.
+
+For example, suppose two requests update the same user's account balance. Both requests read the same balance, calculate a new value, and then write their results. One update may overwrite the other, causing a lost update.
+
+To prevent this, I would use an appropriate database-level solution, such as an atomic update, transaction, optimistic concurrency control, or locking, depending on the requirement.”
+
+Consider this conceptual example:
+```
+
+async function incrementBalance(userId) {
+const user = await getUser(userId);
+
+const newBalance = user.balance + 1;
+
+await updateBalance(userId, newBalance);
+}
+```
+
+If two requests execute this function concurrently, both could read the same original balance and then write the same incremented balance.
+
+For a database that supports atomic updates, the operation should instead be performed atomically, conceptually like this:
+```
+
+UPDATE users
+SET balance = balance + 1
+WHERE user_id = $1;
+```
+
+Remember: Race conditions can occur in asynchronous Node.js applications; protecting shared state often requires atomic operations or database concurrency controls.
+
+[↑ Back to top](#table-of-contents)
+
+### 44. What is GitHub Actions? How do you set up a basic CI pipeline for a Node.js app?
+
+GitHub Actions runs workflows. Create `.github/workflows/ci.yml`: on push, use `actions/checkout`, setup Node, `npm ci`, `npm test`, etc. Add secrets for env vars.
+
+[↑ Back to top](#table-of-contents)
+
+### 45. What is IPC (Inter-Process Communication) in Node.js?
+
+IPC allows parent and child processes to communicate asynchronously via messages. `fork()` enables IPC by default; use `child.on('message')` and `child.send()`.
+
+[↑ Back to top](#table-of-contents)
+
+### 46. What is libuv? What role does it play in Node.js?
+
+Expected interview answer:
+
+“libuv is a cross-platform C library that provides the event loop and asynchronous I/O capabilities used by Node.js.
+
+For example, when our application needs to read a file or perform another asynchronous operation, Node.js can delegate the work to the operating system or the libuv thread pool, depending on the operation.
+
+While the operation is in progress, JavaScript can continue processing other work. When the result becomes available, the associated callback or continuation can execute through the event loop.
+
+So, libuv is one of the main components that enables Node.js to handle concurrent operations efficiently.”
+
+Remember: libuv manages the event loop and coordinates many asynchronous operations.
+
+[↑ Back to top](#table-of-contents)
+
+### 47. What is Node.js and why is it used?
+
+Node.js is an open-source, cross-platform JavaScript runtime built on Chrome’s V8 engine. It allows JavaScript to run on the server, enabling full‑stack development. Its non‑blocking, event‑driven architecture makes it ideal for I/O‑intensive applications like real‑time chat, APIs, and streaming services. Node.js uses npm (Node Package Manager) to provide a vast ecosystem of reusable modules.
+
+[↑ Back to top](#table-of-contents)
+
+### 48. What is Node.js's role in microservices architecture?
+
+Node.js is well‑suited for microservices due to its lightweight nature, fast startup time, and ability to handle many concurrent connections. It works well with containerization (Docker) and orchestration (Kubernetes). Its rich ecosystem supports communication via HTTP, gRPC, or message brokers.
+
+[↑ Back to top](#table-of-contents)
+
+### 49. What is Node.js? How is it different from a browser's JavaScript environment?
+
+Expected interview answer:
+
+“Node.js is an open-source, cross-platform JavaScript runtime environment that allows us to execute JavaScript outside the browser.
+
+It uses Google's V8 engine to execute JavaScript and provides additional features to interact with the operating system, such as file handling, networking, and database connectivity.
+
+The main difference is that browsers provide objects like `window` and the DOM for interacting with web pages, whereas Node.js provides objects like `process`, `global`, and built-in modules such as `fs`, `http`, and `path`.
+
+Node.js is mainly used for backend development, REST APIs, real-time applications, and other server-side applications.”
+
+Remember: Node.js = JavaScript runtime + V8 + server-side APIs.
+
+[↑ Back to top](#table-of-contents)
+
+### 50. What is REPL in Node.js? What is it useful for?
+
+Expected interview answer:
+
+“REPL stands for Read-Eval-Print Loop. It is an interactive environment that allows us to execute JavaScript statements directly from the terminal.
+
+We can start it by running the `node` command without specifying a file.
+
+It reads our input, evaluates the code, displays the result, and waits for the next input.
+
+REPL is useful for quickly testing JavaScript expressions, checking how built-in modules work, trying small pieces of code, and debugging simple problems without creating a separate file.”
+
+Example:
+```
+
+node
+```
+
+Then enter:
+```
+
+2 + 3
+```
+
+The output will be:
+```
+
+5
+```
+
+Remember: REPL is useful for quickly experimenting with JavaScript in the terminal.
+
+[↑ Back to top](#table-of-contents)
+
+### 51. What is semantic versioning? What is the difference between `^1.2.3` and `~1.2.3`?
+
+Expected interview answer:
+
+“Semantic versioning uses three main numbers: MAJOR, MINOR, and PATCH.
+
+The major version represents incompatible changes, the minor version represents backward-compatible functionality, and the patch version represents backward-compatible bug fixes.
+
+In `package.json`, the caret and tilde symbols specify which versions npm is allowed to select within a version range.
+
+For example, `^1.2.3` allows compatible updates below version `2.0.0`, while `~1.2.3` allows patch updates below version `1.3.0`.
+
+These ranges help us manage dependency updates without automatically accepting every new major version.”
+
+| Version  | Meaning                                         |
+| -------- | ----------------------------------------------- |
+| `1.2.3`  | Exact version when no range operator is present |
+| `^1.2.3` | `>=1.2.3` and `<2.0.0`                          |
+| `~1.2.3` | `>=1.2.3` and `<1.3.0`                          |
+
+Remember: Caret generally permits minor and patch updates for a non-zero major version; tilde permits patch updates.
+
+[↑ Back to top](#table-of-contents)
+
+### 52. What is statelessness in REST? Why is it important?
+
+Expected interview answer:
+
+“Statelessness means that the server does not depend on stored conversational context from previous client requests to understand the current request.
+
+Each request must contain the information needed to process it, such as the resource identifier, required parameters, and authentication credentials.
+
+This makes it easier to distribute requests across multiple server instances because any suitable instance can process a request without depending on session state held by another instance.
+
+For example, an authenticated REST API can validate an access token supplied with each request rather than relying on in-memory client context stored on a specific server.
+
+Statelessness improves scalability and simplifies deployment, although the server can still maintain application data in its database.”
+
+Remember: Statelessness concerns client-request context, not whether the application stores data in a database.
+
+[↑ Back to top](#table-of-contents)
+
+### 53. What is the `_id` field? How is an ObjectId generated?
+
+Every document must have an `_id` field as primary key. If not provided, MongoDB generates a unique ObjectId (12 bytes: timestamp, machine id, process id, counter), ensuring global uniqueness and sortability.
+
+[↑ Back to top](#table-of-contents)
+
+### 54. What is the `worker_threads` module? What problem does it solve?
+
+`worker_threads` enables running JavaScript in separate threads within the same process, sharing memory. It solves CPU-intensive tasks blocking the event loop by offloading them to parallel threads with their own event loop.
+
+[↑ Back to top](#table-of-contents)
+
+### 55. What is the CommonJS module system?
+
+CommonJS is the default module system in Node.js. It uses `require()` to import modules and `module.exports` to export values. Modules are loaded synchronously and are cached after the first load. It provides encapsulation because each module runs in its own scope.
+
+[↑ Back to top](#table-of-contents)
+
+### 56. What is the CommonJS module system? How does `require()` work internally?
+
+Expected interview answer:
+
+“CommonJS is a module system traditionally used in Node.js to organize code into separate files and share functionality between them.
+
+It uses `require()` to import a module and `module.exports` to export functionality from a module.
+
+Internally, when Node.js encounters `require()`, it first resolves the module path and checks whether the module is already present in the cache. If the module has not been loaded, Node.js loads and executes it inside a wrapper function that provides variables such as `exports`, `require`, `module`, `__filename`, and `__dirname`.
+
+After execution, Node.js returns the value of `module.exports` to the importing file.
+
+The module is then cached, so subsequent requests for the same resolved module generally reuse the cached exports instead of executing the module again.”
+
+Example:
+```
+
+// math.js
+function add(a, b) {
+return a + b;
+}
+
+module.exports = add;
+```
+
+```
+// app.js
+const add = require("./math");
+
+console.log(add(10, 20)); // 30
+```
+
+Remember: `require()` loads a module, executes it if necessary, and returns its `module.exports`.
+
+[↑ Back to top](#table-of-contents)
+
+### 57. What is the difference between `__dirname` and `__filename`?
+
+Expected interview answer:
+
+“Both `__dirname` and `__filename` are available in CommonJS modules and provide absolute path information about the current module.
+
+`__dirname` gives the absolute path of the directory containing the current file, whereas `__filename` gives the absolute path of the current file itself, including its filename.
+
+For example, if my file is located at `/app/routes/user.js`, `__dirname` would be `/app/routes` and `__filename` would be `/app/routes/user.js`.
+
+In ES modules, these CommonJS variables are not available by default. We can use `import.meta.url` and Node.js URL and path utilities to achieve equivalent results.”
+
+Example:
+```
+
+console.log(__dirname);
+console.log(__filename);
+```
+
+Remember: `__dirname` = containing directory; `__filename` = complete file path.
+
+[↑ Back to top](#table-of-contents)
+
+### 58. What is the difference between `dependencies` and `devDependencies`?
+
+Expected interview answer:
+
+“The main difference is the purpose of the packages.
+
+`dependencies` contains packages required by the application at runtime. For example, Express and a PostgreSQL driver are typically production dependencies.
+
+`devDependencies` contains packages used mainly during development, testing, linting, or building. Examples include Jest, ESLint, and development tools.
+
+When deploying an application, we can configure the installation process to omit development dependencies if they are not needed at runtime.
+
+Separating these dependencies makes the project's requirements clearer and can reduce the installed production package set.”
+
+Example:
+```
+
+npm install express
+npm install --save-dev jest
+```
+
+Remember: Production runtime packages go in `dependencies`; development and testing tools generally go in `devDependencies`.
+
+[↑ Back to top](#table-of-contents)
+
+### 59. What is the difference between `module.exports` and `exports`?
+
+Expected interview answer:
+
+“In CommonJS, `module.exports` is the actual value that Node.js returns when another file requires a module.
+
+The variable `exports` initially refers to the same object as `module.exports`. Therefore, adding properties through `exports` also adds them to the exported object.
+
+However, if I reassign `exports` to a completely new value, it no longer refers to `module.exports`. In that case, the new value will not become the module's exported value.
+
+So, if I want to export an object with multiple methods, I can use `exports`. If I want to export a function, class, or another value directly, I should assign it to `module.exports`.”
+
+Example:
+
+Correct — exporting properties:
+```
+
+exports.add = (a, b) => a + b;
+exports.subtract = (a, b) => a - b;
+```
+
+Correct — exporting a function directly:
+```
+
+module.exports = function add(a, b) {
+return a + b;
+};
+```
+
+Incorrect if the intention is to replace the exported value:
+```
+
+exports = function add(a, b) {
+return a + b;
+};
+```
+
+Remember: `exports` is initially a reference to `module.exports`, but reassigning `exports` does not replace `module.exports`.
+
+[↑ Back to top](#table-of-contents)
+
+### 60. What is the difference between `npm install` and `npm ci`? When do you use `npm ci`?
+
+Expected interview answer:
+
+“Both commands install Node.js dependencies, but they serve slightly different purposes.
+
+`npm install` installs dependencies based on `package.json` and can update the lock file when necessary.
+
+`npm ci` is intended for clean, reproducible installations. It requires a compatible lock file, removes the existing `node_modules` directory, and installs the dependency versions recorded in the lock file.
+
+I would generally use `npm install` during normal development and `npm ci` in CI/CD pipelines, where I want dependency installation to be consistent with the committed lock file.”
+
+Remember: `npm install` is convenient for development; `npm ci` is generally preferred for reproducible automated builds.
+
+[↑ Back to top](#table-of-contents)
+
+### 61. What is the difference between `process.exit()` and throwing an uncaught error?
+
+Expected interview answer:
+
+“`process.exit()` explicitly terminates the Node.js process with a specified exit code. For example, `process.exit(1)` indicates that the process is exiting because of an error.
+
+An uncaught exception occurs when an error is thrown and is not handled by the application. Depending on the runtime behavior and any installed handlers, it can result in the process terminating.
+
+The important difference is that calling `process.exit()` directly can terminate the process before pending asynchronous operations have completed.
+
+In production, I would prefer proper error handling and graceful shutdown where possible. If an uncaught exception leaves the application in an unsafe state, I would log the error, perform appropriate cleanup, and allow the process to restart through the process manager.”
+
+Remember: Avoid using `process.exit()` as a routine error-handling mechanism because it can interrupt pending work.
+
+[↑ Back to top](#table-of-contents)
+
+### 62. What is the difference between CommonJS and ES Modules?
+
+Expected interview answer:
+
+“The main difference between CommonJS and ES Modules is their syntax and module-loading behavior.
+
+CommonJS uses `require()` to import modules and `module.exports` to export them. It is traditionally used in Node.js backend applications and supports dynamic, conditional calls to `require()`.
+
+ES Modules, also known as ESM, is the standard JavaScript module system. It uses `import` and `export`. Static imports are declared at the module's top level, allowing JavaScript engines and build tools to analyze dependencies before executing the module.
+
+Another important difference is that ES Modules use live bindings for their exports, while CommonJS consumers receive the value returned by `module.exports`, which may be an object or another value.
+
+ES Modules also make tree shaking more effective because their imports and exports are statically analyzable.”
+
+Example:
+
+CommonJS:
+```
+
+const express = require("express");
+
+module.exports = express;
+```
+
+ES Modules:
+```
+
+import express from "express";
+
+export default express;
+```
+
+| CommonJS                             | ES Modules                                    |
+| ------------------------------------ | --------------------------------------------- |
+| `require()`                          | `import`                                      |
+| `module.exports`                     | `export`                                      |
+| Supports conditional `require()`     | Static imports must be at module level        |
+| Commonly cached by resolved filename | Uses ESM module-loading and caching semantics |
+| Dynamic loading through `require()`  | Dynamic loading through `import()`            |
+| Tree shaking is harder               | Tree shaking is generally more effective      |
+
+Remember: CommonJS uses `require()` and `module.exports`; ES Modules uses `import` and `export`.
+
+[↑ Back to top](#table-of-contents)
+
+### 63. What is the order of execution of `process.nextTick`, `Promise.then`, `setImmediate`, and `setTimeout(0)`?
+
+Expected interview answer:
+
+“First, synchronous JavaScript executes. After the current operation finishes, Node.js processes `process.nextTick()` callbacks before Promise microtasks in the normal case.
+
+After those queues are processed, execution continues through the event loop, where timer callbacks and `setImmediate()` callbacks can execute.
+
+An important point is that I would not claim that `setTimeout(fn, 0)` always runs before `setImmediate()`. Their relative order can depend on the execution context and timing.
+
+For example, inside an I/O callback, `setImmediate()` normally executes before a zero-delay timer scheduled in that callback.
+
+Therefore, I would distinguish the reliable ordering of synchronous code and microtasks from the context-dependent ordering of timers and `setImmediate()`.”
+
+Example:
+```
+
+process.nextTick(() => console.log("nextTick"));
+
+Promise.resolve().then(() => console.log("Promise"));
+
+setTimeout(() => console.log("Timeout"), 0);
+
+setImmediate(() => console.log("Immediate"));
+
+console.log("Sync");
+```
+
+The beginning of the output is:
+```
+
+Sync
+nextTick
+Promise
+```
+
+The relative order of `Timeout` and `Immediate` is not guaranteed for this top-level example.
+
+Remember: Do not memorize a universal execution order for `setTimeout(0)` and `setImmediate()`.
+
+[↑ Back to top](#table-of-contents)
+
+### 64. What is the purpose of `npm` and how does it differ from `yarn`?
+
+npm (Node Package Manager) is the default package manager for Node.js. Yarn is an alternative created by Facebook that focuses on speed, deterministic installs via a lockfile, and offline caching. Both manage dependencies defined in `package.json`.
+
+[↑ Back to top](#table-of-contents)
+
+### 65. What is the purpose of `package.json`? What are its key fields?
+
+Expected interview answer:
+
+“`package.json` is the main configuration and manifest file for a Node.js project.
+
+It contains project information such as the name and version, scripts for running commands, dependencies, development dependencies, and other configuration.
+
+For example, we can define a `start` script to run our application or a `dev` script to start the development server.
+
+It also specifies package-related settings, including the module system through fields such as `type`.
+
+Overall, `package.json` helps manage dependencies, scripts, and project configuration in a consistent way.”
+
+Example:
+```
+
+{
+"name": "my-backend",
+"version": "1.0.0",
+"type": "commonjs",
+"scripts": {
+"start": "node app.js",
+"dev": "nodemon app.js"
+},
+"dependencies": {
+"express": "^5.0.0"
+}
+}
+```
+
+Remember: `package.json` defines project metadata, scripts, dependencies, and configuration.
+
+[↑ Back to top](#table-of-contents)
+
+### 66. What is the purpose of the `process` object in Node.js?
+
+The `process` object provides information and control over the current Node.js process. It gives access to environment variables (`process.env`), command‑line arguments (`process.argv`), standard I/O (`stdin`, `stdout`, `stderr`), and allows exiting (`process.exit()`), listening to events like `uncaughtException`, and more.
+
+[↑ Back to top](#table-of-contents)
+
+### 67. What is the purpose of the `require` function in Node.js?
+
+`require` is used to load modules (built‑in, third‑party, or local files). It returns the module’s exports and caches the result for subsequent calls. For local files, it expects a relative path (e.g., `./myModule`). It is part of the CommonJS module system.
+
+[↑ Back to top](#table-of-contents)
+
+### 68. What is the role of `package.json` in a Node.js project?
+
+`package.json` is the manifest file that describes the project: name, version, dependencies (`dependencies`, `devDependencies`), scripts (e.g., `npm start`), entry point, and metadata. It enables reproducible installations (`npm install`) and serves as configuration for many tools.
+
+[↑ Back to top](#table-of-contents)
+
+### 69. What is the V8 engine? What does it do in Node.js?
+
+Expected interview answer:
+
+“V8 is Google's open-source JavaScript engine, written in C++. It is used by Chrome and Node.js to execute JavaScript code.
+
+V8 compiles and optimizes JavaScript, including using Just-In-Time compilation to improve execution performance. It also manages JavaScript memory and garbage collection.
+
+However, V8 itself does not provide all the server-side functionality. Node.js adds APIs and bindings that allow JavaScript to interact with the file system, network, processes, and other operating-system resources.”
+
+Remember: V8 executes JavaScript; Node.js adds the runtime capabilities needed for backend development.
+
+[↑ Back to top](#table-of-contents)
+
+### 70. When should you use `process.on('uncaughtException')`? What are the risks?
+
+Use it as a last-resort handler to log fatal errors and perform a graceful shutdown. Risks: the process might be in an inconsistent state; continuing after uncaught exception is dangerous. Always exit after logging.
+
+[↑ Back to top](#table-of-contents)
+
+### 71. When should you use `process.on('unhandledRejection')`?
+
+To catch promise rejections that were not handled. In Node.js, unhandled rejections will eventually terminate the process. Use this to log and alert, then gracefully shut down.
+
+[↑ Back to top](#table-of-contents)
+
+### 72. When would you use streams instead of loading a file entirely into memory?
+
+Expected interview answer:
+
+“I would use streams when working with large files or when the data can be processed incrementally.
+
+For example, if I need to compress a large file, transfer it over a network, or process its contents line by line, a stream allows me to work with chunks instead of loading the entire file into memory.
+
+This reduces memory pressure and can allow processing to begin before the entire input has been read.
+
+For a small file that comfortably fits into memory, reading the entire file may be simpler and perfectly reasonable.
+
+So, I would choose based on the file size, processing requirements, memory constraints, and complexity of the implementation.”
+
+Remember: Streams are especially useful for large or incremental workloads; loading small files into memory is often simpler.
+
+[↑ Back to top](#table-of-contents)
+
+### 73. You notice your Node.js service's memory is growing unboundedly in production. How do you investigate?
+
+1. Monitor memory usage over time (process.memoryUsage).
+2. Take heap snapshots using `--inspect` or `heapdump`, compare to see which objects are retained.
+3. Look for common causes: event listener leaks, large caches, unclosed streams, closures.
+4. Use `clinic doctor` or APM tools.
+5. Reproduce in staging, isolate recent changes.
+
+**Q: Your event loop is showing high lag (200ms+). Walk through your debugging process.**
+1. Confirm lag using `perf_hooks.monitorEventLoopDelay`.
+2. Profile CPU: `clinic doctor` or Chrome DevTools recording during high lag.
+3. Identify synchronous operations (e.g., large `JSON.parse`, regex, synchronous loop).
+4. Check for blocking DB queries, synchronous `fs` calls.
+5. Review recent code changes.
+6. Offload CPU work or break into chunks.
+
+[↑ Back to top](#table-of-contents)
+
+## Event Loop, Concurrency & Async Patterns
+
+### 74. Explain the concept of Node.js's non-blocking I/O.
+
+Non‑blocking I/O means that an I/O operation (like reading a file) does not halt the execution of the program. Instead, the system starts the operation and immediately returns control, allowing other code to run. When the operation completes, a callback or promise is triggered. This is achieved through the event loop and underlying async system calls.
+
+[↑ Back to top](#table-of-contents)
+
+### 75. Explain the concept of Promises in Node.js.
+
+A Promise is an object representing the eventual completion (or failure) of an asynchronous operation. It has three states: `pending`, `fulfilled`, and `rejected`. Promises allow chaining with `.then()` and error handling with `.catch()`, making asynchronous code more readable and avoiding callback hell.
+
+[↑ Back to top](#table-of-contents)
+
+### 76. Explain the event-driven architecture of Node.js.
+
+Node.js uses an event loop to handle asynchronous operations. When an I/O task (e.g., file read) is initiated, Node.js registers a callback and continues executing other code. Once the task completes, the event loop places the callback in the queue and executes it. This allows a single thread to manage many concurrent connections efficiently, without blocking.
+
+[↑ Back to top](#table-of-contents)
+
+### 77. Explain the Node.js event loop in detail. What are its phases?
+
+Expected interview answer:
+
+“The event loop is a mechanism that allows Node.js to handle asynchronous operations without blocking the main JavaScript thread while waiting for I/O.
+
+When an asynchronous operation, such as reading a file or receiving a network response, is initiated, Node.js can continue executing other code instead of waiting for that operation to finish.
+
+The event loop coordinates when callbacks associated with completed operations can execute. It has several phases, including timers, pending callbacks, poll, check, and close callbacks.
+
+After JavaScript finishes the current operation, Node.js processes its scheduled microtasks and continues through the event-loop phases.
+
+This architecture allows Node.js to handle many concurrent I/O operations efficiently. However, long-running synchronous JavaScript can block the event loop and delay other requests.”
+
+Remember: The event loop coordinates asynchronous work; it does not make CPU-intensive JavaScript run in parallel.
+
+[↑ Back to top](#table-of-contents)
+
+### 78. How can you perform background tasks in Node.js?
+
+Use `setTimeout`, `setInterval`, or the `node-cron` library for scheduled tasks. For CPU‑intensive tasks, use `worker_threads` or offload to a separate service (e.g., message queue with Bull). Avoid blocking the event loop.
+
+[↑ Back to top](#table-of-contents)
+
+### 79. How do you change the thread pool size in Node.js?
+
+Expected interview answer:
+
+“We can configure the libuv thread-pool size using the `UV_THREADPOOL_SIZE` environment variable.
+
+For example, on a Unix-like system, we can start our application like this:
+```
+
+UV_THREADPOOL_SIZE=8 node app.js
+```
+
+This configures the pool to use eight threads instead of the default four.
+
+We should set the variable before Node.js initializes the thread pool. Increasing the pool size is not automatically beneficial because it can increase resource usage and thread contention. I would tune it only after identifying that thread-pool saturation is a real bottleneck.”
+
+Remember: Configure `UV_THREADPOOL_SIZE` before startup, and measure performance before increasing it.
+
+[↑ Back to top](#table-of-contents)
+
+### 80. How do you design a Node.js service for 10,000 requests per second?
+
+- Use clustering (multiple workers) or run multiple instances behind a load balancer.
+- Optimize I/O: connection pooling, caching (Redis).
+- Avoid blocking the event loop: offload CPU tasks.
+- Use fast web framework (Fastify instead of Express for marginal gains).
+- Ensure stateless design.
+- Use a reverse proxy (Nginx) for connection management.
+- Profile and monitor continuously.
+
+[↑ Back to top](#table-of-contents)
+
+### 81. How do you detect event loop lag in production?
+
+Use `perf_hooks.monitorEventLoopDelay()` and expose a metric. Compare lag threshold; if consistently high, the loop is blocked. Also implement a "busy" middleware using `toobusy-js`.
+
+[↑ Back to top](#table-of-contents)
+
+### 82. How do you profile a Node.js application? What tools do you use?
+
+- CPU profiling: Node.js built-in `--inspect` + Chrome DevTools, or `clinic doctor`, `v8-profiler-next`.
+- Memory profiling: heap snapshots with Chrome DevTools, `memwatch-next`, `heapdump`.
+- Event loop lag: `clinic doctor`, `blocked` module, `perf_hooks.monitorEventLoopDelay`.
+- Flamegraphs: `0x` or `clinic flame`.
+
+[↑ Back to top](#table-of-contents)
+
+### 83. How do you propagate errors through a Promise chain?
+
+Using `reject` in a then callback or throwing an error inside a `.then()` passes it to the next `.catch()`. Unhandled rejections bubble up.
+
+[↑ Back to top](#table-of-contents)
+
+### 84. How do you run multiple asynchronous operations in parallel in Node.js?
+
+Expected interview answer:
+
+“When multiple independent asynchronous operations do not depend on one another, I can run them concurrently using `Promise.all()`.
+
+For example, an API dashboard might need user details, notifications, and activity information. Instead of awaiting each request sequentially, I can start the operations together and await the resulting Promises.
+
+`Promise.all()` resolves when all its input Promises fulfill. If one rejects, the combined Promise rejects.
+
+If I need the outcome of every operation, including failures, I would consider `Promise.allSettled()` instead.”
+
+Example:
+```
+
+async function getDashboard() {
+const [user, notifications, activity] = await Promise.all([
+getUser(),
+getNotifications(),
+getActivity()
+]);
+
+return { user, notifications, activity };
+}
+```
+
+Remember: Use `Promise.all()` for independent operations that can run concurrently.
+
+[↑ Back to top](#table-of-contents)
+
+### 85. How do you test a function that uses `setTimeout`? (fake timers: `jest.useFakeTimers()`)
+
+Use `jest.useFakeTimers()` to control time. Then `jest.advanceTimersByTime()` or `jest.runAllTimers()` to trigger callbacks. Restore with `jest.useRealTimers()`.
+
+[↑ Back to top](#table-of-contents)
+
+### 86. How do you use generics in service classes and repositories?
+
+Define a generic base repository class: `class Repository<T> { findAll(): Promise<T[]> {} }`. Then extend with specific type: `class UserRepository extends Repository<User> {}`. Increases reusability.
+
+[↑ Back to top](#table-of-contents)
+
+### 87. How does `require()` differ from `import()` in terms of blocking vs non-blocking?
+
+`require()` is synchronous; it blocks the event loop while loading a module. `import()` is asynchronous and returns a Promise, non-blocking. In modern Node.js, `import()` is used for dynamic loading; static `import` is also compiled synchronously but handled at parse time.
+
+[↑ Back to top](#table-of-contents)
+
+### 88. How does Node.js handle concurrency?
+
+Node.js uses a single‑threaded event loop to manage concurrency. I/O operations are delegated to the system kernel or a thread pool (libuv), and callbacks are scheduled when results are ready. This model avoids thread overhead and simplifies development.
+
+[↑ Back to top](#table-of-contents)
+
+### 89. How does Node.js handle file operations?
+
+Node.js provides the `fs` module with both synchronous (blocking) and asynchronous (non‑blocking) methods. Asynchronous methods are preferred because they don’t block the event loop. They use callbacks, promises (via `fs.promises`), or streams for large files.
+
+[↑ Back to top](#table-of-contents)
+
+### 90. If Node.js is single-threaded, how does it handle thousands of concurrent requests?
+
+Expected interview answer:
+
+“Node.js achieves high concurrency through asynchronous, non-blocking I/O.
+
+Suppose an Express API receives a request that needs data from PostgreSQL. Node.js starts the database operation asynchronously instead of blocking the main JavaScript thread while waiting for the result.
+
+During that time, the event loop can process other requests. Once the database operation completes, the application continues processing the result and sends the response.
+
+This allows one Node.js process to manage many concurrent requests efficiently, especially when the application spends much of its time waiting for I/O.
+
+However, actual capacity depends on workload, available resources, database capacity, and how efficiently the application is implemented.”
+
+Remember: Node.js doesn't wait idly for I/O; it can process other work while the operation is pending.
+
+[↑ Back to top](#table-of-contents)
+
+### 91. What are common causes of event-loop lag in production?
+
+Expected interview answer:
+
+“Event-loop lag means callbacks are being executed later than expected because the event loop cannot make progress quickly enough.
+
+Common causes include CPU-intensive synchronous operations, large JSON parsing tasks, long-running loops, large object or array transformations, excessive `process.nextTick()` scheduling, and garbage-collection pauses caused by memory pressure.
+
+Excessive synchronous logging can also contribute to the problem.
+
+To troubleshoot it, I would examine event-loop delay metrics, CPU and memory usage, request latency, and profiling data.
+
+After identifying the cause, I would optimize the work, reduce unnecessary memory allocation, or offload CPU-intensive processing where appropriate.”
+
+Remember: Event-loop lag can come from CPU use, memory pressure, or scheduling patterns—not only from database queries.
+
+[↑ Back to top](#table-of-contents)
+
+### 92. What are some common patterns for handling asynchronous operations in Node.js?
+
+- **Callbacks** (error‑first).
+- **Promises** with `.then()`/`.catch()`.
+- **async/await** – recommended for readability.
+- **Event emitters** for multiple events.
+- **Streams** for processing data.
+
+[↑ Back to top](#table-of-contents)
+
+### 93. What are some common pitfalls when working with Node.js?
+
+- Blocking the event loop with synchronous code.
+- Not handling errors properly.
+- Using `require` inside tight loops.
+- Memory leaks from event listeners.
+- Misunderstanding the event loop (e.g., expecting `setTimeout` to be precise).
+- Overusing npm packages without vetting.
+
+[↑ Back to top](#table-of-contents)
+
+### 94. What are the advantages and disadvantages of Node.js over Java or PHP for backend development?
+
+Expected interview answer:
+
+“One major advantage of Node.js is its ability to handle a large number of concurrent I/O operations using asynchronous, non-blocking programming.
+
+It also allows teams to use JavaScript on both the frontend and backend, and its npm ecosystem provides many packages for application development.
+
+Another advantage is that Node.js is well suited for APIs, real-time applications, and services that frequently interact with databases or external APIs.
+
+However, CPU-intensive JavaScript can block the event loop if it is not handled appropriately. Asynchronous code can also become difficult to manage if it is poorly structured, although Promises and `async/await` help with this.
+
+Compared with Java, the best choice depends on the workload, language ecosystem, concurrency requirements, and the team's expertise. Node.js is not automatically better or worse than Java or PHP for every application.”
+
+Remember: Node.js is especially useful for I/O-heavy applications; CPU-heavy workloads require more careful design.
+
+[↑ Back to top](#table-of-contents)
+
+### 95. What are the benefits of using Node.js for building APIs?
+
+- Non‑blocking I/O handles many concurrent requests.
+- JavaScript on both frontend and backend reduces context switching.
+- Rich ecosystem (npm) speeds development.
+- Lightweight and fast, suitable for microservices.
+- Good support for real‑time features (WebSockets).
+
+[↑ Back to top](#table-of-contents)
+
+### 96. What are the differences between Node.js and other server-side technologies like Python and Ruby?
+
+Node.js is event‑driven and non‑blocking, making it excellent for I/O‑heavy applications. Python (Django, Flask) and Ruby (Rails) are often multi‑threaded or use different concurrency models. Node.js uses JavaScript, enabling full‑stack development, while Python/Ruby have different syntax and ecosystems.
+
+[↑ Back to top](#table-of-contents)
+
+### 97. What are the three ways to handle asynchronous code in Node.js?
+
+Expected interview answer:
+
+“There are three common approaches to handling asynchronous code in Node.js: callbacks, Promises, and `async/await`.
+
+First, callbacks pass a function to be executed when an operation completes. Traditional Node.js APIs often use error-first callbacks.
+
+Second, Promises represent the eventual success or failure of an asynchronous operation. We can handle the result using `.then()` and errors using `.catch()`.
+
+Third, `async/await` provides a more readable syntax for working with Promises. It allows us to write asynchronous workflows in a style similar to synchronous code.
+
+Although all three approaches are useful, I generally prefer `async/await` for most modern application code.”
+
+Example:
+```
+
+// Callback
+fs.readFile("data.txt", "utf8", (err, data) => {
+if (err) return console.error(err);
+console.log(data);
+});
+
+// Promise
+fetchData()
+.then(data => console.log(data))
+.catch(error => console.error(error));
+
+// Async/await
+async function main() {
+try {
+const data = await fetchData();
+console.log(data);
+} catch (error) {
+console.error(error);
+}
+}
+```
+
+Remember: Callback → function; Promise → `.then()` and `.catch()`; `async/await` → readable Promise-based code.
+
+[↑ Back to top](#table-of-contents)
+
+### 98. What does `Promise.allSettled()` do that `Promise.all()` does not?
+
+Expected interview answer:
+
+“Both methods work with multiple Promises, but they handle failures differently.
+
+`Promise.all()` fulfills when all input Promises fulfill. If any input Promise rejects, the returned Promise rejects without waiting for all the remaining operations to settle.
+
+`Promise.allSettled()` waits until every input Promise has either fulfilled or rejected. It then returns an array describing the result of each operation.
+
+I would use `Promise.all()` when all results are required for success. I would use `Promise.allSettled()` when I need to collect every outcome, such as generating a report about several independent API calls.”
+
+Example:
+```
+
+const results = await Promise.allSettled([
+fetchUser(),
+fetchOrders(),
+fetchNotifications()
+]);
+
+results.forEach(result => {
+if (result.status === "fulfilled") {
+console.log("Success:", result.value);
+} else {
+console.log("Failure:", result.reason);
+}
+});
+```
+
+Remember: `Promise.all()` is useful for all-or-fail workflows; `Promise.allSettled()` is useful when every operation's result matters.
+
+[↑ Back to top](#table-of-contents)
+
+### 99. What is `setImmediate()`? How is it different from `setTimeout(fn, 0)`?
+
+Expected interview answer:
+
+“Both methods schedule callbacks for later execution, but they are associated with different parts of the event loop.
+
+`setImmediate()` schedules a callback for the check phase, which follows the poll phase.
+
+`setTimeout(fn, 0)` schedules a timer callback after a minimum delay threshold. It does not mean the callback runs immediately.
+
+When both are scheduled inside an I/O callback, `setImmediate()` normally executes first because the check phase follows the poll phase.
+
+At the top level of a script, however, their relative execution order is not guaranteed.”
+
+Example:
+```
+
+const fs = require("node:fs");
+
+fs.readFile(__filename, () => {
+setTimeout(() => console.log("Timeout"), 0);
+
+setImmediate(() => console.log("Immediate"));
+});
+```
+
+Here, `Immediate` normally prints before `Timeout`.
+
+Remember: `setImmediate()` is tied to the check phase; `setTimeout()` is tied to the timers phase.
+
+[↑ Back to top](#table-of-contents)
+
+### 100. What is a ReDoS (Regular Expression Denial of Service)?
+
+A ReDoS exploits catastrophic backtracking in poorly crafted regex patterns, causing extreme CPU usage and event loop block. Prevent: use safe regex patterns (avoid nested quantifiers), use tools like `safe-regex`, set timeouts for regex matching.
+
+[↑ Back to top](#table-of-contents)
+
+### 101. What is a thread pool pattern using worker threads?
+
+Create a pool of worker threads that can process tasks. Maintain a queue of jobs; a manager assigns work to an available worker. This avoids spawning workers per task. Use `piscina` library which provides an efficient pool.
+
+[↑ Back to top](#table-of-contents)
+
+### 102. What is callback hell? How do you avoid it?
+
+Expected interview answer:
+
+“Callback hell happens when multiple asynchronous operations are nested inside one another, making the code difficult to read, understand, and maintain.
+
+For example, an application might need to fetch a user, retrieve that user's orders, and then fetch payment details for those orders. If each operation uses a nested callback, the code can become deeply indented.
+
+We can avoid callback hell by breaking the logic into smaller functions, using Promises, or using `async/await`.
+
+In modern Node.js applications, I generally prefer `async/await` for sequential asynchronous workflows because it makes the code easier to read and allows us to handle errors using `try/catch`.”
+
+Example:
+```
+
+async function getUserDetails(userId) {
+try {
+const user = await getUser(userId);
+const orders = await getOrders(user.id);
+const payments = await getPayments(orders);
+
+return payments;
+} catch (error) {
+console.error("Failed to fetch user details:", error);
+throw error;
+}
+}
+```
+
+Remember: Promises and `async/await` help avoid deeply nested callbacks and improve error handling.
+
+[↑ Back to top](#table-of-contents)
+
+### 103. What is connection pooling? Why is it critical for performance under load?
+
+Connection pooling maintains a pool of reusable database connections, avoiding the overhead of establishing new ones per request. Critical for Node.js because a single-threaded event loop benefits from fast, reusable connections.
+
+[↑ Back to top](#table-of-contents)
+
+### 104. What is dynamic `import()`? When would you use it?
+
+Expected interview answer:
+
+“Dynamic `import()` allows us to load a module at runtime instead of declaring a static import at the top of the file.
+
+It returns a Promise that fulfills with a module namespace object containing the module's exports.
+
+I would use it when a module is needed only under certain conditions, when loading a feature on demand, or when I want to delay loading a large dependency until it is required.
+
+For example, if an application supports multiple file formats, I could load a CSV-processing module only when the user requests a CSV export.
+
+This can avoid unnecessary module loading, although its performance benefits depend on the application and the module.”
+
+Example:
+```
+
+async function loadCsvProcessor() {
+const module = await import("./csvProcessor.js");
+
+module.processCsv();
+}
+
+loadCsvProcessor();
+```
+
+Remember: Dynamic `import()` loads a module on demand and returns a Promise.
+
+[↑ Back to top](#table-of-contents)
+
+### 105. What is event-loop blocking? How do you detect and fix it?
+
+Expected interview answer:
+
+“Event-loop blocking happens when JavaScript runs an operation that occupies the main thread for too long, preventing the application from processing other callbacks and requests promptly.
+
+For example, a large synchronous computation or parsing an extremely large JSON payload can increase API response times even when other requests are performing simple operations.
+
+To investigate this, I would monitor event-loop delay and CPU usage, review application logs, and use diagnostic tools such as Node.js `perf_hooks` or Clinic.js.
+
+Once the cause is identified, I would optimize the algorithm, break work into smaller chunks where appropriate, or offload CPU-intensive work to worker threads or child processes.
+
+I would then measure event-loop delay and request latency again to confirm that the fix improves performance.”
+
+Remember: Detect the bottleneck first; then optimize, split, or offload the blocking work.
+
+[↑ Back to top](#table-of-contents)
+
+### 106. What is non-blocking I/O? Give a concrete example.
+
+Expected interview answer:
+
+“Non-blocking I/O means that our application does not have to stop executing JavaScript while waiting for an I/O operation to finish.
+
+For example, when we use `fs.readFile()` to read a file asynchronously, Node.js can continue executing other code while the file is being read.
+
+When the operation completes, the callback receives the result or error.
+
+This approach improves concurrency because the main JavaScript thread does not remain occupied simply waiting for an I/O operation.”
+
+Example:
+```
+
+const fs = require("node:fs");
+
+fs.readFile("data.txt", "utf8", (err, data) => {
+if (err) {
+console.error(err);
+return;
+}
+
+console.log(data);
+});
+
+console.log("Reading file...");
+```
+
+Here, `"Reading file..."` can print before the file contents are available.
+
+[↑ Back to top](#table-of-contents)
+
+### 107. What is the `clinic` tool suite? (clinic doctor, clinic flame, clinic bubbleprof)
+
+Clinic.js is a set of tools to diagnose performance issues in Node.js:
+- `clinic doctor`: overall health, event loop delay, GC activity.
+- `clinic flame`: generates flamegraphs to visualize CPU usage.
+- `clinic bubbleprof`: visualises async operations and their latencies.
+
+[↑ Back to top](#table-of-contents)
+
+### 108. What is the `fs` module? What are the key methods?
+
+`fs` module provides API for interacting with the file system. Key methods: `readFile`, `writeFile`, `appendFile`, `mkdir`, `readdir`, `stat`, `unlink`, `rename`, `createReadStream`, `createWriteStream`, `watch`. Both synchronous and asynchronous (callback/Promise) variants.
+
+[↑ Back to top](#table-of-contents)
+
+### 109. What is the callback pattern? What problems does it cause at scale?
+
+The callback pattern uses functions passed as arguments to handle async results. Problems: callback hell, difficult error handling, lack of composability. Mitigated by Promises and async/await.
+
+[↑ Back to top](#table-of-contents)
+
+### 110. What is the difference between `async/await` and `.then()` chaining?
+
+Expected interview answer:
+
+“Both `async/await` and `.then()` are ways of working with Promises. The main difference is how the code is written and organized.
+
+With `.then()` chaining, we attach callbacks to handle the result of each Promise. With `async/await`, we can write the same workflow in a more sequential and readable style.
+
+For error handling, `.then()` chains can use `.catch()`, whereas `async/await` commonly uses `try/catch`.
+
+Importantly, `await` does not block the entire Node.js thread. It suspends the execution of the current async function while the awaited Promise settles, allowing other work to proceed.”
+
+Example using `.then()`:
+```
+
+getUser()
+.then(user => getOrders(user.id))
+.then(orders => console.log(orders))
+.catch(error => console.error(error));
+```
+
+Equivalent approach using `async/await`:
+```
+
+async function main() {
+try {
+const user = await getUser();
+const orders = await getOrders(user.id);
+
+console.log(orders);
+} catch (error) {
+console.error(error);
+}
+}
+```
+
+Remember: Both use Promises; `async/await` often makes sequential workflows easier to read.
+
+[↑ Back to top](#table-of-contents)
+
+### 111. What is the difference between `await Promise.all()` and sequential `await` in a loop?
+
+Expected interview answer:
+
+“The main difference is whether independent operations run concurrently or one after another.
+
+With `Promise.all()`, we start the independent operations and wait for all of them to finish. This can reduce total execution time.
+
+With sequential `await` in a loop, each operation must complete before the next one starts.
+
+For example, if I need to fetch information for ten independent users, running the requests concurrently can be faster than awaiting each request one by one.
+
+However, for large workloads, I would use controlled concurrency instead of launching an unlimited number of operations at once.”
+
+Sequential execution:
+```
+
+for (const id of userIds) {
+await getUser(id);
+}
+```
+
+Concurrent execution:
+```
+
+const users = await Promise.all(
+userIds.map(id => getUser(id))
+);
+```
+
+Remember: Sequential `await` is appropriate when operations depend on one another; concurrent execution is useful when they are independent.
+
+[↑ Back to top](#table-of-contents)
+
+### 112. What is the difference between blocking and non-blocking code?
+
+Expected interview answer:
+
+“The main difference is whether the operation prevents further JavaScript execution while it is running.
+
+Blocking code makes the current JavaScript execution wait until the operation completes. For example, `fs.readFileSync()` blocks the thread while reading a file.
+
+Non-blocking code allows the application to continue executing other JavaScript while an asynchronous operation is pending. For example, `fs.readFile()` can read a file asynchronously.
+
+In a backend server, excessive blocking operations can increase response times and reduce the number of requests the server can handle efficiently.”
+
+| Blocking                          | Non-blocking                           |
+| --------------------------------- | -------------------------------------- |
+| Waits for the operation to finish | Allows other work while I/O is pending |
+| Can delay other requests          | Supports higher I/O concurrency        |
+| Example: `fs.readFileSync()`      | Example: `fs.readFile()`               |
+
+[↑ Back to top](#table-of-contents)
+
+### 113. What is the difference between the microtask queue and the macrotask queue?
+
+Expected interview answer:
+
+“The main difference is their scheduling behavior and when their callbacks get a chance to execute.
+
+In Node.js, Promise callbacks, such as those registered with `.then()`, and callbacks scheduled using `queueMicrotask()` are processed through the microtask queue.
+
+Node.js also has a separate `process.nextTick()` queue, which is generally processed before the Promise microtask queue after the current JavaScript operation.
+
+What developers commonly call macrotasks are scheduled operations such as timers, I/O callbacks, and `setImmediate()`. These are associated with different event-loop phases.
+
+Microtasks generally run before Node.js proceeds to the next event-loop phase. However, repeatedly scheduling microtasks or `nextTick` callbacks can delay other work, including I/O.”
+
+Remember: `process.nextTick()` has its own queue; Promise callbacks use the microtask queue; timers and I/O callbacks are handled through event-loop phases.
+
+[↑ Back to top](#table-of-contents)
+
+### 114. What is the Node.js thread pool? What operations use it? What is its default size?
+
+Expected interview answer:
+
+“The Node.js thread pool is managed by libuv and allows certain operations to execute on worker threads instead of blocking the main JavaScript thread.
+
+Operations that commonly use it include many file-system operations, `crypto` operations such as `pbkdf2`, `zlib` compression, and certain DNS operations.
+
+The default thread-pool size is four threads. We can configure it using the `UV_THREADPOOL_SIZE` environment variable.
+
+It is important to understand that not every asynchronous operation uses this thread pool. For example, much network I/O is handled using operating-system facilities rather than a thread from the libuv pool.”
+
+Remember: Default pool size = 4. The thread pool is separate from the main JavaScript thread.
+
+[↑ Back to top](#table-of-contents)
+
+### 115. What is the purpose of the `async` and `await` keywords in Node.js?
+
+`async` declares a function that returns a Promise. Inside an `async` function, `await` pauses execution until the awaited Promise resolves, then returns the result. This allows writing asynchronous code in a synchronous style, improving readability and error handling via `try/catch`.
+
+[↑ Back to top](#table-of-contents)
+
+### 116. What is the Reactor pattern? How does it relate to the event loop?
+
+Reactor pattern is the design behind the event loop: it demultiplexes I/O events and dispatches them to registered handlers. The event loop acts as the synchronous event demultiplexer.
+
+[↑ Back to top](#table-of-contents)
+
+### 117. What is the role of the event loop in Node.js?
+
+The event loop orchestrates the execution of asynchronous callbacks. It continuously checks the call stack and task queues. When the stack is empty, it takes the next callback from the microtask queue (promises) or macrotask queue (timers, I/O) and pushes it onto the stack. This enables non‑blocking concurrency.
+
+[↑ Back to top](#table-of-contents)
+
+### 118. What runs first: `Promise.then()` or `setTimeout(fn, 0)`? Why?
+
+Expected interview answer:
+
+“Normally, a Promise's `.then()` callback runs before a `setTimeout(fn, 0)` callback when both are scheduled during the same synchronous execution.
+
+The reason is that Promise callbacks are microtasks, whereas `setTimeout()` schedules a timer callback.
+
+After the synchronous JavaScript finishes, Node.js processes the relevant microtask queues before moving on to the timer callback.
+
+So, under these conditions, the Promise callback executes first.”
+
+Example:
+```
+
+console.log("Start");
+
+setTimeout(() => console.log("Timer"), 0);
+
+Promise.resolve().then(() => console.log("Promise"));
+
+console.log("End");
+```
+
+Output:
+```
+
+Start
+End
+Promise
+Timer
+```
+
+Remember: Synchronous code runs first, followed by the Promise callback, then the timer callback in this example.
+
+[↑ Back to top](#table-of-contents)
+
+### 119. When should you NOT use Node.js? What workloads is it poor for?
+
+Expected interview answer:
+
+“I would be careful about choosing Node.js for workloads that require heavy CPU computation on the main JavaScript thread.
+
+For example, complex mathematical calculations, intensive image processing, or video processing could block the event loop and delay other requests.
+
+However, this does not mean Node.js cannot be used for these applications. We can offload CPU-intensive tasks to worker threads, child processes, or separate processing services.
+
+The decision depends on the workload, performance requirements, and the additional complexity introduced by that architecture.”
+
+Remember: The main concern is running heavy CPU-bound work directly on the event-loop thread.
+
+[↑ Back to top](#table-of-contents)
+
+### 120. Why is Node.js single-threaded? What does that mean practically?
+
+Expected interview answer:
+
+“Node.js normally executes our JavaScript application code on a single main thread, which is coordinated by the event loop.
+
+This does not mean that the entire Node.js runtime uses only one thread. The operating system and libuv's thread pool can perform certain operations separately.
+
+The advantage is that Node.js can handle many I/O operations without creating a separate application thread for every request.
+
+However, CPU-intensive JavaScript can block the event loop and delay other requests. For such workloads, we can consider worker threads, multiple processes, or an external processing service.”
+
+Remember: Single-threaded JavaScript execution does not mean the entire Node.js runtime is single-threaded.
+
+[↑ Back to top](#table-of-contents)
+
+### 121. Why is synchronous code like `JSON.parse()` of a huge payload dangerous?
+
+Expected interview answer:
+
+“`JSON.parse()` is synchronous, meaning the JavaScript thread must finish parsing the JSON before it can execute other JavaScript.
+
+If a server receives an extremely large JSON payload, parsing it can consume considerable CPU time and block the event loop.
+
+During that period, other requests, timers, and callbacks may be delayed, which can increase latency and even cause request timeouts.
+
+To address this, I would limit request-body sizes, validate input, avoid unnecessarily large payloads, and consider worker threads or streaming parsers when the workload justifies them.”
+
+Remember: A synchronous operation does not become non-blocking simply because the application uses Node.js.
+
+[↑ Back to top](#table-of-contents)
+
+## Streams & Buffers
+
+### 122. Explain the concept of the `buffer` in Node.js.
+
+Buffers are temporary storage for binary data, typically used when dealing with streams, file I/O, or network operations. They are instances of the `Buffer` class, which provides methods to work with raw binary data in a fixed size. Buffers are allocated outside the V8 heap for performance.
+
+[↑ Back to top](#table-of-contents)
+
+### 123. Explain the different types of streams in Node.js.
+
+- **Readable**: source of data (e.g., `fs.createReadStream`).
+- **Writable**: destination for data (e.g., `fs.createWriteStream`).
+- **Duplex**: both readable and writable (e.g., `net.Socket`).
+- **Transform**: a duplex stream that modifies data as it passes through (e.g., `zlib.createGzip`).
+
+[↑ Back to top](#table-of-contents)
+
+### 124. How do you convert a file to Base64 using Buffers?
+
+Expected interview answer:
+
+“To convert a file to Base64, I can read its contents into a Buffer and then call `toString('base64')`.
+
+For a small file, `fs.readFile()` is a convenient option because it returns the file contents as a Buffer when no text encoding is specified.
+
+For a large file, reading the entire file into memory may be inefficient. In that case, I would use a streaming approach and ensure that the Base64 encoding is handled correctly across chunk boundaries.”
+
+Example for a small file:
+```
+
+const fs = require("node:fs");
+
+fs.readFile("image.png", (error, buffer) => {
+if (error) {
+console.error(error);
+return;
+}
+
+const base64 = buffer.toString("base64");
+
+console.log(base64);
+});
+```
+
+Remember: Read the file into a Buffer, then call `toString('base64')`. For large files, use a properly implemented streaming encoder.
+
+[↑ Back to top](#table-of-contents)
+
+### 125. How do you convert between a Buffer and a string?
+
+Expected interview answer:
+
+“We can convert a string into a Buffer using `Buffer.from()`, specifying an encoding such as UTF-8.
+
+To convert a Buffer back into a string, we use its `toString()` method and specify the encoding.
+
+For example, if I receive text from a file or network connection as a Buffer, I can convert it into a readable string using UTF-8.
+
+However, if the underlying data is binary, such as an image, I should not assume that converting it to UTF-8 will preserve its meaning. I would use the appropriate representation and encoding for the data.”
+
+Example:
+```
+
+const buffer = Buffer.from("Hello Node.js", "utf8");
+
+console.log(buffer);
+
+const text = buffer.toString("utf8");
+
+console.log(text);
+```
+
+Remember: Use `Buffer.from()` to create a Buffer from a string and `buffer.toString()` to decode it.
+
+[↑ Back to top](#table-of-contents)
+
+### 126. What are Streams in Node.js and how are they used?
+
+Streams are objects that let you read or write data piece by piece (in chunks) instead of loading the whole data into memory. They are used for handling large files, network communications, and real‑time data. Types: `Readable`, `Writable`, `Duplex`, `Transform`.
+
+[↑ Back to top](#table-of-contents)
+
+### 127. What are the differences between `Buffer.from()` and `Buffer.alloc()`?
+
+- `Buffer.from()` creates a buffer from an existing data source (string, array, another buffer). It may contain existing data.
+- `Buffer.alloc()` creates a new buffer of a specified size, initialized with zeros (safe).
+- `Buffer.allocUnsafe()` also creates a buffer but may contain old memory data (faster but less safe). Prefer `alloc()` or `from()` for security.
+
+[↑ Back to top](#table-of-contents)
+
+### 128. What are the four types of streams in Node.js? Give an example of each.
+
+Expected interview answer:
+
+“Node.js provides four main types of streams: Readable, Writable, Duplex, and Transform.
+
+A Readable stream allows us to read data from a source. For example, `fs.createReadStream()` reads data from a file.
+
+A Writable stream allows us to write data to a destination. For example, `fs.createWriteStream()` writes data to a file.
+
+A Duplex stream supports both reading and writing independently. For example, a network socket created using `net.Socket` can send and receive data.
+
+A Transform stream is a type of Duplex stream that modifies data as it passes through. For example, `zlib.createGzip()` compresses data.
+
+These streams allow us to build efficient data-processing pipelines.”
+
+| Stream type | Purpose                              | Example                  |
+| ----------- | ------------------------------------ | ------------------------ |
+| Readable    | Read data                            | `fs.createReadStream()`  |
+| Writable    | Write data                           | `fs.createWriteStream()` |
+| Duplex      | Read and write                       | `net.Socket`             |
+| Transform   | Transform data while passing through | `zlib.createGzip()`      |
+
+Remember: Readable = read, Writable = write, Duplex = both, Transform = both plus transformation.
+
+[↑ Back to top](#table-of-contents)
+
+### 129. What is `pipe()`? How does it work internally?
+
+Expected interview answer:
+
+“`pipe()` connects a readable stream to a writable stream and transfers data from the source to the destination.
+
+As data becomes available, it is written to the destination in chunks. An important feature of `pipe()` is that it manages backpressure automatically.
+
+For example, if the writable stream cannot process data as quickly as the readable stream produces it, `pipe()` pauses the readable stream and resumes it when the destination can accept more data.
+
+This helps prevent excessive buffering and memory consumption.
+
+The method also returns the destination stream, allowing us to chain streams together. However, `pipe()` alone does not provide the same comprehensive error handling and cleanup as `pipeline()`.”
+
+Example:
+```
+
+const fs = require("node:fs");
+
+fs.createReadStream("input.txt")
+.pipe(fs.createWriteStream("output.txt"));
+```
+
+Remember: `pipe()` connects streams and manages data flow and backpressure.
+
+[↑ Back to top](#table-of-contents)
+
+### 130. What is a Buffer in Node.js? How does it differ from an array?
+
+Expected interview answer:
+
+“A Buffer is a Node.js type used to work with raw binary data, such as data read from files or received over a network.
+
+A Buffer stores bytes, with each byte having a value between 0 and 255. It provides methods for converting data to strings and reading or writing binary values.
+
+A regular JavaScript array is a general-purpose collection that can hold different types of JavaScript values. A Buffer, by contrast, is a byte-oriented structure with a fixed length.
+
+Buffers are especially useful in Node.js because many file-system and networking operations work with binary data.”
+
+Example:
+```
+
+const buffer = Buffer.from([72, 101, 108, 108, 111]);
+
+console.log(buffer);
+console.log(buffer.toString("utf8"));
+```
+
+Output:
+```
+
+<Buffer 48 65 6c 6c 6f>
+Hello
+```
+
+Remember: An array stores general JavaScript values; a Buffer is designed for byte-oriented binary data.
+
+[↑ Back to top](#table-of-contents)
+
+### 131. What is the `highWaterMark` option in Node.js streams?
+
+Expected interview answer:
+
+“`highWaterMark` specifies the buffering threshold used by a stream.
+
+For regular streams handling binary data, the value is measured in bytes. For object-mode streams, it represents the number of objects.
+
+When the writable stream's buffered data reaches its threshold, calling `write()` can return `false`, signalling that the producer should slow down until the stream emits `drain`.
+
+For readable streams, the threshold influences how much data is buffered before the stream signals that it has enough data available.
+
+I can adjust `highWaterMark` to suit the application, but it is important to understand that it is a buffering threshold, not a strict maximum on the total memory consumed by the application.”
+
+Example:
+```
+
+const fs = require("node:fs");
+
+const readStream = fs.createReadStream("large-file.txt", {
+highWaterMark: 16 * 1024
+});
+```
+
+Here, the configured threshold is 16 KiB.
+
+Remember: `highWaterMark` controls stream buffering behavior; it does not impose a strict limit on total memory consumption.
+
+[↑ Back to top](#table-of-contents)
+
+### 132. What is the `stream` module and how do you use it in Node.js?
+
+The `stream` module provides the foundation for streaming data. It includes the abstract classes `Readable`, `Writable`, `Duplex`, and `Transform`. You can implement custom streams by extending these classes or using helper methods like `Readable.from()`.
+
+[↑ Back to top](#table-of-contents)
+
+### 133. What is the difference between `stream.Readable.from()` and creating a custom readable stream?
+
+Expected interview answer:
+
+“`Readable.from()` allows us to create a readable stream from an existing iterable or asynchronous iterable, such as an array or a generator.
+
+It is convenient when the data source is already represented as an iterable and I want to expose it as a stream.
+
+A custom readable stream gives us more control over how the data is generated or retrieved. We can extend the `Readable` class and implement the `_read()` method to supply data when the stream requests it.
+
+For example, I might use `Readable.from()` to stream records produced by a generator, but create a custom readable stream when integrating with a specialized data source that needs custom reading behavior.”
+
+Example using `Readable.from()`:
+```
+
+const { Readable } = require("node:stream");
+
+const stream = Readable.from(["Node", "Express", "PostgreSQL"]);
+
+stream.on("data", chunk => {
+console.log(chunk.toString());
+});
+```
+
+Remember: Use `Readable.from()` for existing iterables; create a custom readable when you need more control over the data source.
+
+[↑ Back to top](#table-of-contents)
+
+### 134. When should you use streaming vs buffering for large responses?
+
+Stream when the response is large (file downloads, large dataset), to keep memory low and start sending data early. Buffer small responses (e.g., JSON payloads) that fit in memory.
+
+[↑ Back to top](#table-of-contents)
+
+## Express.js, Middleware & REST API Design
+
+### 135. Explain the complete lifecycle of an HTTP request in a Node.js + Express application.
+
+1. TCP connection established, HTTP request parsed by Node.js `http` module.
+2. Event loop picks up the request, creates `req` and `res` objects.
+3. Express runs the request through its middleware stack in order.
+4. Each middleware can modify `req`/`res`, end the response, or call `next()`.
+5. Route matching directs to appropriate route handler.
+6. Handler processes request, may query DB, call external services.
+7. Response sent via `res.send()` etc., underlying socket writes data.
+8. Response finishes; if `Connection: close`, socket closes; else reused.
+9. Middleware after sending may run (error if headers sent).
+10. Resources cleaned up.
+
+[↑ Back to top](#table-of-contents)
+
+### 136. Explain the concept of middleware in Express.js.
+
+Middleware functions in Express have access to the request (`req`) and response (`res`) objects and the `next` function. They can execute code, modify `req`/`res`, end the request‑response cycle, or call the next middleware. Middleware is used for logging, authentication, parsing bodies, error handling, etc.
+
+[↑ Back to top](#table-of-contents)
+
+### 137. Explain the purpose of `app.use()` in Express.js.
+
+`app.use()` mounts middleware functions that are executed for every request (or requests matching a specific path). It is used for logging, static file serving, authentication, and any cross‑cutting concerns. Unlike route handlers, it doesn’t require a specific HTTP method.
+
+[↑ Back to top](#table-of-contents)
+
+### 138. How can you handle errors in an Express.js application?
+
+Express has built‑in error‑handling middleware with four parameters (err, req, res, next). Define it after all routes. Use `next(err)` to pass errors to this handler. You can also catch errors inside route handlers and call `next(error)`.
+
+[↑ Back to top](#table-of-contents)
+
+### 139. How can you handle file uploads in a Node.js application?
+
+Use `multer` middleware in Express. It processes `multipart/form-data` and stores files in memory or on disk. Example:
+
+```js
+const multer = require('multer');
+const upload = multer({ dest: 'uploads/' });
+app.post('/upload', upload.single('file'), (req, res) => { ... });
+
+```
+
+[↑ Back to top](#table-of-contents)
+
+### 140. How can you handle form data in Express.js?
+
+Use middleware like `express.urlencoded({ extended: true })` for `application/x-www-form-urlencoded` data, and `express.json()` for JSON payloads. For file uploads, use `multer` or similar middleware.
+
+[↑ Back to top](#table-of-contents)
+
+### 141. How can you use sessions in a Node.js application?
+
+Use `express-session` middleware. It creates a session store (often in memory or using a database like Redis). The session ID is stored in a cookie; session data is saved on the server. Example:
+
+```js
+const session = require('express-session');
+app.use(session({ secret: 'key', resave: false, saveUninitialized: true }));
+
+```
+
+[↑ Back to top](#table-of-contents)
+
+### 142. How do you design a multi-tenant Node.js SaaS application?
+
+Strategies:
+- Database per tenant (strong isolation, harder to manage).
+- Shared database with tenant ID column (simpler, risk of data leaks).
+- Shared schema, separate schemas.
+Implement tenant context middleware that sets the tenant ID for every request, used in queries automatically. Use connection pools scoped to tenant if needed.
+
+[↑ Back to top](#table-of-contents)
+
+### 143. How do you design filtering, sorting, and searching for a REST API?
+
+Expected interview answer:
+
+“I generally use query parameters to support filtering, sorting, and searching in a REST API.
+
+Filtering restricts the results based on specific conditions, such as `status=active` or `role=admin`.
+
+Sorting controls the order of the returned records, such as sorting by creation date or name.
+
+Searching looks for records that match a keyword or query, for example through a `q` parameter.
+
+I would validate the query parameters, allow only supported fields and sort directions, and use parameterized database queries to prevent injection risks.”
+
+Example:
+```
+
+GET /users?status=active&sort=-created_at&q=shubham
+```
+
+Remember: Filtering narrows the results, sorting orders them, and searching finds matching records.
+
+[↑ Back to top](#table-of-contents)
+
+### 144. How do you design pagination for a REST API? Explain offset-based versus cursor-based pagination.
+
+Expected interview answer:
+
+“Pagination allows an API to return a large collection in smaller, manageable portions instead of sending every record in one response.
+
+Offset-based pagination uses parameters such as `offset` and `limit`. It is simple to implement but can become inefficient for large offsets, and the results can shift when records are inserted or deleted.
+
+Cursor-based pagination uses a cursor representing a position in the result set. It is often more suitable for large or frequently changing datasets because it avoids skipping through increasingly large offsets.
+
+I would choose the approach according to data size, ordering requirements, consistency expectations, and query performance.”
+
+Examples:
+
+Offset-based:
+```
+
+GET /users?offset=0&limit=20
+```
+
+Cursor-based:
+```
+
+GET /users?cursor=abc123&limit=20
+```
+
+Remember: Offset pagination is simple; cursor pagination is often better for large, frequently updated collections.
+
+[↑ Back to top](#table-of-contents)
+
+### 145. How do you document a REST API using Swagger, OpenAPI, or Postman?
+
+Expected interview answer:
+
+“I would document a REST API by describing its endpoints, HTTP methods, parameters, authentication requirements, request bodies, response schemas, and possible status codes.
+
+OpenAPI provides a standard specification for describing HTTP APIs. We can write the specification in YAML or JSON, or generate it from code annotations or other tooling.
+
+Swagger UI can display interactive API documentation based on an OpenAPI document, allowing developers to explore and test endpoints.
+
+Postman collections are also useful for documenting requests, organizing test cases, and sharing practical API examples with the team.”
+
+Remember: OpenAPI describes the API contract; Swagger UI presents interactive documentation; Postman helps organize and test requests.
+
+[↑ Back to top](#table-of-contents)
+
+### 146. How do you prevent brute-force login attacks?
+
+Implement rate limiting on login endpoints, account lockout after consecutive failures, CAPTCHA after threshold, and use bcrypt/argon2 for password hashing (slow by design).
+
+[↑ Back to top](#table-of-contents)
+
+### 147. How do you serve static files in Express?
+
+Expected interview answer:
+
+“Express provides the built-in `express.static()` middleware to serve static files such as images, CSS, JavaScript, and HTML files.
+
+We pass the directory containing those files to `express.static()`, and Express makes them accessible through HTTP requests.
+
+For example, if my project contains a `public` directory, I can configure Express to serve files from that directory.
+
+This is useful for serving assets directly without writing a separate route for each file.”
+
+Example:
+```
+
+app.use(express.static("public"));
+```
+
+If `public/logo.png` exists, it can normally be accessed through `/logo.png`.
+
+Remember: `express.static()` serves files from a configured directory.
+
+[↑ Back to top](#table-of-contents)
+
+### 148. How do you test error handling middleware?
+
+Use supertest to trigger a route that throws or calls `next(error)`, then assert the response status and body matches the error handler's output.
+
+[↑ Back to top](#table-of-contents)
+
+### 149. How do you type `req`, `res`, `next` in an Express route with TypeScript?
+
+Install `@types/express`. Route handler: `(req: Request, res: Response, next: NextFunction) => void`. For custom properties, augment `Request`.
+
+[↑ Back to top](#table-of-contents)
+
+### 150. How do you validate request bodies in Express?
+
+Expected interview answer:
+
+“Request-body validation ensures that incoming data follows the structure and rules expected by the application.
+
+For example, when creating a user, I might require a valid email address and a non-empty name.
+
+I can implement validation using libraries such as Joi, Zod, or express-validator. Typically, I create validation middleware that checks the request body before the controller executes.
+
+If validation fails, I return an appropriate client error response, usually `400 Bad Request` or `422 Unprocessable Content`, depending on the API's error-handling convention.
+
+This improves data quality and prevents invalid input from reaching the business-logic and database layers.”
+
+Example using Joi:
+```
+
+const Joi = require("joi");
+
+const userSchema = Joi.object({
+name: Joi.string().required(),
+email: Joi.string().email().required()
+});
+
+function validateUser(req, res, next) {
+const { error } = userSchema.validate(req.body);
+
+if (error) {
+return res.status(400).json({
+error: error.message
+});
+}
+
+next();
+}
+```
+
+Remember: Validate incoming data before executing business logic or database operations.
+
+[↑ Back to top](#table-of-contents)
+
+### 151. How do you version a REST API? What strategies can you use?
+
+Expected interview answer:
+
+“API versioning allows us to introduce changes to an API without unexpectedly breaking existing clients.
+
+One common approach is URI versioning, where the version appears in the URL, such as `/api/v1/users` and `/api/v2/users`.
+
+Another approach is header versioning, where the client specifies the desired API version through a request header.
+
+We can also use a query parameter, such as `?version=2`.
+
+I would choose a strategy based on the application's client requirements, compatibility policy, and operational needs. I would also define a deprecation process so older clients have time to migrate.”
+
+Remember: URI versioning is explicit and easy to understand; header versioning keeps the URL independent of the version.
+
+[↑ Back to top](#table-of-contents)
+
+### 152. What are `express-async-errors` and `express-async-handler`? Why are they needed?
+
+Expected interview answer:
+
+“These tools help handle errors from asynchronous Express route handlers.
+
+For example, suppose an async route handler awaits a database query and that query rejects. If the rejection is not propagated to Express's error-handling mechanism, the application may not return the expected error response.
+
+`express-async-handler` wraps an async route handler and forwards rejected errors to `next()`.
+
+`express-async-errors` uses a different approach by patching Express behavior to propagate asynchronous errors.
+
+The need depends on the Express version. Express 4 applications commonly use a wrapper or explicit error forwarding, while Express 5 automatically forwards rejected Promises returned by route handlers and middleware.”
+
+Example:
+```
+
+const asyncHandler = require("express-async-handler");
+
+app.get(
+"/users/:id",
+asyncHandler(async (req, res) => {
+const user = await getUserById(req.params.id);
+
+if (!user) {
+return res.status(404).json({
+error: "User not found"
+});
+}
+
+res.json(user);
+})
+);
+```
+
+Remember: These tools help route asynchronous failures into centralized error handling; the exact requirement depends on your Express version.
+
+[↑ Back to top](#table-of-contents)
+
+### 153. What are HTTP status codes and how do you use them in Express.js?
+
+HTTP status codes indicate the result of the request. Common ones: 200 (OK), 201 (Created), 400 (Bad Request), 401 (Unauthorized), 404 (Not Found), 500 (Internal Server Error). In Express, use `res.status(code)` before sending a response: `res.status(404).send('Not found')`.
+
+[↑ Back to top](#table-of-contents)
+
+### 154. What are Mongoose middleware (pre/post hooks)? Give 3 use cases.
+
+Middleware (hooks) execute functions before/after certain events (save, validate, remove, updateOne). Use cases: hashing password before save (`pre('save')`), removing dependent documents after delete (`post('remove')`), logging changes, or updating timestamps.
+
+[↑ Back to top](#table-of-contents)
+
+### 155. What are the best practices for structuring a Node.js application?
+
+- Separate concerns (routes, controllers, services, models).
+- Use environment configuration.
+- Keep code modular and testable.
+- Use middleware for cross‑cutting concerns.
+- Implement error handling centrally.
+- Use a consistent folder structure (e.g., `src/`, `tests/`).
+
+[↑ Back to top](#table-of-contents)
+
+### 156. What are the differences between `req.query`, `req.params`, and `req.body` in Express.js?
+
+- `req.query` – URL query parameters (e.g., `/search?q=node` → `{ q: 'node' }`).
+- `req.params` – route parameters (e.g., `/users/:id` → `{ id: '123' }`).
+- `req.body` – data sent in the request body (populated by body‑parsing middleware like `express.json()`).
+
+[↑ Back to top](#table-of-contents)
+
+### 157. What does `next()` do in middleware? What happens if you don't call it?
+
+Expected interview answer:
+
+“`next()` passes control from the current middleware to the next applicable middleware or route handler.
+
+If middleware sends a response, it does not need to call `next()`.
+
+However, if it neither sends a response nor calls `next()`, the request may remain pending, causing the client to wait indefinitely.
+
+We can also call `next(err)` to pass an error to Express's error-handling middleware.
+
+Therefore, every middleware should either complete the response, pass control forward, or pass an error to the error handler.”
+
+Example:
+```
+
+app.use((req, res, next) => {
+if (!req.headers.authorization) {
+return res.status(401).json({
+error: "Authentication required"
+});
+}
+
+next();
+});
+```
+
+Remember: `next()` continues the middleware chain; `next(err)` forwards an error.
+
+[↑ Back to top](#table-of-contents)
+
+### 158. What is `Apollo Server`? How do you set it up with Express?
+
+Apollo Server is a community-driven GraphQL server. Integrate with Express: `const server = new ApolloServer({ typeDefs, resolvers }); await server.start(); server.applyMiddleware({ app });`. It serves the GraphQL endpoint and optional playground.
+
+[↑ Back to top](#table-of-contents)
+
+### 159. What is `compression` middleware? What does it do?
+
+Expected interview answer:
+
+“The `compression` middleware reduces the size of HTTP response bodies by compressing eligible responses, commonly using gzip or deflate.
+
+Smaller responses can reduce network transfer time and bandwidth usage, especially for larger JSON responses or text-based content.
+
+However, compression consumes CPU resources, so the benefit depends on the response size, content type, network conditions, and server capacity.
+
+I would evaluate it for suitable responses and configure the application to avoid unnecessary compression of already-compressed content.”
+
+Example:
+```
+
+const compression = require("compression");
+
+app.use(compression());
+```
+
+Remember: Compression can reduce payload size and network cost, but it introduces CPU overhead.
+
+[↑ Back to top](#table-of-contents)
+
+### 160. What is `compression` middleware? What is the trade-off of enabling it?
+
+`compression` gzips responses, reducing bandwidth. Trade-off: it consumes CPU cycles. For high traffic, it's usually worth it. Can be offloaded to a reverse proxy.
+
+[↑ Back to top](#table-of-contents)
+
+### 161. What is `express-session`? How does it work?
+
+Expected interview answer:
+
+“`express-session` is Express middleware that manages server-side sessions across multiple HTTP requests.
+
+When a session is created, the server stores session data and sends the client a cookie containing a session identifier. The client sends that cookie with subsequent requests, allowing the server to associate the request with the existing session.
+
+For example, after a successful login, the application can store the user's session information and use it to recognize subsequent authenticated requests.
+
+In production, I would configure an appropriate session store, such as Redis, instead of relying on the default in-memory store, which is not suitable for most production deployments.”
+
+Example:
+```
+
+const session = require("express-session");
+
+app.use(session({
+secret: process.env.SESSION_SECRET,
+resave: false,
+saveUninitialized: false,
+cookie: {
+httpOnly: true,
+secure: true,
+sameSite: "lax"
+}
+}));
+```
+
+Remember: Session data stays on the server; the cookie normally identifies the session.
+
+[↑ Back to top](#table-of-contents)
+
+### 162. What is `express.json()` middleware? What did `body-parser` used to do?
+
+Expected interview answer:
+
+“`express.json()` is built-in Express middleware that parses incoming requests containing JSON payloads.
+
+After parsing, the resulting JavaScript value becomes available through `req.body`.
+
+Earlier, developers commonly used the separate `body-parser` package to parse JSON and URL-encoded request bodies.
+
+From Express 4.16 onward, the JSON and URL-encoded parsing middleware are built into Express, so we can use `express.json()` and `express.urlencoded()` without installing the separate package for these capabilities.
+
+I would still validate the parsed body because parsing JSON does not guarantee that the submitted data is valid for my application.”
+
+Example:
+```
+
+app.use(express.json());
+
+app.post("/users", (req, res) => {
+console.log(req.body);
+res.status(201).json({ message: "User received" });
+});
+```
+
+Remember: `express.json()` parses JSON; validation is still required.
+
+[↑ Back to top](#table-of-contents)
+
+### 163. What is `hpp` (HTTP Parameter Pollution)? How do you protect against it?
+
+HPP exploits passing multiple parameters with the same name to bypass validation or cause unexpected behavior. Use `hpp` middleware to handle duplicate parameters (e.g., pick last, first, or reject).
+
+[↑ Back to top](#table-of-contents)
+
+### 164. What is `morgan`? What log format would you use in production?
+
+Morgan is an HTTP request logger middleware. In production, use the `combined` format (standard Apache combined log) or a custom JSON format that includes request ID, method, URL, status, response time.
+
+[↑ Back to top](#table-of-contents)
+
+### 165. What is `NODE_ENV`? Why is it important?
+
+Expected interview answer:
+
+“`NODE_ENV` is an environment variable commonly used to identify the application's environment, such as development, production, or testing.
+
+For example, when deploying an Express application, we can set `NODE_ENV=production` so that Express and other libraries can use their production-specific behavior.
+
+It can also help us configure logging, debugging, and other environment-dependent settings.
+
+I would normally configure it through the deployment environment rather than hardcoding it in the source code.”
+
+Example:
+```
+
+NODE_ENV=production node app.js
+```
+
+Remember: `NODE_ENV` helps distinguish development, testing, and production configurations.
+
+[↑ Back to top](#table-of-contents)
+
+### 166. What is `res.locals`? What is it used for?
+
+Expected interview answer:
+
+“`res.locals` is an object used to store variables that are available during a particular request-response cycle.
+
+These values can be accessed by subsequent middleware and route handlers associated with that response, and they are commonly used when rendering server-side templates.
+
+For example, authentication middleware might store information about the current user in `res.locals`, allowing a template to display the user's name.
+
+Because `res.locals` is associated with an individual response, it is useful for request-specific data rather than application-wide state.”
+
+Example:
+```
+
+app.use((req, res, next) => {
+res.locals.appName = "My Application";
+next();
+});
+```
+
+Remember: `res.locals` stores data for the current request-response cycle, often for use in templates.
+
+[↑ Back to top](#table-of-contents)
+
+### 167. What is `zlib` module? How do you gzip a response in Express?
+
+`zlib` provides compression. In Express, use `compression` middleware that uses zlib behind the scenes. For manual streaming: `zlib.createGzip()` as transform.
+
+[↑ Back to top](#table-of-contents)
+
+### 168. What is CORS and how can you handle it in a Node.js application?
+
+CORS (Cross‑Origin Resource Sharing) controls which origins can access resources. In Express, use the `cors` middleware: `const cors = require('cors'); app.use(cors());` and configure allowed origins, methods, etc.
+
+[↑ Back to top](#table-of-contents)
+
+### 169. What is CORS middleware? When and how do you configure it?
+
+Expected interview answer:
+
+“CORS stands for Cross-Origin Resource Sharing. It is a browser security mechanism that controls whether web pages from one origin can access resources from another origin.
+
+In Express, we can configure CORS using the `cors` middleware.
+
+For example, if my React frontend runs on one origin and my Express API runs on another, I can configure the API to allow requests from the frontend's origin.
+
+I would explicitly configure allowed origins, methods, headers, and credentials according to the application's requirements.
+
+For production, I would avoid unnecessarily broad policies and remember that CORS is not a replacement for authentication or authorization.”
+
+Example:
+```
+
+const cors = require("cors");
+
+app.use(cors({
+origin: "https://my-frontend.example.com",
+methods: ["GET", "POST", "PUT", "PATCH", "DELETE"]
+}));
+```
+
+Remember: CORS controls browser cross-origin access; it does not authenticate users or block all non-browser clients.
+
+[↑ Back to top](#table-of-contents)
+
+### 170. What is CORS? How do you configure it securely?
+
+CORS (Cross-Origin Resource Sharing) controls which origins can access resources. Use `cors` middleware, specify allowed origins (never `*` with credentials), methods, headers. For sensitive data, restrict origins explicitly.
+
+[↑ Back to top](#table-of-contents)
+
+### 171. What is cursor-based pagination? When is it better than offset-based pagination?
+
+Expected interview answer:
+
+“Cursor-based pagination uses a pointer to the position of the last item returned, allowing the next request to continue from that position.
+
+For example, an API might return 20 records and provide a cursor for retrieving the next 20 records.
+
+It is especially useful for large datasets and frequently updated collections, such as social-media feeds, because it avoids relying on large offset values.
+
+A well-designed cursor is usually opaque to the client and is based on a stable ordering, such as a unique ID or a timestamp combined with a unique ID.
+
+It still requires careful query design, but it can improve performance and reduce inconsistencies caused by records being inserted or deleted.”
+
+Remember: Cursor pagination continues from a stable position instead of skipping an offset.
+
+[↑ Back to top](#table-of-contents)
+
+### 172. What is declaration merging? How do you extend `Request` type in Express?
+
+Declaration merging allows combining multiple declarations of the same interface. Extend `Express.Request` by adding a `.d.ts` file:
+
+```typescript
+declare namespace Express {
+interface Request {
+user?: UserPayload;
+}
+}
+
+```
+
+[↑ Back to top](#table-of-contents)
+
+### 173. What is Express.js and how does it enhance Node.js?
+
+Express.js is a minimal and flexible web application framework for Node.js. It adds middleware support, routing, template engines, and simplifies handling of requests and responses. It abstracts low‑level details of the `http` module, enabling rapid API and web application development.
+
+[↑ Back to top](#table-of-contents)
+
+### 174. What is Express.js? Why is it used with Node.js?
+
+Expected interview answer:
+
+“Express.js is a lightweight and flexible web application framework built on top of Node.js.
+
+Node.js provides the runtime for executing JavaScript on the server, while Express simplifies building web servers and REST APIs.
+
+It provides features such as routing, middleware, request and response handling, and error handling.
+
+For example, instead of manually handling every HTTP request using Node.js's built-in HTTP module, I can use Express to define routes such as `GET /users` or `POST /users`.
+
+This makes backend code easier to organize, maintain, and extend.”
+
+Example:
+```
+
+const express = require("express");
+
+const app = express();
+
+app.get("/", (req, res) => {
+res.send("Hello World");
+});
+
+app.listen(3000);
+```
+
+Remember: Node.js provides the runtime; Express simplifies backend web development.
+
+[↑ Back to top](#table-of-contents)
+
+### 175. What is HTTPS? How do you force HTTPS in Express?
+
+HTTPS encrypts HTTP traffic. Force HTTPS by detecting `req.protocol` or `X-Forwarded-Proto` header (when behind a proxy) and redirecting HTTP to HTTPS. Use `express-sslify` or manual middleware. In production, terminate SSL at load balancer, but still enforce.
+
+[↑ Back to top](#table-of-contents)
+
+### 176. What is IoC (Inversion of Control)?
+
+IoC inverts the flow of control; the framework calls your code. DI is a form of IoC. In Node.js, Express middleware chain is an example: you define middleware, Express controls when they are called.
+
+[↑ Back to top](#table-of-contents)
+
+### 177. What is middleware in Express.js and how is it used?
+
+Middleware functions in Express are functions that execute during the request‑response cycle. They have access to `req`, `res`, and `next`. They can modify `req`/`res`, end the cycle, or call `next()` to pass control to the next middleware. Use `app.use()` to mount middleware globally or on specific paths.
+
+[↑ Back to top](#table-of-contents)
+
+### 178. What is middleware in Express? How does the middleware chain work?
+
+Expected interview answer:
+
+“Middleware is a function that executes during the request-response lifecycle of an Express application.
+
+It typically receives three arguments: `req`, `res`, and `next`.
+
+The `req` object contains request information, `res` is used to send the response, and `next()` passes control to the next middleware.
+
+Middleware is useful for common tasks such as request logging, authentication, validation, body parsing, and error handling.
+
+We can register multiple middleware functions, and Express executes the applicable ones in their defined order.”
+
+Example:
+```
+
+app.use((req, res, next) => {
+console.log(req.method, req.url);
+next();
+});
+```
+
+Remember: Middleware handles reusable request-processing logic.
+
+[↑ Back to top](#table-of-contents)
+
+### 179. What is OWASP Top 10? Which items are most relevant to Node.js APIs?
+
+OWASP Top 10 lists critical web application security risks. Relevant ones: Injection (NoSQL, SQL), Broken Authentication (JWT misuse), Sensitive Data Exposure (leaking stack traces), XXE, Broken Access Control, Security Misconfiguration (CORS, headers), XSS, Insecure Deserialization, Using Components with Known Vulnerabilities, Insufficient Logging & Monitoring.
+
+[↑ Back to top](#table-of-contents)
+
+### 180. What is the Decorator pattern? How does it relate to Express middleware?
+
+Decorator adds behavior to an object dynamically. Express middleware decorates the request handling by adding functionality (logging, auth) before/after route handler, like wrapping.
+
+[↑ Back to top](#table-of-contents)
+
+### 181. What is the difference between `app.listen()` and `http.createServer(app).listen()`?
+
+Expected interview answer:
+
+“`app.listen()` is a convenience method provided by Express. It creates an HTTP server using the Express application and starts listening on the specified port.
+
+Alternatively, I can create the server explicitly using `http.createServer(app)` and then call `listen()` on that server.
+
+Both approaches can serve the same Express application.
+
+The explicit approach gives me direct access to the underlying HTTP server, which is useful when integrating WebSocket servers or configuring certain server-level features.”
+
+Example:
+```
+
+// Convenience approach
+app.listen(3000);
+```
+
+```
+// Explicit approach
+const http = require("node:http");
+
+const server = http.createServer(app);
+
+server.listen(3000);
+```
+
+Remember: `app.listen()` is convenient; explicit server creation offers more control over the underlying HTTP server.
+
+[↑ Back to top](#table-of-contents)
+
+### 182. What is the difference between `app.use()` and `app.get()` / `app.post()`?
+
+Expected interview answer:
+
+“The main difference is that `app.use()` is primarily used to register middleware, while `app.get()` and `app.post()` register route handlers for specific HTTP methods.
+
+`app.use()` can apply middleware globally or to a particular path prefix, regardless of the HTTP method.
+
+For example, I can use `app.use()` to log every request or enable JSON parsing.
+
+On the other hand, `app.get('/users')` handles GET requests for the users route, while `app.post('/users')` handles POST requests for that route.
+
+I use `app.use()` for common request processing and method-specific route handlers for application functionality.”
+
+Example:
+```
+
+app.use(express.json());
+
+app.get("/users", (req, res) => {
+res.json([]);
+});
+
+app.post("/users", (req, res) => {
+res.status(201).json(req.body);
+});
+```
+
+Remember: `app.use()` registers middleware; `app.get()` and `app.post()` register method-specific routes.
+
+[↑ Back to top](#table-of-contents)
+
+### 183. What is the difference between `res.cookie()` and setting the `Set-Cookie` header manually?
+
+Expected interview answer:
+
+“Both approaches can send cookies to the client, but `res.cookie()` is a higher-level Express helper.
+
+It allows me to set a cookie's value and configure options such as `httpOnly`, `secure`, `sameSite`, `path`, and `maxAge`.
+
+If I manually set the `Set-Cookie` header, I must construct the cookie header correctly and handle its attributes myself.
+
+I generally prefer `res.cookie()` because it is simpler and less error-prone. For authentication cookies, I would carefully configure security attributes based on the deployment requirements.”
+
+Example:
+```
+
+res.cookie("sessionId", "example-value", {
+httpOnly: true,
+secure: true,
+sameSite: "lax",
+maxAge: 60 * 60 * 1000
+});
+```
+
+Remember: `res.cookie()` handles cookie formatting and options more conveniently than manually building a header.
+
+[↑ Back to top](#table-of-contents)
+
+### 184. What is the difference between `throw` and `next(err)` in Express?
+
+`throw` inside synchronous code or async without catch will crash the process (unless caught by global handlers). `next(err)` passes the error to the Express error-handling middleware chain safely.
+
+[↑ Back to top](#table-of-contents)
+
+### 185. What is the difference between application-level, router-level, and error-handling middleware?
+
+Expected interview answer:
+
+“Express supports different kinds of middleware based on where and how we register them.
+
+Application-level middleware is registered on the main Express application using methods such as `app.use()`.
+
+Router-level middleware is registered on an `express.Router()` instance and applies to routes managed by that router.
+
+Error-handling middleware uses four arguments: `err`, `req`, `res`, and `next`. It handles errors passed through the Express error-handling mechanism.
+
+I would use application-level middleware for common functionality, router-level middleware for specific route groups, and error-handling middleware for centralized error responses.”
+
+Remember: Application → whole application; router → route group; error handler → handles propagated errors.
+
+[↑ Back to top](#table-of-contents)
+
+### 186. What is the Middleware pattern? How is it different from traditional OOP patterns?
+
+Middleware pattern uses a pipeline of functions to process a request/response. It’s functional, composable, and avoids complex inheritance hierarchies. Express popularized it.
+
+[↑ Back to top](#table-of-contents)
+
+### 187. What is the order of middleware execution? Does order matter?
+
+Expected interview answer:
+
+“Yes, the order of middleware registration matters because Express processes applicable middleware and route handlers in the order they are registered.
+
+For example, body-parsing middleware should generally be registered before routes that need `req.body`.
+
+Similarly, authentication middleware should execute before protected route handlers.
+
+A typical structure includes common middleware first, route handlers next, a 404 handler after the routes, and error-handling middleware at the end.
+
+If the required middleware is registered after a route, that route may execute before the middleware has had a chance to process the request.”
+
+Example:
+```
+
+app.use(express.json());
+
+app.use("/api/users", userRoutes);
+
+app.use((req, res) => {
+res.status(404).json({ error: "Route not found" });
+});
+
+app.use(errorHandler);
+```
+
+Remember: Register middleware in the order required by the request-processing flow.
+
+[↑ Back to top](#table-of-contents)
+
+### 188. What is the principle of least privilege? How do you apply it in API design?
+
+Grant only the minimum necessary permissions to perform a task. In APIs: restrict endpoints to specific roles, limit data returned, validate permissions per operation, avoid exposing admin endpoints publicly.
+
+[↑ Back to top](#table-of-contents)
+
+### 189. What is the Proxy pattern? When is it used in Node.js? (caching, rate limiting)
+
+Proxy controls access to an object. In Node.js, a proxy can add caching, logging, or rate limiting to an API client. Example: a redis-cached proxy for database queries.
+
+[↑ Back to top](#table-of-contents)
+
+### 190. What is the request-response lifecycle in Express?
+
+Expected interview answer:
+
+“The request-response lifecycle describes how an incoming HTTP request is processed by an Express application until a response is sent back to the client.
+
+When a request arrives, it passes through the middleware and route handlers in the order they are registered.
+
+For example, the request might first pass through logging middleware, then JSON parsing middleware, authentication middleware, and finally the matching route handler.
+
+Each middleware can modify the request or response, send a response, or call `next()` to pass control to the next middleware.
+
+Once the response is sent, the request-response cycle is generally considered complete.”
+
+Example flow:
+
+`Client → Logging → JSON Parser → Authentication → Route Handler → Response`
+
+Remember: Middleware order determines the processing flow of an Express request.
+
+[↑ Back to top](#table-of-contents)
+
+## Authentication & Authorization
+
+### 191. How do you invalidate/revoke a JWT before it expires?
+
+JWT is stateless; to revoke, maintain a blacklist (in Redis or DB) of tokens (by `jti` claim) until they expire. Check the blacklist on each request. Alternatively, use short-lived tokens and rely on token expiration.
+
+[↑ Back to top](#table-of-contents)
+
+### 192. How does JWT authentication work end-to-end? (sign, send, verify)
+
+1. Client sends credentials.
+2. Server validates, creates JWT with user info and expiry, signs it, sends back.
+3. Client stores token, sends it in `Authorization: Bearer <token>` header.
+4. Server verifies signature, decodes claims, and authorizes request.
+
+[↑ Back to top](#table-of-contents)
+
+### 193. What are the security risks of JWT? How do you mitigate them?
+
+- Token theft: use short expiration, HTTPS, store securely (HttpOnly, Secure cookie).
+- Sensitive data in payload: payload is only base64 encoded, not encrypted; never put secrets.
+- No built-in revocation: implement a blacklist or use short-lived tokens with refresh.
+- Weak signing key: use strong keys, rotate regularly.
+
+**Q: Where should you store JWT on the client? (localStorage vs HttpOnly cookie — trade-offs)**
+- localStorage: vulnerable to XSS; JavaScript can access it.
+- HttpOnly cookie: not accessible via JS, mitigates XSS, but susceptible to CSRF (if not `SameSite`). Use `SameSite=Strict/Lax` and CSRF tokens. Preferred for security.
+
+[↑ Back to top](#table-of-contents)
+
+### 194. What is `crypto.timingSafeEqual()`? Why is it important for authentication?
+
+It compares two buffers in constant time, preventing timing attacks where an attacker can guess secrets by measuring response time differences. Essential for comparing tokens, API keys, or passwords.
+
+[↑ Back to top](#table-of-contents)
+
+### 195. What is a JWT secret? How long should it be? How do you rotate it?
+
+The secret is used to sign and verify JWT. For HS256, it should be a long, random string (at least 256 bits). Rotation involves using a key ID (`kid`) in the header, supporting multiple keys simultaneously, and deprecating old keys after a period. Store secrets securely.
+
+[↑ Back to top](#table-of-contents)
+
+### 196. What is ABAC (Attribute-Based Access Control)?
+
+ABAC evaluates attributes of the user, resource, and environment against policies. More fine-grained than RBAC. Example: "User can edit document if userId matches document.owner and time is within business hours."
+
+[↑ Back to top](#table-of-contents)
+
+### 197. What is JWT (JSON Web Token)? What are its three parts?
+
+JWT is a compact, URL-safe token for claims. It consists of: Header (algorithm & type), Payload (claims), Signature (signed with secret or private key). Format: `header.payload.signature`, base64url encoded.
+
+[↑ Back to top](#table-of-contents)
+
+### 198. What is OAuth 2.0? What are the 4 grant types?
+
+OAuth 2.0 is an authorization framework for delegated access. Grant types:
+1. Authorization Code (most secure, with server-side app).
+2. Implicit (deprecated).
+3. Resource Owner Password Credentials (deprecated).
+4. Client Credentials (machine-to-machine).
+Plus Device Code, Refresh Token.
+
+[↑ Back to top](#table-of-contents)
+
+### 199. What is OpenAPI/Swagger? How do you generate documentation from code?
+
+Expected interview answer:
+
+“OpenAPI is a specification for describing HTTP APIs, including endpoints, request parameters, schemas, authentication, and responses.
+
+Swagger is a set of tools associated with working with API specifications, including Swagger UI, which displays interactive documentation.
+
+We can create an OpenAPI specification manually or generate parts of it from code annotations using tools such as `swagger-jsdoc`. In some TypeScript applications, tools such as `tsoa` can generate API descriptions from controllers and type information.
+
+We can then serve the generated specification through Swagger UI so that developers can explore endpoints and understand how to use them.”
+
+Remember: OpenAPI defines the API description format; Swagger tools help create, display, and work with it.
+
+[↑ Back to top](#table-of-contents)
+
+### 200. What is OpenID Connect (OIDC)? How does it extend OAuth 2.0?
+
+OIDC is an identity layer on top of OAuth 2.0. It adds an ID token (JWT) with user identity claims, standardizing authentication. OAuth 2.0 alone is for authorization; OIDC enables single sign-on (SSO).
+
+[↑ Back to top](#table-of-contents)
+
+### 201. What is Passport.js and how is it used with Node.js?
+
+Passport.js is authentication middleware for Node.js. It provides a modular way to integrate authentication strategies (e.g., local, Google, Facebook, JWT). You configure a strategy, then use `passport.authenticate()` in routes.
+
+[↑ Back to top](#table-of-contents)
+
+### 202. What is session-based authentication vs token-based authentication?
+
+Session-based: server stores session data, client holds session ID in cookie. Server looks up session each request.
+Token-based: client holds a token (JWT), server verifies token without storing session state; stateless.
+
+[↑ Back to top](#table-of-contents)
+
+### 203. What is sticky session? When do you need it?
+
+Sticky session routes a client to the same backend instance for the duration of a session. Needed when the application stores session state locally (not externalized). Otherwise, avoid it for better scalability and resilience.
+
+[↑ Back to top](#table-of-contents)
+
+### 204. What is the Authorization Code flow with PKCE? When is it used?
+
+PKCE (Proof Key for Code Exchange) enhances the Authorization Code flow for mobile/SPA clients that cannot securely store a client secret. It uses a code verifier and challenge to prevent authorization code interception.
+
+[↑ Back to top](#table-of-contents)
+
+### 205. What is the difference between `HS256` and `RS256` signing algorithms in JWT?
+
+- HS256: HMAC with SHA-256, symmetric secret key (same key signs and verifies). Simpler but requires sharing secret between parties.
+- RS256: RSA with SHA-256, asymmetric (private key signs, public key verifies). Better for distributed systems, allows key rotation without exposing private key.
+
+[↑ Back to top](#table-of-contents)
+
+### 206. What is the difference between access token and refresh token?
+
+Access token: used to access resources, short lifespan. Refresh token: used to obtain new access tokens, longer lifespan, stored securely. The server can revoke refresh tokens.
+
+[↑ Back to top](#table-of-contents)
+
+### 207. What is the difference between authentication and authorization?
+
+Authentication verifies who you are (credentials). Authorization determines what you are allowed to do (permissions).
+
+[↑ Back to top](#table-of-contents)
+
+### 208. What is the Mongoose `session` and how do you use it for transactions?
+
+To use MongoDB transactions, start a session: `const session = await mongoose.startSession(); session.startTransaction();`. Pass `{ session }` to all operations within the transaction. Commit or abort.
+
+[↑ Back to top](#table-of-contents)
+
+### 209. What is the purpose of the `jsonwebtoken` library in Node.js?
+
+The `jsonwebtoken` library creates and verifies JSON Web Tokens (JWT). JWTs are used for stateless authentication: the server signs a token with a secret, and the client includes it in subsequent requests. It can contain user identity and expiry.
+
+[↑ Back to top](#table-of-contents)
+
+### 210. What is the Strategy pattern? Give a Node.js example.
+
+Strategy pattern defines a family of algorithms and makes them interchangeable. Example: different authentication strategies in Passport.js — you can swap local strategy with OAuth strategy without changing the authentication flow.
+
+[↑ Back to top](#table-of-contents)
+
+### 211. When do you return 400 versus 401 versus 403 versus 404 versus 422 versus 409?
+
+Expected interview answer:
+
+“These status codes represent different kinds of request failures.
+
+`400 Bad Request` is appropriate when the request is malformed or cannot be processed as submitted.
+
+`401 Unauthorized` is used when authentication is missing or invalid.
+
+`403 Forbidden` means the server understood the request but refuses to authorize the operation.
+
+`404 Not Found` means the requested resource or endpoint cannot be found.
+
+`422 Unprocessable Content` can be used when the request is syntactically valid but fails semantic validation.
+
+`409 Conflict` indicates that the request conflicts with the current state of the resource, such as a duplicate operation or a version conflict.
+
+I would use a consistent error-handling policy across the API so that clients can respond to errors predictably.”
+
+Remember: The important distinction is whether the request is malformed, unauthenticated, forbidden, missing a resource, semantically invalid, or conflicting with current state.
+
+[↑ Back to top](#table-of-contents)
+
+## Databases — MongoDB & Mongoose
+
+### 212. Explain how you would perform CRUD operations in a Node.js application.
+
+- **Create**: `db.collection.insertOne()` or using Mongoose `Model.create()`.
+- **Read**: `find()` with filters.
+- **Update**: `updateOne()` with `$set`.
+- **Delete**: `deleteOne()`.
+In REST APIs, these correspond to POST, GET, PUT/PATCH, DELETE.
+
+[↑ Back to top](#table-of-contents)
+
+### 213. How do you define validation in a Mongoose schema?
+
+Within schema definition, use built-in validators (required, min, max, enum, match) or custom validators via `validate` function. Example: `name: { type: String, required: true, minlength: 3 }`.
+
+[↑ Back to top](#table-of-contents)
+
+### 214. How do you paginate results in Mongoose efficiently?
+
+Use `skip()` and `limit()` for offset pagination, or cursor-based using `find({ _id: { $gt: lastId } }).limit(n)`. For large collections, cursor-based is more efficient. `mongoose-paginate-v2` plugin simplifies.
+
+[↑ Back to top](#table-of-contents)
+
+### 215. How do you test database interactions? (in-memory DB, test containers, mocking)
+
+- Use an in-memory database (e.g., sqlite in-memory, mongodb-memory-server) for fast, isolated tests.
+- Test containers: real database in Docker for integration tests.
+- Mock the database layer entirely for unit tests.
+
+[↑ Back to top](#table-of-contents)
+
+### 216. How do you tune V8 garbage collection? (`--max-old-space-size`, `--expose-gc`)
+
+- `--max-old-space-size=4096`: increases max heap memory.
+- `--expose-gc`: enables `global.gc()` for manual triggering (only in dev).
+- `--optimize-for-size` reduces memory. Tune as needed based on monitoring.
+
+[↑ Back to top](#table-of-contents)
+
+### 217. How do you type a MongoDB document with Mongoose + TypeScript?
+
+Define an interface extending `mongoose.Document`, or use `mongoose.Schema` with type inference. E.g., `interface IUser extends Document { name: string; }`. Or use `@typegoose/typegoose` for decorator-based typing.
+
+[↑ Back to top](#table-of-contents)
+
+### 218. How does Node.js manage and optimize garbage collection?
+
+V8 uses a generational garbage collector: young generation (scavenger) for short‑lived objects, old generation (mark‑sweep/compact) for longer‑lived objects. To optimize, avoid creating too many objects in tight loops, use object pooling, and monitor memory usage. The `--max-old-space-size` flag can adjust heap limits.
+
+[↑ Back to top](#table-of-contents)
+
+### 219. What are documents and collections in MongoDB?
+
+A document is a record (analogous to a row) stored as BSON. A collection is a grouping of documents (analogous to a table) with no enforced schema.
+
+[↑ Back to top](#table-of-contents)
+
+### 220. What are MongoDB transactions? When are they used?
+
+Transactions provide ACID guarantees across multiple documents/collections within a replica set. Use when you need atomicity for writes that must all succeed or fail together (e.g., transfer money between accounts). Not needed for single-document operations (which are already atomic).
+
+[↑ Back to top](#table-of-contents)
+
+### 221. What are MongoDB write concerns and read concerns?
+
+- Write concern: level of acknowledgment requested for write operations (e.g., `{ w: "majority" }` waits for majority of replica set members).
+- Read concern: level of isolation for read operations (e.g., `"majority"` returns data that has been acknowledged by a majority, providing consistency).
+
+[↑ Back to top](#table-of-contents)
+
+### 222. What are Mongoose virtuals?
+
+Virtuals are document properties that are not persisted to MongoDB but computed on the fly. They can be getters/setters. Example: `fullName` computed from `firstName` and `lastName`.
+
+[↑ Back to top](#table-of-contents)
+
+### 223. What are the common MongoDB data types?
+
+String, Number (Int, Long, Double), Boolean, Date, ObjectId, Array, Object, Binary data, Timestamp, Regular Expression, Null.
+
+[↑ Back to top](#table-of-contents)
+
+### 224. What are the different types of databases you can use with Node.js?
+
+- **SQL**: PostgreSQL, MySQL, SQLite (drivers: `pg`, `mysql2`, `sqlite3`).
+- **NoSQL**: MongoDB (with Mongoose), CouchDB, Cassandra.
+- **In‑memory**: Redis, Memcached.
+
+[↑ Back to top](#table-of-contents)
+
+### 225. What is `$lookup`? How does it perform a join?
+
+`$lookup` performs a left outer join with another collection. It adds an array field containing matching documents from the joined collection. Example: join orders with users.
+
+[↑ Back to top](#table-of-contents)
+
+### 226. What is `lean()` in Mongoose? When should you use it?
+
+`lean()` returns plain JavaScript objects instead of Mongoose documents, skipping hydration, getters/setters, and virtuals. Use when you only need data, for performance gains (e.g., read-only queries).
+
+[↑ Back to top](#table-of-contents)
+
+### 227. What is `populate()` in Mongoose? How does it work? What are its limitations?
+
+`populate()` replaces referenced ObjectIds with actual documents from another collection, similar to a join. It issues additional queries. Limitations: can lead to N+1 queries, not SQL joins; for large references, performance degrades. Use `lean()` for plain objects.
+
+[↑ Back to top](#table-of-contents)
+
+### 228. What is a BSON document? How does it differ from JSON?
+
+BSON (Binary JSON) extends JSON with additional data types (Date, ObjectId, binary) and is efficient for encoding and decoding. It is used internally by MongoDB.
+
+[↑ Back to top](#table-of-contents)
+
+### 229. What is a covered query in MongoDB?
+
+A query fully satisfied by an index without reading documents. All queried fields and conditions are part of the index. This results in high performance as only the index is scanned.
+
+[↑ Back to top](#table-of-contents)
+
+### 230. What is a mass assignment vulnerability? How do you prevent it?
+
+Mass assignment occurs when an API blindly assigns client-provided properties to a database model, allowing unauthorized fields to be set. Prevent: explicitly define which fields can be updated (whitelist approach). In Mongoose, use `strict` schema; in Sequelize/Prisma, specify allowed fields.
+
+[↑ Back to top](#table-of-contents)
+
+### 231. What is a Mongoose schema? What is a model?
+
+Schema defines the structure, data types, validators, and default values for documents. A model is a compiled constructor created from the schema, providing an interface to interact with the database collection.
+
+[↑ Back to top](#table-of-contents)
+
+### 232. What is a replica set? How does failover work?
+
+A replica set is a group of MongoDB processes maintaining the same data set, providing redundancy and high availability. One primary receives writes; secondaries replicate data. If primary fails, an election promotes a secondary to primary automatically.
+
+[↑ Back to top](#table-of-contents)
+
+### 233. What is an index in MongoDB? Why are indexes important?
+
+Indexes support efficient query execution by allowing MongoDB to find data without scanning the entire collection. Without indexes, MongoDB performs a collection scan. They dramatically improve read performance but add write overhead.
+
+[↑ Back to top](#table-of-contents)
+
+### 234. What is discriminator in Mongoose?
+
+Discriminators enable schema inheritance within a single collection. You define a base schema and then derived schemas that inherit and add fields, sharing the same collection but with a `__t` discriminator key.
+
+[↑ Back to top](#table-of-contents)
+
+### 235. What is Docker Compose? How do you use it for a Node.js + MongoDB + Redis stack?
+
+Docker Compose defines multi-container applications in a YAML file. Define services: `web` (Node.js), `mongo`, `redis`. Link them via network. Start with `docker-compose up`.
+
+[↑ Back to top](#table-of-contents)
+
+### 236. What is garbage collection in Node.js? How does V8's GC work?
+
+GC reclaims memory occupied by objects no longer in use. V8 uses generational GC: New space (Scavenge) for short-lived objects, Old space (Mark-Sweep & Mark-Compact) for long-lived. It stops the world briefly (minor GCs are fast) but major GCs can cause pauses.
+
+[↑ Back to top](#table-of-contents)
+
+### 237. What is MongoDB Atlas? How does it differ from self-hosted MongoDB?
+
+Atlas is MongoDB's managed cloud database service (DBaaS). It handles deployment, scaling, backups, monitoring, and security. Self-hosted requires manual setup, maintenance, and scaling.
+
+[↑ Back to top](#table-of-contents)
+
+### 238. What is MongoDB? How does it differ from relational databases?
+
+MongoDB is a document-oriented NoSQL database that stores data in flexible, JSON-like BSON documents. Differences: schema-less/ flexible schema, denormalization common, horizontal scaling via sharding, no joins in the traditional sense (use `$lookup`), ACID transactions available for replica sets.
+
+[↑ Back to top](#table-of-contents)
+
+### 239. What is Mongoose and how does it simplify MongoDB interactions?
+
+Mongoose is an ODM (Object Data Modeling) library for MongoDB. It provides schema definitions, built‑in validation, middleware (hooks), and methods to query data using a structured model, reducing boilerplate compared to the native driver.
+
+[↑ Back to top](#table-of-contents)
+
+### 240. What is Mongoose? Why use it instead of the native MongoDB driver?
+
+Mongoose is an ODM (Object Data Modeling) library for MongoDB and Node.js. It provides schema validation, model creation, middleware, and query building, enforcing a structure on otherwise schemaless collections. Useful for data consistency and relationship handling.
+
+[↑ Back to top](#table-of-contents)
+
+### 241. What is NoSQL injection (MongoDB injection)? How do you prevent it?
+
+By passing objects with operators like `{ $gt: '' }` in query parameters, attackers can bypass logic. Prevent: use `mongoose` schema validation, sanitize input, use `express-mongo-sanitize` to remove `$` and `.` from keys.
+
+[↑ Back to top](#table-of-contents)
+
+### 242. What is sharding in MongoDB? What problem does it solve?
+
+Sharding distributes data across multiple servers (shards) to handle large datasets and high throughput operations. Each shard holds a subset of data based on a shard key. Enables horizontal scaling.
+
+[↑ Back to top](#table-of-contents)
+
+### 243. What is the aggregation pipeline? Name 5 common stages and what they do.
+
+Aggregation pipeline processes data in stages, where each stage transforms documents. Common stages:
+- `$match`: filters documents.
+- `$group`: groups by a key, calculates aggregations.
+- `$project`: reshapes documents (include/exclude fields, computed fields).
+- `$sort`: sorts documents.
+- `$limit` / `$skip`: pagination.
+
+[↑ Back to top](#table-of-contents)
+
+### 244. What is the difference between `save()` and `updateOne()` in Mongoose?
+
+- `save()`: validates the full document against schema, runs middleware, works on a document instance.
+- `updateOne()`: sends an update operation to MongoDB, bypasses schema validation and middleware (by default). Faster for bulk updates.
+
+[↑ Back to top](#table-of-contents)
+
+### 245. What is the difference between SQL and NoSQL databases?
+
+SQL databases (relational): structured schema, tables, rows, SQL queries, ACID compliance (e.g., PostgreSQL). NoSQL: flexible schema (documents, key-value, graph), designed for horizontal scaling, eventual consistency often used (e.g., MongoDB). Different use cases.
+
+[↑ Back to top](#table-of-contents)
+
+### 246. What is the explain() method? How do you use it to diagnose slow queries?
+
+`collection.find().explain('executionStats')` returns query plan details: which index used (or COLLSCAN), execution time, documents examined vs returned. Helps identify missing indexes or inefficient queries.
+
+[↑ Back to top](#table-of-contents)
+
+### 247. What is the oplog?
+
+The oplog (operations log) is a capped collection that records all modifications in the primary, enabling secondaries to replicate changes.
+
+[↑ Back to top](#table-of-contents)
+
+### 248. What types of indexes does MongoDB support?
+
+Single field, compound (multiple fields), multikey (for arrays), text (for full-text search), geospatial (2d, 2dsphere), hashed (for sharding), TTL (auto-delete after time), sparse, partial, unique.
+
+[↑ Back to top](#table-of-contents)
+
+### 249. When would you choose PostgreSQL over MongoDB?
+
+When data is relational, requires complex joins, transactions across multiple entities, strict data integrity constraints, or reporting queries. PostgreSQL excels at structured, consistent data; MongoDB at rapidly evolving schemas, high write throughput, and hierarchical data.
+
+[↑ Back to top](#table-of-contents)
+
+## Databases — SQL, PostgreSQL & ORMs
+
+### 250. How do you prevent SQL injection using a query builder?
+
+Query builders like Knex parameterize queries automatically, separating SQL code from values. They escape input, eliminating injection. Avoid raw interpolated strings; use parameterized queries (`?` placeholders) or builder methods.
+
+[↑ Back to top](#table-of-contents)
+
+### 251. What are ACID properties? Explain each.
+
+- Atomicity: all operations in a transaction succeed or all fail.
+- Consistency: a transaction brings the database from one valid state to another.
+- Isolation: concurrent transactions do not interfere.
+- Durability: committed transactions persist even after a crash.
+
+[↑ Back to top](#table-of-contents)
+
+### 252. What are database migrations? How do you manage schema migrations in a Node.js app?
+
+Migrations are version-controlled scripts that alter database schema. Tools like Knex.js, Sequelize, Prisma Migrate, `node-pg-migrate` apply changes incrementally and allow rollback.
+
+[↑ Back to top](#table-of-contents)
+
+### 253. What are the trade-offs between using an ORM vs raw SQL in a high-performance Node.js app?
+
+ORM: faster development, type safety, migrations, but can generate suboptimal queries, overhead. Raw SQL: precise control, better performance for complex queries, but more boilerplate and prone to injection without care. For high performance, a query builder like Knex offers a middle ground.
+
+[↑ Back to top](#table-of-contents)
+
+### 254. What is `pg` vs `pg-pool` vs Knex.js vs Sequelize vs Prisma? When to use each?
+
+- `pg`: low-level PostgreSQL client, callback/promise API.
+- `pg-pool`: connection pooling for `pg`.
+- Knex.js: SQL query builder with migrations and pooling, more control than ORM.
+- Sequelize: full ORM with model definitions, associations, validation.
+- Prisma: modern ORM with type-safe client, declarative schema, auto-generated migrations.
+Use `pg` for simple scripts; Knex for SQL lovers; ORM for complex domain models and rapid development.
+
+[↑ Back to top](#table-of-contents)
+
+### 255. What is a transaction? How do you use one in Node.js?
+
+A transaction groups multiple SQL statements into a single unit of work. In Node.js with `pg` (or ORM), use `BEGIN`, `COMMIT`, `ROLLBACK`. With an ORM like Sequelize, you can use managed transactions:
+
+```javascript
+await sequelize.transaction(async (t) => {
+// operations passing { transaction: t }
+});
+
+```
+
+[↑ Back to top](#table-of-contents)
+
+### 256. What is an index in PostgreSQL? What is the trade-off of over-indexing?
+
+Index speeds up data retrieval but slows down write operations (INSERT, UPDATE, DELETE) because the index must be updated. Over-indexing consumes disk and increases maintenance overhead, with diminishing returns.
+
+[↑ Back to top](#table-of-contents)
+
+### 257. What is an ORM? What are its advantages and disadvantages?
+
+ORM maps database tables to objects. Advantages: reduces boilerplate SQL, automates migrations, provides relations, type safety. Disadvantages: can generate inefficient queries, learning curve, hides complexity, less control over advanced SQL.
+
+[↑ Back to top](#table-of-contents)
+
+### 258. What is correlation ID / request ID? How do you propagate it across async calls?
+
+A correlation ID is a unique identifier attached to a request, passed across services and logged with each entry, enabling tracing of a transaction. In Node.js, use `AsyncLocalStorage` or `cls-hooked` to maintain the ID through asynchronous operations without explicit parameter passing.
+
+[↑ Back to top](#table-of-contents)
+
+### 259. What is EXPLAIN ANALYZE in PostgreSQL?
+
+`EXPLAIN ANALYZE` executes the query and shows the actual execution plan and timing, including row counts and loops. Vital for performance tuning.
+
+[↑ Back to top](#table-of-contents)
+
+### 260. What is Knex.js? When would you use it over an ORM?
+
+Knex.js is a SQL query builder. Use when you need full control over SQL but want to avoid raw strings, migrations, and connection pooling. It's lighter than a full ORM and suitable for complex queries.
+
+[↑ Back to top](#table-of-contents)
+
+### 261. What is Prisma? How does it differ from Sequelize?
+
+Prisma is a next-gen ORM with a declarative schema file, auto-generated type-safe client, and migration system. It provides better TypeScript support, less boilerplate, and more predictable queries. Sequelize is more traditional, JavaScript-first.
+
+[↑ Back to top](#table-of-contents)
+
+### 262. What is Sequelize? How do you define a model and associations?
+
+Sequelize is a promise-based ORM for Node.js. Define model: `sequelize.define('User', { name: DataTypes.STRING })`. Associations: `User.hasMany(Post)`, `Post.belongsTo(User)`.
+
+[↑ Back to top](#table-of-contents)
+
+### 263. What is SQL injection? How do you prevent it in Node.js?
+
+SQL injection occurs when untrusted input is concatenated into SQL queries. Prevention: use parameterized queries or ORM/query builders that escape inputs. Never use string interpolation for values.
+
+[↑ Back to top](#table-of-contents)
+
+### 264. What is the active record pattern vs the data mapper pattern?
+
+- Active Record: model object contains data and behavior (like Sequelize models).
+- Data Mapper: separates in-memory objects from database, using a mapper to translate (like Doctrine). Sequelize leans toward active record; Prisma is more data mapper (client generates queries).
+
+[↑ Back to top](#table-of-contents)
+
+### 265. What is the difference between Redis `WATCH/MULTI/EXEC` and a transaction?
+
+`WATCH` marks keys for optimistic locking; `MULTI/EXEC` queues commands. If watched keys change before EXEC, the transaction fails. This provides atomicity and isolation but not full ACID. Redis transactions don't support rollback (commands are just not executed if EXEC fails).
+
+[↑ Back to top](#table-of-contents)
+
+### 266. What is the Prisma schema? What is the Prisma client?
+
+Prisma schema (in `schema.prisma`) defines the data model, database connection, and generator. Prisma client is an auto-generated, type-safe query builder used in application code to interact with the database.
+
+[↑ Back to top](#table-of-contents)
+
+## Caching & Redis
+
+### 267. How can you optimize the performance of a Node.js application?
+
+- Use clustering to utilize multiple CPU cores.
+- Implement caching (Redis, in‑memory) for frequent data.
+- Optimize database queries and indexes.
+- Use streaming for large data.
+- Enable gzip compression.
+- Profile and identify bottlenecks with `clinic` or `node --prof`.
+
+[↑ Back to top](#table-of-contents)
+
+### 268. How do you connect to Redis from Node.js? (`ioredis` vs `node-redis`)
+
+`ioredis` and `redis` (npm `redis`) are popular clients. Example with ioredis: `const Redis = require('ioredis'); const redis = new Redis();`. Both support promises; ioredis has better cluster/sentinel support.
+
+[↑ Back to top](#table-of-contents)
+
+### 269. How do you scale `socket.io` across multiple servers? (Redis adapter)
+
+Use `socket.io-redis-adapter` (or the newer `@socket.io/redis-adapter`). It uses Redis Pub/Sub to relay events between nodes, so a message emitted on one server reaches all servers and their connected clients.
+
+[↑ Back to top](#table-of-contents)
+
+### 270. How do you scale a Node.js application to handle high traffic?
+
+- Horizontally: run multiple instances behind a load balancer (cluster module or separate processes).
+- Use a reverse proxy (Nginx).
+- Design stateless services.
+- Use caching, CDN.
+- Offload CPU-intensive tasks to worker threads.
+- Scale database (sharding, read replicas).
+
+[↑ Back to top](#table-of-contents)
+
+### 271. How do you set a key with a TTL (expiration) in Redis?
+
+`redis.set('key', 'value', 'EX', 3600);` (expires in 3600 seconds). Or `setex key 3600 value`. The client libraries provide the same.
+
+[↑ Back to top](#table-of-contents)
+
+### 272. How do you share state across multiple Node.js instances? (Redis, sticky sessions)
+
+Use a centralized store like Redis for sessions, cache, and real-time data. For WebSockets, use a Redis adapter with `socket.io` to broadcast across instances. Sticky sessions (ip hash) tie a client to a specific instance, but this breaks true statelessness; prefer external state.
+
+[↑ Back to top](#table-of-contents)
+
+### 273. What are common Redis anti-patterns to avoid?
+
+- Using `KEYS *` in production (blocking) → use `SCAN`.
+- Storing very large keys/values (bandwidth, memory).
+- Not setting TTLs, causing memory bloat.
+- Using single instance without persistence for critical data.
+- Overusing Pub/Sub for reliable messaging.
+
+[↑ Back to top](#table-of-contents)
+
+### 274. What are Redis data types? When would you use each?
+
+- Strings: simple key-value, counters, caching.
+- Hashes: object storage (user profile fields).
+- Lists: queues (LPUSH/RPOP), recent items.
+- Sets: unique collections, tags, friend lists.
+- Sorted Sets: leaderboards, priority queues.
+- Streams: log data, event sourcing.
+- HyperLogLog: approximate unique counting.
+- Bitmaps: feature flags, online status.
+
+[↑ Back to top](#table-of-contents)
+
+### 275. What is a cache stampede (thundering herd)? How do you prevent it?
+
+When many concurrent requests try to rebuild the same expired cache entry simultaneously, overwhelming the database. Prevent with: staggered TTLs, mutex/lock on cache rebuild (only one fetches, others wait), pre-warming cache, or using `SETNX` to acquire a lock in Redis.
+
+[↑ Back to top](#table-of-contents)
+
+### 276. What is a Redis pipeline? What problem does it solve?
+
+Pipelining sends multiple commands without waiting for replies, reducing network round-trips. Useful for batch operations. In Node.js, `redis.pipeline().set('a', 1).incr('a').exec()`.
+
+[↑ Back to top](#table-of-contents)
+
+### 277. What is Bull/BullMQ? How does it use Redis as a backend?
+
+Bull is a Node.js job queue library using Redis for persistence. It supports job priorities, delays, retries, and concurrency. BullMQ is the modern rewrite. Redis stores job data and uses pub/sub for real-time events.
+
+[↑ Back to top](#table-of-contents)
+
+### 278. What is cache invalidation? What are the common strategies?
+
+Cache invalidation removes or updates stale cache entries. Strategies: TTL-based (expire after time), write-through (update cache and DB together), write-behind (update cache then async to DB), cache-aside (read cache, miss->DB, store in cache; manual invalidation on write). There's no universal solution; it's a hard problem.
+
+[↑ Back to top](#table-of-contents)
+
+### 279. What is inline caching in V8? How does it affect performance?
+
+Inline caching is an optimization where V8 caches the location of a property access after the first lookup, assuming the object shape (hidden class) remains the same. Subsequent accesses become direct memory reads. When the shape changes, the cache misses, causing deoptimization.
+
+[↑ Back to top](#table-of-contents)
+
+### 280. What is module-level singleton pattern (leveraging module cache)?
+
+Node.js caches modules after first `require`. By exporting an instance of a class or object, you effectively create a singleton because subsequent requires return the same object. This is a common way to share DB connections.
+
+[↑ Back to top](#table-of-contents)
+
+### 281. What is Redis Cluster? What is Redis Sentinel?
+
+- Redis Cluster: horizontal scaling with automatic sharding and failover.
+- Redis Sentinel: monitors master/slave instances, performs automatic failover for high availability without sharding.
+
+[↑ Back to top](#table-of-contents)
+
+### 282. What is Redis Lua scripting? When is it useful?
+
+Lua scripts run atomically inside Redis, combining multiple commands into one execution. Useful for complex operations that require atomicity (e.g., rate limiting, compare-and-set). Use `EVAL` command.
+
+[↑ Back to top](#table-of-contents)
+
+### 283. What is Redis persistence? What is the difference between RDB and AOF?
+
+- RDB (snapshotting): periodic point-in-time snapshots of dataset. Fast recovery, but can lose recent data.
+- AOF (Append Only File): logs every write operation; more durable, but slower. Can be used together.
+
+[↑ Back to top](#table-of-contents)
+
+### 284. What is Redis Pub/Sub? How does it differ from a message queue?
+
+Pub/Sub allows publishers to send messages to channels; subscribers receive them in real-time. It's fire-and-forget; messages are not persisted or queued if no subscriber. Message queues (like RabbitMQ) persist messages and ensure delivery.
+
+[↑ Back to top](#table-of-contents)
+
+### 285. What is Redis? What data structures does it support?
+
+Redis is an in-memory data structure store used as cache, database, message broker. Supports strings, hashes, lists, sets, sorted sets, streams, HyperLogLog, bitmaps, geospatial indexes.
+
+[↑ Back to top](#table-of-contents)
+
+### 286. What is the cache-aside pattern? How does it differ from write-through and write-behind?
+
+- Cache-aside: application checks cache first; on miss, loads from DB and stores in cache. Writes go directly to DB, then invalidate cache.
+- Write-through: application writes to cache, cache synchronously writes to DB.
+- Write-behind: application writes to cache, cache asynchronously writes to DB later.
+
+[↑ Back to top](#table-of-contents)
+
+### 287. What is the difference between `DEL` and `UNLINK` in Redis?
+
+`DEL` synchronously deletes a key and blocks Redis while freeing memory (for large values). `UNLINK` non-blocking; it marks the key for deletion and reclaims memory in the background, reducing latency spikes.
+
+[↑ Back to top](#table-of-contents)
+
+### 288. What is the difference between Redis as a cache vs as a database vs as a message broker?
+
+- Cache: volatile data, often with TTL, eviction policies.
+- Database: data persisted, used as primary store (less common).
+- Message broker: Pub/Sub or streams for real-time messaging.
+
+[↑ Back to top](#table-of-contents)
+
+## Error Handling & Logging
+
+### 289. How do you redact sensitive fields (passwords, tokens) from logs?
+
+Use a formatter that replaces or removes sensitive keys from the log object before output. Winston/Pino have redact options or you can write a custom serializer.
+
+[↑ Back to top](#table-of-contents)
+
+### 290. What are some best practices for error handling in Node.js applications?
+
+- Use `try/catch` in async/await and handle promise rejections.
+- In Express, use centralized error‑handling middleware.
+- Never expose stack traces to clients in production.
+- Log errors with appropriate levels (debug, error).
+- Crash and restart on unhandled exceptions using process managers.
+
+[↑ Back to top](#table-of-contents)
+
+### 291. What is `AsyncLocalStorage`? How do you use it for request context propagation?
+
+`AsyncLocalStorage` creates a storage context that is maintained across asynchronous operations without explicitly passing data. Usage: `const als = new AsyncLocalStorage(); als.run({ requestId }, () => { ... })`. Inside the callback, `als.getStore()` returns the context. Perfect for logging, request tracing.
+
+[↑ Back to top](#table-of-contents)
+
+### 292. What is `pipeline()`? How does it differ from `pipe()`? Why is `pipeline()` preferred?
+
+Expected interview answer:
+
+“Both `pipe()` and `pipeline()` connect streams to transfer data between them, but `pipeline()` provides more comprehensive error handling and cleanup.
+
+With `pipe()`, we may need to manage errors on individual streams and ensure that resources are cleaned up correctly if something fails.
+
+With `pipeline()`, Node.js coordinates the stream chain, propagates errors to the callback or returned Promise, and performs appropriate cleanup when an error occurs.
+
+For example, when reading a file, compressing it, and writing the compressed result to another file, I would generally prefer `pipeline()` because it is safer to use in production.”
+
+Example:
+```
+
+const fs = require("node:fs");
+const zlib = require("node:zlib");
+const { pipeline } = require("node:stream");
+
+pipeline(
+fs.createReadStream("input.txt"),
+zlib.createGzip(),
+fs.createWriteStream("output.txt.gz"),
+error => {
+if (error) {
+console.error("Pipeline failed:", error);
+return;
+}
+
+console.log("Compression completed");
+}
+);
+```
+
+Remember: `pipe()` connects streams; `pipeline()` additionally provides coordinated error propagation and cleanup.
+
+[↑ Back to top](#table-of-contents)
+
+### 293. What is a sidecar pattern?
+
+A sidecar is a helper container deployed alongside the main application container, providing support functionalities (e.g., proxy, logging agent, service mesh proxy). They share the same lifecycle.
+
+[↑ Back to top](#table-of-contents)
+
+### 294. What is domain error handling in Node.js? (deprecated, but may be asked)
+
+Domain module was a way to handle multiple I/O operations as a group, catching errors. Deprecated due to performance and reliability issues. Replaced by `async_hooks` and better patterns.
+
+[↑ Back to top](#table-of-contents)
+
+### 295. What is Morgan? What does request logging look like in production?
+
+Expected interview answer:
+
+“Morgan is HTTP request-logging middleware for Express.
+
+It can log information such as the HTTP method, requested URL, response status code, response size, and response time.
+
+For example, if an API starts returning slow responses or frequent errors, request logs help us identify affected endpoints and investigate the issue.
+
+In production, I would configure a suitable log format and integrate it with the application's broader logging and monitoring system.
+
+I would also avoid logging sensitive information such as passwords, access tokens, or private request payloads.”
+
+Example:
+```
+
+const morgan = require("morgan");
+
+app.use(morgan("combined"));
+```
+
+Remember: Morgan records HTTP request details that help with debugging and monitoring.
+
+[↑ Back to top](#table-of-contents)
+
+### 296. What is Pino? Why is it faster than Winston?
+
+Pino is a very fast JSON logger for Node.js. It achieves speed by minimizing overhead, using native JSON stringification, and avoiding complex features. Often used in high-throughput production services.
+
+[↑ Back to top](#table-of-contents)
+
+### 297. What is structured logging? Why is it better than `console.log` in production?
+
+Structured logging outputs log entries as key-value pairs (JSON), enabling parsing and searching by log aggregators (ELK, Datadog). `console.log` outputs unstructured strings, harder to query at scale.
+
+[↑ Back to top](#table-of-contents)
+
+### 298. What is the Command pattern?
+
+Command pattern encapsulates a request as an object, allowing parameterization, queuing, logging. In Node.js, job queues (Bull) where each job is a command with parameters.
+
+[↑ Back to top](#table-of-contents)
+
+### 299. What is the error-first callback convention?
+
+Callbacks should have the signature `(err, result)`. If error, `err` is non-null; else `result` is provided. This standardizes error handling.
+
+[↑ Back to top](#table-of-contents)
+
+### 300. What is Winston? How do you configure transports, log levels, and formatters?
+
+Winston is a logging library. Transports define output destinations (console, file, HTTP). Levels: `error: 0, warn: 1, info: 2, http: 3, verbose: 4, debug: 5, silly: 6`. Formatters customize the log structure (e.g., `winston.format.json()`). Configure via `winston.createLogger`.
+
+[↑ Back to top](#table-of-contents)
+
+## Security
+
+### 301. What are some common security issues in Node.js applications?
+
+- **Injection** (SQL, NoSQL, command injection).
+- **XSS** if not sanitizing user input in frontend.
+- **CSRF** – use tokens.
+- **Insecure dependencies** – regularly audit with `npm audit`.
+- **Exposed secrets** – never hardcode; use environment variables.
+- **Denial of Service** – implement rate limiting.
+
+[↑ Back to top](#table-of-contents)
+
+### 302. What are the security implications of using third-party modules in Node.js?
+
+Third‑party modules can contain vulnerabilities or malicious code. Always verify the module’s popularity, maintenance status, and audit with `npm audit`. Use tools like `snyk` to monitor vulnerabilities. Avoid using modules with excessive permissions.
+
+[↑ Back to top](#table-of-contents)
+
+### 303. What are the security risks of using `exec()` with user input?
+
+`exec()` runs a command in a shell, which is susceptible to command injection if user input is not sanitized. Never pass unsanitized user input to `exec()`. Use `execFile()` with safe arguments.
+
+[↑ Back to top](#table-of-contents)
+
+### 304. What does `helmet.js` do? Which headers does it set?
+
+Helmet sets various security-related HTTP headers: `X-DNS-Prefetch-Control`, `X-Frame-Options`, `X-Content-Type-Options: nosniff`, `Strict-Transport-Security`, `X-Permitted-Cross-Domain-Policies`, `Referrer-Policy`, `Content-Security-Policy` (disabled by default), etc.
+
+[↑ Back to top](#table-of-contents)
+
+### 305. What is a Content Security Policy (CSP)?
+
+CSP is a security header that controls which resources the browser is allowed to load for a page. Mitigates XSS and data injection attacks. Defined via `Content-Security-Policy` header, often configured with helmet.
+
+[↑ Back to top](#table-of-contents)
+
+### 306. What is bcrypt? How do you hash and compare passwords with it?
+
+bcrypt is a password hashing function with salt and cost factor. Hash: `const hash = await bcrypt.hash(password, saltRounds);`. Compare: `const match = await bcrypt.compare(password, hash);`. bcrypt is slow by design to resist brute-force.
+
+[↑ Back to top](#table-of-contents)
+
+### 307. What is CSRF (Cross-Site Request Forgery)? How do you prevent it?
+
+CSRF tricks a user into making unwanted requests to a site where they're authenticated. Prevention: use CSRF tokens (sync token pattern), `SameSite=Strict` cookies, and check origin/referer headers. `csurf` middleware (though deprecated, alternatives exist).
+
+[↑ Back to top](#table-of-contents)
+
+### 308. What is Helmet? What HTTP headers does it set?
+
+Expected interview answer:
+
+“Helmet is middleware that helps improve the security of an Express application by configuring various HTTP response headers.
+
+Depending on its configuration and version, it can set headers such as Content Security Policy, `X-Content-Type-Options`, `X-Frame-Options`, and Strict-Transport-Security.
+
+These headers help reduce certain risks, such as content-type sniffing and clickjacking, and can strengthen browser-side security controls.
+
+I would typically include Helmet in a production Express application, while reviewing and configuring its policies according to the application's requirements.”
+
+Example:
+```
+
+const helmet = require("helmet");
+
+app.use(helmet());
+```
+
+Remember: Helmet helps configure security-related HTTP headers; it does not replace input validation, authorization, or other security controls.
+
+[↑ Back to top](#table-of-contents)
+
+### 309. What is persisted queries?
+
+A technique where the client sends a hash of the query instead of the full query string. The server stores the mapping, reducing request size and preventing arbitrary queries (security). Apollo supports automatic persisted queries (APQ).
+
+[↑ Back to top](#table-of-contents)
+
+### 310. What is salting a password? Why is it necessary?
+
+A salt is a random value added to a password before hashing. It ensures that identical passwords produce different hashes, preventing rainbow table attacks and revealing duplicate passwords. bcrypt handles salting automatically.
+
+[↑ Back to top](#table-of-contents)
+
+### 311. What is the `vm` module in Node.js? What are its security implications?
+
+`vm` allows executing JavaScript code in a sandboxed V8 context. It can provide isolation but is not a security sandbox; untrusted code can escape and access the host. Use `vm2` (now deprecated) or `isolated-vm` for stronger sandboxing. Avoid running arbitrary untrusted code.
+
+[↑ Back to top](#table-of-contents)
+
+### 312. What is the difference between encryption and hashing?
+
+- Encryption is reversible with a key; transforms data into ciphertext.
+- Hashing is one-way, irreversible; produces fixed-size digest. Used for integrity and password storage.
+
+[↑ Back to top](#table-of-contents)
+
+### 313. What is XSS (Cross-Site Scripting)? How do you prevent it in a Node.js API?
+
+XSS injects malicious scripts into web pages. In APIs, prevent by escaping output, setting Content-Type headers appropriately (not `text/html` when serving JSON), and using `helmet` with CSP. Validate and sanitize input.
+
+[↑ Back to top](#table-of-contents)
+
+## Performance, Scaling & Clustering
+
+### 314. How can you use `pm2` for managing Node.js processes?
+
+PM2 is a process manager that keeps applications running forever, handles logs, and provides monitoring. Commands: `pm2 start app.js`, `pm2 list`, `pm2 logs`, `pm2 restart`. It also supports clustering (`pm2 start app.js -i max`).
+
+[↑ Back to top](#table-of-contents)
+
+### 315. How do you use PM2 in cluster mode?
+
+`pm2 start app.js -i max` (or number of instances). `-i max` spawns as many workers as CPU cores. PM2 automatically load balances.
+
+[↑ Back to top](#table-of-contents)
+
+### 316. What is `--heap-prof` and `--cpu-prof` in Node.js?
+
+- `--heap-prof`: generates heap profiling snapshots for memory analysis.
+- `--cpu-prof`: records CPU profile output (similar to Chrome DevTools profiler). Both produce files that can be loaded in Chrome DevTools.
+
+[↑ Back to top](#table-of-contents)
+
+### 317. What is a memory leak and how can you prevent it in Node.js?
+
+A memory leak is when memory that is no longer needed is not released, causing increasing memory usage over time. Prevention: avoid global variables, clean up event listeners, limit cache size, use `WeakMap` for caches, and properly close resources. Use tools like `node --inspect` and heap snapshots to detect leaks.
+
+[↑ Back to top](#table-of-contents)
+
+### 318. What is horizontal vs vertical scaling? Which does Node.js lean toward?
+
+- Vertical: add more resources (CPU, RAM) to a single machine.
+- Horizontal: add more machines/instances. Node.js naturally leans toward horizontal scaling due to its single-threaded nature; running multiple instances across machines/cores works well.
+
+[↑ Back to top](#table-of-contents)
+
+### 319. What is PM2? What are its key features?
+
+(Already covered) Process manager with clustering, monitoring, log management, and deployment.
+
+[↑ Back to top](#table-of-contents)
+
+### 320. What is PM2? What are its key features? How is it different from raw `node`?
+
+PM2 is a process manager for Node.js applications. Features: cluster mode, auto-restart on crash, load balancing, log management, monitoring, zero-downtime reload, and deployment. Unlike raw `node`, it keeps the app alive and manages multiple instances.
+
+[↑ Back to top](#table-of-contents)
+
+### 321. What is stateless architecture? Why is it necessary for horizontal scaling?
+
+Stateless means any server instance can handle any request; no session stored locally. Necessary for horizontal scaling so that a load balancer can distribute requests to any instance without sticky sessions. Use external stores (Redis) for session data.
+
+[↑ Back to top](#table-of-contents)
+
+### 322. What is the difference between `npm start` and using PM2 in production?
+
+`npm start` runs the application as a single process. PM2 provides process management, clustering, auto-restart, log management, and daemonization, making it suitable for production.
+
+[↑ Back to top](#table-of-contents)
+
+### 323. What is the difference between clustering and worker threads?
+
+Clustering spawns separate Node.js processes, each with its own V8 instance, memory, and event loop. Worker threads share the same process memory and can efficiently communicate via `SharedArrayBuffer`. Clustering is for CPU-bound parallelization across cores; worker threads are for parallelizing within a single process, lighter but still separate event loops.
+
+[↑ Back to top](#table-of-contents)
+
+### 324. What is the Node.js Cluster module? How does it work?
+
+The `cluster` module allows creating child processes (workers) that share the same server port. The master process manages workers; incoming connections are distributed among workers (round-robin by default). Each worker runs its own event loop, utilizing multiple CPU cores.
+
+[↑ Back to top](#table-of-contents)
+
+## Worker Threads & Child Processes
+
+### 325. How do worker threads communicate? (`MessageChannel`, `postMessage`, `workerData`)
+
+- `workerData`: initial data passed to worker at creation.
+- `postMessage`: send messages; worker listens with `parentPort.on('message')`.
+- `MessageChannel`: creates a two-way communication channel between two workers.
+
+[↑ Back to top](#table-of-contents)
+
+### 326. How do worker threads share memory? What is `SharedArrayBuffer`?
+
+Worker threads can share memory via `SharedArrayBuffer`, a buffer that can be accessed by multiple workers simultaneously. Synchronization is done using `Atomics`. Additionally, they communicate via `postMessage`.
+
+[↑ Back to top](#table-of-contents)
+
+### 327. How do you terminate a worker thread gracefully?
+
+Call `worker.terminate()` which sends a termination signal, or within the worker listen for exit signals. Clean up resources in the worker's exit handler. Avoid abrupt termination if the worker is in the middle of a task.
+
+[↑ Back to top](#table-of-contents)
+
+### 328. What are the limitations of worker threads?
+
+- Each worker has its own V8 instance and event loop, so they still have some overhead.
+- Cannot share functions or closures; communication is via serializable objects and buffers.
+- Not available on some environments; disabled by default before Node 12 LTS.
+- Not suitable for I/O-bound tasks (event loop handles I/O better).
+
+[↑ Back to top](#table-of-contents)
+
+### 329. What is the difference between CPU-bound and I/O-bound operations? How does Node.js handle each?
+
+Expected interview answer:
+
+“CPU-bound operations are limited mainly by processing power. Examples include complex mathematical computations, large data transformations, and intensive image processing.
+
+I/O-bound operations spend much of their time waiting for external resources, such as a database, file system, or remote API.
+
+Node.js handles I/O-bound workloads well because asynchronous I/O allows the main JavaScript thread to process other work while an operation is pending.
+
+CPU-intensive JavaScript running on the main thread is different because it can block the event loop.
+
+For CPU-heavy tasks, I would consider worker threads, child processes, or a separate processing service, depending on the workload and architecture.”
+
+| CPU-bound                         | I/O-bound                                       |
+| --------------------------------- | ----------------------------------------------- |
+| Limited by computation            | Often limited by waiting for external resources |
+| Can block the main thread         | Asynchronous I/O allows other work to proceed   |
+| Example: complex calculations     | Example: asynchronous database query            |
+| Possible solution: worker threads | Possible solution: non-blocking I/O             |
+
+Remember: Node.js is especially effective when operations involve waiting rather than prolonged computation on the main thread.
+
+[↑ Back to top](#table-of-contents)
+
+## File System & Built-in Modules
+
+### 330. Explain the difference between `fs.readFile` and `fs.createReadStream`.
+
+- `fs.readFile` loads the entire file into memory before invoking the callback. Suitable for small files.
+- `fs.createReadStream` returns a readable stream that emits data chunks as they are read, allowing processing of large files without high memory consumption.
+
+[↑ Back to top](#table-of-contents)
+
+### 331. How do you recursively read a directory in Node.js?
+
+Use `fs.readdir` with `{ recursive: true }` (Node 20+), or use a recursive function that iterates through subdirectories, or `fs.promises.readdir` with the option.
+
+[↑ Back to top](#table-of-contents)
+
+### 332. What is `fs.promises`? How does it differ from callback-based `fs`?
+
+`fs.promises` provides the same file system methods but returns Promises instead of using callbacks, enabling async/await and better error handling.
+
+[↑ Back to top](#table-of-contents)
+
+### 333. What is `fs.stat()` vs `fs.lstat()`?
+
+- `stat`: follows symbolic links and returns info about the target.
+- `lstat`: returns info about the link itself if it's a symlink.
+
+[↑ Back to top](#table-of-contents)
+
+### 334. What is `fs.watch()` vs `fs.watchFile()`? What are their limitations?
+
+- `fs.watchFile`: polls file stats periodically; higher CPU usage, works on all platforms.
+- `fs.watch`: uses OS events (more efficient), but behavior differs across platforms and may not detect all changes (e.g., some editors). Both have reliability issues; for robust watching, use `chokidar`.
+
+[↑ Back to top](#table-of-contents)
+
+### 335. What is directory traversal? How do you prevent it?
+
+Directory traversal uses `../` sequences to access files outside intended directory. Prevent: resolve the path using `path.resolve` and verify it starts with the allowed base path. Never directly pass user input to `fs.readFile`.
+
+[↑ Back to top](#table-of-contents)
+
+### 336. What is the difference between `fs.readFile()` and `fs.createReadStream()`? When to use each?
+
+- `readFile`: reads entire file into memory, simple for small files.
+- `createReadStream`: reads chunk by chunk, memory efficient for large files. Use streaming for large or unbounded data.
+
+[↑ Back to top](#table-of-contents)
+
+### 337. What is the difference between a built-in module, an npm package, and a local module?
+
+Expected interview answer:
+
+“Node.js modules can be grouped into built-in modules, third-party npm packages, and local modules.
+
+Built-in modules come with Node.js itself. Examples include `fs` for file-system operations, `http` for HTTP functionality, and `path` for path manipulation.
+
+Third-party packages are packages that we typically install through npm. For example, Express is a package commonly used to build web servers and REST APIs.
+
+Local modules are files that we create inside our own project and import using relative or absolute paths.
+
+The main difference is where the module comes from and how it is resolved by Node.js.”
+
+Examples:
+```
+
+// Built-in module
+const fs = require("node:fs");
+
+// npm package
+const express = require("express");
+
+// Local module
+const userService = require("./userService");
+```
+
+Remember: Built-in modules come with Node.js, npm packages are third-party dependencies, and local modules are our own project files.
+
+[↑ Back to top](#table-of-contents)
+
+## WebSockets & Real-Time Communication
+
+### 338. How do you authenticate a WebSocket connection?
+
+Pass a token as query parameter or in the first message, verify it upon connection, then associate user with the socket. `socket.io` middleware can be used to reject unauthorized connections.
+
+[↑ Back to top](#table-of-contents)
+
+### 339. How do you test WebSocket handlers?
+
+Create a WebSocket client (e.g., `ws`) in the test, connect to the server, send messages, and assert received responses. Use `socket.io-client` for socket.io.
+
+[↑ Back to top](#table-of-contents)
+
+### 340. What are the limitations of SSE vs WebSockets?
+
+SSE is unidirectional (server to client), limited to text (UTF-8), and max connections per browser domain (~6) can be limited. WebSockets are full-duplex, binary capable.
+
+[↑ Back to top](#table-of-contents)
+
+### 341. What is `socket.io` namespace?
+
+Namespaces allow splitting the server into separate communication channels sharing the same underlying WebSocket connection. They help organize endpoints (e.g., `/admin`, `/chat`).
+
+[↑ Back to top](#table-of-contents)
+
+### 342. What is `socket.io` room? How does it enable group messaging?
+
+A room is a channel that sockets can join/leave. Send to a room broadcasts to all members except the sender. Useful for chat groups, collaborative editing.
+
+[↑ Back to top](#table-of-contents)
+
+### 343. What is `socket.io`? How does it differ from raw WebSockets?
+
+`socket.io` is a library that provides an abstraction over WebSockets with automatic reconnection, rooms, namespaces, fallback to HTTP long polling, and broadcast. Raw `ws` package gives low-level WebSocket control.
+
+[↑ Back to top](#table-of-contents)
+
+### 344. What is a heartbeat/ping-pong in WebSockets? Why is it needed?
+
+A heartbeat sends periodic ping frames to keep the connection alive and detect disconnections. If no pong is received, the connection is considered lost. `socket.io` handles this automatically.
+
+[↑ Back to top](#table-of-contents)
+
+### 345. What is a WebSocket? How does the WebSocket handshake work?
+
+WebSocket provides full-duplex, persistent communication over a single TCP connection. Handshake: client sends an HTTP Upgrade request with headers `Upgrade: websocket` and `Connection: Upgrade`. Server responds with `101 Switching Protocols`, and the connection is upgraded to WebSocket.
+
+[↑ Back to top](#table-of-contents)
+
+### 346. What is SSE? How does it work?
+
+SSE is a standard allowing servers to push data to clients over HTTP. Client uses `EventSource` to open a connection; server keeps it open and sends `data:` lines. It's one-way and auto-reconnects.
+
+[↑ Back to top](#table-of-contents)
+
+### 347. What is the `ws` package? When would you use it over `socket.io`?
+
+`ws` is a simple, fast WebSocket implementation for Node.js. Use it when you need lightweight, low-level control without the overhead of `socket.io` features (rooms, fallback), e.g., for high-throughput custom protocols.
+
+[↑ Back to top](#table-of-contents)
+
+### 348. What is the difference between WebSockets, HTTP long polling, and Server-Sent Events (SSE)?
+
+- WebSockets: full-duplex, real-time, low overhead.
+- Long polling: client makes HTTP request, server holds until data available, then client immediately reconnects. Higher overhead.
+- SSE: server pushes events to client via HTTP; unidirectional, simpler, auto-reconnect.
+
+[↑ Back to top](#table-of-contents)
+
+### 349. What is the Service layer pattern? How does it separate concerns from controllers?
+
+Service layer contains business logic; controllers handle HTTP request/response. This separates concerns, allowing reuse of logic across different transports (HTTP, WebSocket, CLI).
+
+[↑ Back to top](#table-of-contents)
+
+### 350. When would you use WebSockets vs SSE vs polling?
+
+WebSockets for bidirectional, low-latency (chat, gaming). SSE for server-to-client streaming (notifications, live feeds) where client only reads. Polling for simple, infrequent updates where real-time isn't critical.
+
+[↑ Back to top](#table-of-contents)
+
+## Microservices Architecture
+
+### 351. How would you migrate a monolith Node.js app to microservices?
+
+Use the Strangler Fig pattern: identify bounded contexts, extract one service at a time. Route traffic through an API gateway to redirect specific endpoints to the new service. Keep the monolith working until fully replaced. Ensure data is migrated/separated gradually.
+
+[↑ Back to top](#table-of-contents)
+
+### 352. What is a service mesh? What problems does it solve?
+
+Service mesh (e.g., Istio) manages service-to-service communication via sidecar proxies, handling load balancing, service discovery, retries, circuit breaking, and observability without code changes.
+
+[↑ Back to top](#table-of-contents)
+
+### 353. What is an API Gateway? What are its responsibilities?
+
+An API Gateway is the single entry point for clients, routing requests to appropriate microservices, handling cross-cutting concerns: authentication, rate limiting, request aggregation, and protocol translation.
+
+[↑ Back to top](#table-of-contents)
+
+### 354. What is service discovery? How does it work in a Node.js microservices setup?
+
+Service discovery enables services to locate each other dynamically. Client-side discovery uses a registry (Consul, etcd) queried by the client. Server-side discovery uses a load balancer. In Node.js, libraries like `consul` can be used.
+
+[↑ Back to top](#table-of-contents)
+
+### 355. What is the difference between a monolith and microservices?
+
+Monolith: single codebase and deployment; simpler initially but can become unwieldy. Microservices: multiple small services; more complex but enables better scaling and agility for large teams.
+
+[↑ Back to top](#table-of-contents)
+
+### 356. What is the strangler fig pattern for migrating a monolith to microservices?
+
+Incrementally replace specific functionality of the monolith with new microservices, routing traffic to the new service gradually. Over time the monolith is "strangled" and eventually retired.
+
+[↑ Back to top](#table-of-contents)
+
+## Message Queues (RabbitMQ, Kafka, Bull)
+
+### 357. How do microservices communicate? (REST/HTTP, gRPC, message queues)
+
+- Synchronous: REST/HTTP (simplest), gRPC (high-performance, binary).
+- Asynchronous: message queues (RabbitMQ, Kafka) for decoupling and resiliency.
+
+[↑ Back to top](#table-of-contents)
+
+### 358. What are the RabbitMQ exchange types? (direct, fanout, topic, headers)
+
+- Direct: routing key exact match.
+- Fanout: broadcasts to all bound queues.
+- Topic: routing key pattern match with wildcards.
+- Headers: routing based on header attributes.
+
+[↑ Back to top](#table-of-contents)
+
+### 359. What is a dead letter queue? When is it used?
+
+Dead letter queue stores messages that could not be delivered or processed (expired, rejected, max retries exceeded). Used for failure analysis and manual intervention.
+
+[↑ Back to top](#table-of-contents)
+
+### 360. What is a Kafka topic, partition, consumer group, and offset?
+
+- Topic: category of messages.
+- Partition: ordered, immutable log; topics split into partitions for parallelism.
+- Consumer group: set of consumers that share work (each partition consumed by one member).
+- Offset: position of a consumer in a partition.
+
+[↑ Back to top](#table-of-contents)
+
+### 361. What is a message queue? Why would you use one?
+
+A message queue is a durable buffer that decouples producers and consumers. Use for asynchronous processing, load leveling, reliability (guaranteed delivery), and microservice communication.
+
+[↑ Back to top](#table-of-contents)
+
+### 362. What is Apache Kafka? How is it different from RabbitMQ?
+
+Kafka is a distributed streaming platform designed for high-throughput, persisted logs. Messages are stored in topics partitioned and replicated. Unlike RabbitMQ, Kafka retains messages for a configurable time, allowing replay, and uses consumer groups and offsets. Kafka is better for large-scale event streaming; RabbitMQ for traditional messaging with complex routing.
+
+[↑ Back to top](#table-of-contents)
+
+### 363. What is at-least-once vs at-most-once vs exactly-once delivery?
+
+- At-most-once: message may be lost but not duplicated.
+- At-least-once: message never lost, but may be delivered multiple times (requires idempotent processing).
+- Exactly-once: message processed exactly once, very hard to achieve end-to-end; Kafka provides some transactional support.
+
+[↑ Back to top](#table-of-contents)
+
+### 364. What is Kafka's message retention policy?
+
+Kafka retains messages based on time or size (e.g., 7 days or 1TB), regardless of consumption. It can also compact logs to keep latest value per key.
+
+[↑ Back to top](#table-of-contents)
+
+### 365. What is message acknowledgment in RabbitMQ? What happens if a consumer crashes?
+
+Consumer sends ack after processing. If consumer crashes before ack, the message is re-queued and delivered to another consumer, ensuring at-least-once delivery.
+
+[↑ Back to top](#table-of-contents)
+
+### 366. What is message durability vs persistence in RabbitMQ?
+
+- Durable queues survive broker restart.
+- Persistent messages are written to disk. Both are needed to ensure messages survive a restart.
+
+[↑ Back to top](#table-of-contents)
+
+### 367. What is RabbitMQ? What are exchanges, queues, and bindings?
+
+RabbitMQ is a message broker implementing AMQP.
+- Exchanges receive messages and route them to queues based on bindings.
+- Queues store messages until consumed.
+- Bindings define the relationship between exchange and queue (routing key patterns).
+
+[↑ Back to top](#table-of-contents)
+
+### 368. What is the competing consumers pattern?
+
+Multiple consumer instances listen to the same queue; each message is delivered to only one consumer, distributing workload. Achieved with RabbitMQ queues or Kafka consumer groups.
+
+[↑ Back to top](#table-of-contents)
+
+### 369. What is the difference between a message queue and a pub/sub system?
+
+- Message queue: typically point-to-point, messages consumed by one consumer from a queue (work queue).
+- Pub/sub: broadcasts to multiple subscribers based on topics; each subscriber gets a copy.
+
+[↑ Back to top](#table-of-contents)
+
+### 370. What is the Pub/Sub pattern? How is it different from Observer?
+
+Pub/Sub uses a message broker/topic to decouple publishers and subscribers, often across distributed systems. Observer is a direct relationship within the same process. Pub/Sub is more loosely coupled and scalable.
+
+[↑ Back to top](#table-of-contents)
+
+### 371. When would you choose Kafka over RabbitMQ?
+
+When you need high throughput, event sourcing, replay capability, very large scale, and durable log semantics. RabbitMQ for low-latency, complex routing, priority queues, and where brokered delivery is simpler.
+
+[↑ Back to top](#table-of-contents)
+
+## Testing in Node.js
+
+### 372. How do you mock external API calls in tests? (nock, msw, jest.fn)
+
+- `nock`: intercepts HTTP requests at the Node.js level, returning mock responses.
+- `msw`: intercepts at the service worker level, works in Node and browser.
+- `jest.fn` can mock functions that make API calls, replacing them with stubs.
+
+[↑ Back to top](#table-of-contents)
+
+### 373. How do you mock modules in Jest? (`jest.mock()`, `jest.spyOn()`)
+
+`jest.mock('module')` auto-mocks all exports. `jest.spyOn(object, 'method')` spies on an existing method. Both can override implementations.
+
+[↑ Back to top](#table-of-contents)
+
+### 374. How do you test async code in Jest?
+
+Return a promise from the test; Jest waits. Or use `async/await`. Use `expect.assertions()` to verify callbacks were called. Or `done` callback (deprecated for promises).
+
+[↑ Back to top](#table-of-contents)
+
+### 375. What are some popular testing frameworks for Node.js?
+
+- **Mocha** – flexible test runner.
+- **Jest** – all‑in‑one framework with assertions and mocks.
+- **Chai** – assertion library often used with Mocha.
+- **Supertest** – for testing HTTP servers.
+- **Sinon** – for spies, stubs, and mocks.
+
+[↑ Back to top](#table-of-contents)
+
+### 376. What is Jest? What is Mocha + Chai? How do they compare?
+
+Jest: full-featured testing framework with built-in assertion library, mocking, coverage, snapshot testing. Mocha is a test runner, often paired with Chai (assertion) and Sinon (mocks). Jest offers a cohesive out-of-the-box experience; Mocha is more flexible.
+
+[↑ Back to top](#table-of-contents)
+
+### 377. What is TDD (Test-Driven Development)? How do you apply it in Node.js?
+
+TDD cycle: write a failing test, write minimal code to pass, refactor. In Node.js, use Jest to write tests first for a function/API, then implement. Enforces design and test coverage.
+
+[↑ Back to top](#table-of-contents)
+
+### 378. What is the difference between a mock, stub, and spy?
+
+- Mock: object with pre-programmed expectations (e.g., `jest.fn()` with expected calls).
+- Stub: replaces a function to return fixed values, without verifying interactions.
+- Spy: wraps a real function to record calls but still executes original logic.
+
+[↑ Back to top](#table-of-contents)
+
+### 379. What is the testing pyramid in Node.js context? (unit, integration, e2e)
+
+The testing pyramid suggests many fast unit tests (isolated functions), fewer integration tests (modules working together, DB), and few end-to-end tests (full system). In Node.js, unit tests with Jest, integration with supertest + test DB, e2e with Cypress/Playwright.
+
+[↑ Back to top](#table-of-contents)
+
+## DevOps — Docker, CI/CD & Deployment
+
+### 380. How do you gracefully shut down a Node.js server?
+
+Expected interview answer:
+
+“Graceful shutdown means stopping a server safely without unnecessarily interrupting requests that are already being processed.
+
+For example, when a deployment platform sends a `SIGTERM` signal, I would first stop accepting new connections. I would then allow ongoing requests to finish within an appropriate shutdown period.
+
+After that, I would close resources such as database connections and other application resources.
+
+Once cleanup is complete, the process can exit. I would also implement a timeout so that the application does not remain stuck indefinitely if some requests or connections fail to close.
+
+This is important during production deployments and restarts because it helps reduce failed requests and resource leaks.”
+
+A simplified example using Node.js HTTP server:
+```
+
+const http = require("node:http");
+
+const server = http.createServer((req, res) => {
+res.end("Hello World");
+});
+
+server.listen(3000, () => {
+console.log("Server running on port 3000");
+});
+
+process.on("SIGTERM", () => {
+console.log("Shutting down...");
+
+server.close(() => {
+console.log("Server closed");
+process.exit(0);
+});
+});
+
+```
+
+[↑ Back to top](#table-of-contents)
+
+### 381. How do you manage secrets in production? (env vars, Vault, AWS Secrets Manager)
+
+Inject secrets at runtime via environment variables from a secret manager (HashiCorp Vault, AWS Secrets Manager, Kubernetes secrets). Avoid storing in config files. Rotate regularly.
+
+[↑ Back to top](#table-of-contents)
+
+### 382. How do you optimize Docker image size for a Node.js app?
+
+- Use small base (alpine).
+- Multi-stage builds.
+- `npm ci --only=production` to avoid devDependencies.
+- Remove unnecessary files.
+- Use `.dockerignore`.
+
+[↑ Back to top](#table-of-contents)
+
+### 383. How do you securely store secrets in a Node.js application?
+
+Use environment variables (not hardcoded) and tools like `dotenv` only for development. In production, use secret managers (AWS Secrets Manager, HashiCorp Vault), CI/CD secrets injection, or Kubernetes secrets. Never commit secrets to source control.
+
+[↑ Back to top](#table-of-contents)
+
+### 384. What is `testcontainers`? How does it help with integration tests?
+
+Testcontainers is a library that starts real databases/message queues in Docker containers for integration tests, providing a consistent, disposable environment without manual setup.
+
+[↑ Back to top](#table-of-contents)
+
+### 385. What is a CI/CD pipeline? What does a typical Node.js CI pipeline look like?
+
+CI/CD automates code integration, testing, and deployment. A Node.js pipeline: lint, test (unit, integration), build, push Docker image, deploy to staging, run e2e, deploy to production.
+
+[↑ Back to top](#table-of-contents)
+
+### 386. What is a health check in Docker?
+
+A health check command tests container's health; if it fails, container can be restarted. Example: `HEALTHCHECK CMD curl --fail http://localhost:3000/health || exit 1`.
+
+[↑ Back to top](#table-of-contents)
+
+### 387. What is a microservices architecture? What are its advantages and disadvantages?
+
+Microservices break an application into small, independent services, each with its own database and business logic. Advantages: scalability, independent deployment, technology diversity. Disadvantages: complexity, network latency, data consistency challenges, operational overhead.
+
+[↑ Back to top](#table-of-contents)
+
+### 388. What is a multi-stage build in Docker? Why is it important for Node.js?
+
+Multi-stage builds use multiple `FROM` statements; you can compile/build in one stage and copy only artifacts to the final image, reducing image size and removing build-time dependencies.
+
+[↑ Back to top](#table-of-contents)
+
+### 389. What is a rolling deployment vs blue-green deployment vs canary deployment?
+
+- Rolling: gradually replaces old instances with new.
+- Blue-green: two environments, swap traffic from old (blue) to new (green) instantly.
+- Canary: small percentage of traffic to new version, gradually increase.
+
+[↑ Back to top](#table-of-contents)
+
+### 390. What is Docker? What is a container vs a virtual machine?
+
+Docker is a platform for developing, shipping, and running applications inside lightweight containers. Containers share the host OS kernel and isolate processes; VMs virtualize entire hardware with full OS, heavier.
+
+[↑ Back to top](#table-of-contents)
+
+### 391. What is Kubernetes? What are pods, services, deployments, and ingress?
+
+Kubernetes orchestrates containers. Pod: smallest deployable unit (one or more containers). Service: stable network endpoint for pods. Deployment: manages replicas and updates. Ingress: external HTTP access routing.
+
+[↑ Back to top](#table-of-contents)
+
+## TypeScript with Node.js
+
+### 392. How do you set up a TypeScript Node.js project from scratch?
+
+1. `npm init -y`
+2. Install `typescript`, `@types/node`, `ts-node`, `nodemon` as devDependencies.
+3. Create `tsconfig.json` (using `npx tsc --init`).
+4. Configure `outDir`, `rootDir`, `strict`.
+5. Write code in `src/`.
+6. Add scripts: `"dev": "ts-node src/index.ts"`, `"build": "tsc"`, `"start": "node dist/index.js"`.
+
+[↑ Back to top](#table-of-contents)
+
+### 393. How do you type environment variables in TypeScript?
+
+Declare a module augmentation for `process.env` or use a library like `env-var` with types. Or create a config module that reads and casts values.
+
+[↑ Back to top](#table-of-contents)
+
+### 394. What are path aliases in TypeScript? How do you configure them for Node.js?
+
+Define `paths` in `tsconfig.json` (e.g., `"@services/*": ["src/services/*"]`). To work at runtime, use `module-alias` package or `tsconfig-paths` with `ts-node`. For compiled output, use `tsc-alias` or similar.
+
+[↑ Back to top](#table-of-contents)
+
+### 395. What is `ts-node`? What is `ts-node-dev`?
+
+`ts-node` executes TypeScript files directly without pre-compilation, useful for development. `ts-node-dev` restarts on file changes (similar to nodemon) with faster compilation.
+
+[↑ Back to top](#table-of-contents)
+
+### 396. What is `zod`? How does it combine runtime validation with TypeScript types?
+
+`zod` is a schema validation library. Define a schema, infer the TypeScript type: `const UserSchema = z.object({ name: z.string() }); type User = z.infer<typeof UserSchema>;`. It validates at runtime and provides static typing.
+
+[↑ Back to top](#table-of-contents)
+
+## Design Patterns in Node.js
+
+### 397. What is the Repository pattern? Why is it used in Node.js backends?
+
+Repository pattern abstracts data access, providing collection-like methods. It decouples business logic from ORM/database details, making it easier to swap data sources and test.
+
+[↑ Back to top](#table-of-contents)
+
+### 398. What is the Singleton pattern? When is it used in Node.js? (DB connection, config)
+
+Singleton ensures only one instance of a class exists. In Node.js, module caching already provides singletons; exporting an instance of a DB connection (e.g., `mongoose.connect()`) or a config object works as a singleton.
+
+[↑ Back to top](#table-of-contents)
+
+## GraphQL with Node.js
+
+### 399. What are the three GraphQL operation types: query, mutation, and subscription?
+
+- Query: read data (like GET).
+- Mutation: modify data (like POST/PUT/DELETE).
+- Subscription: real-time updates via WebSocket.
+
+[↑ Back to top](#table-of-contents)
+
+### 400. What is `graphql-yoga`?
+
+`graphql-yoga` is a fully-featured GraphQL server built on top of Express/Apollo, with defaults for CORS, subscriptions, file uploads, etc. It’s a simpler alternative.
+
+[↑ Back to top](#table-of-contents)
+
+### 401. What is a GraphQL directive? Give an example.
+
+Directives provide instructions to the schema or query. Example: `@deprecated(reason: "Use newField")` marks a field deprecated. Custom directives can implement authentication (`@auth(requires: ADMIN)`).
+
+[↑ Back to top](#table-of-contents)
+
+### 402. What is a GraphQL schema? What is SDL (Schema Definition Language)?
+
+Schema defines the types, queries, mutations, and subscriptions available. SDL is the syntax to define the schema using `type` and `input` keywords. Example:
+
+```graphql
+type User { id: ID!, name: String }
+type Query { users: [User] }
+
+```
+
+[↑ Back to top](#table-of-contents)
+
+### 403. What is a resolver in GraphQL?
+
+Resolvers are functions that resolve the value for a type's field. They define how to fetch data for each field. You provide a resolver map: `{ Query: { users: () => db.getUsers() } }`.
+
+[↑ Back to top](#table-of-contents)
+
+### 404. What is code-first vs schema-first GraphQL?
+
+- Schema-first: write SDL schema first, then implement resolvers.
+- Code-first: define the schema programmatically using decorators or builders (e.g., TypeGraphQL, Nexus). The schema is generated from code, ensuring type consistency.
+
+[↑ Back to top](#table-of-contents)
+
+### 405. What is GraphQL? How does it differ from REST?
+
+GraphQL is a query language for APIs, allowing clients to request exactly the data they need. REST exposes fixed endpoints returning fixed structures; GraphQL has a single endpoint, and the client shapes the response, reducing over/under-fetching.
+
+[↑ Back to top](#table-of-contents)
+
+### 406. What is schema stitching vs federation?
+
+- Schema stitching combines multiple GraphQL schemas into one, but can be brittle.
+- Federation (Apollo Federation) enables composing a unified graph from multiple services, with a gateway that distributes queries. More scalable for microservices.
+
+[↑ Back to top](#table-of-contents)
+
+### 407. What is the difference between GraphQL subscription and polling?
+
+Subscription uses WebSocket to push real-time updates to clients efficiently. Polling repeatedly queries the server at intervals, wasting resources. Subscriptions are event-driven.
+
+[↑ Back to top](#table-of-contents)
+
+### 408. What is the N+1 problem in GraphQL? What is DataLoader?
+
+N+1 problem occurs when resolvers make separate DB queries for each related item. DataLoader batches and caches requests, turning N+1 into a few batched queries. Example: `dataLoader.load(userId)` collects keys and dispatches a single query.
+
+[↑ Back to top](#table-of-contents)
+
+## General / Miscellaneous Node.js Concepts
+
+### 409. Explain the use of the `url` module in Node.js.
+
+The `url` module provides utilities for URL resolution and parsing. You can parse a URL string into components (protocol, host, path, query, etc.) using `new URL(urlString)`. It also includes the `url.format()` method to build a URL string from an object.
+
+[↑ Back to top](#table-of-contents)
+
+### 410. How can you make HTTP requests in Node.js?
+
+Use the built‑in `http`/`https` modules with `http.request()` or use simpler libraries like `axios` or `node-fetch`. Example with native `http`:
+
+```js
+const http = require('http');
+http.get('http://example.com', (res) => {
+let data = '';
+res.on('data', chunk => data += chunk);
+res.on('end', () => console.log(data));
+});
+
+```
+
+[↑ Back to top](#table-of-contents)
+
+### 411. How can you parse URLs in Node.js?
+
+Use the `url` module: `url.parse()` (legacy) or the WHATWG `URL` class: `new URL('https://example.com/path')`. The `URL` class provides properties like `href`, `pathname`, `searchParams`, etc., for easy manipulation.
+
+[↑ Back to top](#table-of-contents)
+
+### 412. How can you use the `assert` module for testing in Node.js?
+
+The `assert` module provides basic assertions. Example:
+
+```js
+const assert = require('assert');
+assert.strictEqual(1 + 1, 2);
+assert.throws(() => { throw new Error('fail'); });
+```
+
+For more features, use dedicated testing frameworks.
+
+[↑ Back to top](#table-of-contents)
+
+### 413. How can you use the `debug` module in Node.js?
+
+The `debug` library provides namespaced debugging output. Set `DEBUG=namespace` environment variable to see logs. Example:
+
+```js
+const debug = require('debug')('app:server');
+debug('Server started');
+
+```
+
+[↑ Back to top](#table-of-contents)
+
+### 414. How do you broadcast to all connected clients vs a subset?
+
+- All: `io.emit('message', data)` (all namespaces).
+- Subset: use rooms: `socket.to('room').emit(...)`, or filter by connected sockets manually.
+
+[↑ Back to top](#table-of-contents)
+
+### 415. How do you cancel an in-flight asynchronous operation using `AbortController` and `AbortSignal`?
+
+Expected interview answer:
+
+“`AbortController` provides a way to request cancellation of an asynchronous operation, while its `signal` communicates that cancellation request to an API that supports it.
+
+I create an `AbortController`, pass its signal to the operation, and call `controller.abort()` when I need to cancel it.
+
+For example, in a backend service making an HTTP request to an external API, I could abort the request if it exceeds a timeout or is no longer needed.
+
+The important point is that cancellation depends on the operation supporting the signal. `AbortController` cannot automatically cancel arbitrary JavaScript code or every asynchronous operation.”
+
+Example:
+```
+
+const controller = new AbortController();
+
+async function fetchData() {
+try {
+const response = await fetch("https://example.com/api", {
+signal: controller.signal
+});
+
+return await response.json();
+} catch (error) {
+if (error.name === "AbortError") {
+console.log("Request cancelled");
+} else {
+throw error;
+}
+}
+}
+
+fetchData();
+
+// Cancel when needed:
+controller.abort();
+```
+
+Remember: Create a controller, pass its signal to a compatible API, and call `abort()` to request cancellation.
+
+[↑ Back to top](#table-of-contents)
+
+### 416. How do you design a batch API endpoint?
+
+Expected interview answer:
+
+“A batch API endpoint allows clients to submit multiple operations in a single HTTP request.
+
+For example, instead of sending several separate requests to create or update records, the client can submit an array of operations to one batch endpoint.
+
+The server processes each operation and returns the corresponding results.
+
+When designing a batch endpoint, I would define whether operations execute sequentially or concurrently, how partial failures are reported, and whether the batch needs transactional behavior.
+
+I would also set limits on the number and size of operations to prevent excessive resource consumption.”
+
+Example request:
+```
+
+{
+"operations": [
+{
+"method": "POST",
+"path": "/users",
+"body": {
+"name": "Amit"
+}
+},
+{
+"method": "PATCH",
+"path": "/users/123",
+"body": {
+"active": true
+}
+}
+]
+}
+```
+
+Remember: A batch endpoint reduces request overhead but needs clear rules for ordering, failures, validation, and transactions.
+
+[↑ Back to top](#table-of-contents)
+
+### 417. How do you design an API that handles both synchronous and asynchronous workflows?
+
+For long-running operations, return `202 Accepted` with a `Location` header pointing to a status resource. Provide webhook or polling endpoint to retrieve result. Synchronous responses for immediate processing.
+
+[↑ Back to top](#table-of-contents)
+
+### 418. How do you design an idempotent API?
+
+1. Use idempotency keys: client sends a unique key, server stores key and response, returns cached response on subsequent requests.
+2. Implement POST as idempotent by checking for existing resource or using PUT for full replacement.
+3. Design operations naturally idempotent (e.g., setting a value, not incrementing blindly).
+
+[↑ Back to top](#table-of-contents)
+
+### 419. How do you distinguish between a 4xx error (client) and 5xx error (server) in your error handler?
+
+Use the status code attached to the error object. Custom error classes can have `statusCode` property. If `statusCode` >= 400 and < 500, it's client error; >= 500 is server. Default to 500 if unknown.
+
+[↑ Back to top](#table-of-contents)
+
+### 420. How do you ensure data consistency across multiple microservices?
+
+Employ eventual consistency using sagas (orchestration or choreography). Each service maintains its own data; events are published after local transactions. Compensating actions handle failures. Avoid distributed transactions.
+
+[↑ Back to top](#table-of-contents)
+
+### 421. How do you optimize database queries in a Node.js app?
+
+- Use proper indexing.
+- Avoid N+1 by eager loading.
+- Use connection pooling.
+- Select only needed fields.
+- Batch operations.
+- Use query analysis (explain).
+- Paginate results efficiently.
+
+[↑ Back to top](#table-of-contents)
+
+### 422. How does Node.js integrate with frontend frameworks like React or Angular?
+
+Node.js is often used as the backend API server for frontend frameworks. It can also serve the static build files. For SSR (Server‑Side Rendering), Node.js can render React components on the server. Tools like Next.js (React) or Angular Universal leverage Node.js for SSR.
+
+[↑ Back to top](#table-of-contents)
+
+### 423. How does the garbage collector decide what to collect? What are generations?
+
+V8's GC is generational: it separates objects into young (new space) and old (old space). Young generation is collected frequently via Scavenge (copying survivors). If objects survive enough scavenges, they're promoted to old generation. Old generation uses Mark-Sweep and Mark-Compact. GC starts from roots (global, stack) and marks reachable objects; unreachable are collected.
+
+[↑ Back to top](#table-of-contents)
+
+### 424. What are child processes in Node.js? What are the 4 methods to create them?
+
+Child processes allow spawning new OS processes. Methods: `spawn()`, `exec()`, `execFile()`, `fork()`. They are separate processes with their own memory, communicating via IPC.
+
+[↑ Back to top](#table-of-contents)
+
+### 425. What are log levels? (`error`, `warn`, `info`, `http`, `verbose`, `debug`, `silly`)
+
+Log levels indicate severity; they allow filtering logs based on importance. Higher severity numbers mean less verbosity.
+
+[↑ Back to top](#table-of-contents)
+
+### 426. What are snapshot tests? When are they useful in a backend context?
+
+Snapshot tests record a serialized value and compare subsequent runs. In backend, they can validate API response structures, complex objects. Useful to catch unintended changes, but can be brittle.
+
+[↑ Back to top](#table-of-contents)
+
+### 427. What are the different HTTP methods and their uses?
+
+- **GET**: retrieve data.
+- **POST**: submit data to be processed.
+- **PUT**: update/replace an entire resource.
+- **PATCH**: partially update a resource.
+- **DELETE**: remove a resource.
+- **HEAD**: similar to GET but without body.
+- **OPTIONS**: request communication options.
+
+[↑ Back to top](#table-of-contents)
+
+### 428. What does idempotency mean? Which HTTP methods are idempotent?
+
+Expected interview answer:
+
+“An operation is idempotent when performing the same request multiple times has the same intended effect on the server as performing it once.
+
+For example, sending the same PUT request several times with the same representation should leave the resource in the same intended state.
+
+The HTTP methods GET, HEAD, PUT, DELETE, OPTIONS, and TRACE are defined as idempotent in terms of their intended semantics. POST is not generally idempotent.
+
+This is important in backend development because network failures can lead clients to retry requests. Idempotent operations are easier to retry safely, provided the implementation follows the intended semantics.”
+
+Remember: Idempotency means repeating an operation does not keep changing its intended effect—not that every response must be identical.
+
+[↑ Back to top](#table-of-contents)
+
+### 429. What HTTP status codes should you use? Give examples from 2xx, 3xx, 4xx, and 5xx.
+
+Expected interview answer:
+
+“HTTP status codes communicate the outcome of an API request.
+
+The 2xx range indicates success. For example, `200 OK` means the request succeeded, `201 Created` indicates successful resource creation, and `204 No Content` indicates success without a response body.
+
+The 3xx range indicates redirection or a related response, such as `301 Moved Permanently` or `304 Not Modified`.
+
+The 4xx range indicates that the request has an issue from the client's perspective. Examples include `400 Bad Request`, `401 Unauthorized`, `403 Forbidden`, `404 Not Found`, and `429 Too Many Requests`.
+
+The 5xx range indicates a server-side failure, such as `500 Internal Server Error`, `502 Bad Gateway`, or `503 Service Unavailable`.
+
+I choose the status code that best describes the result rather than returning 200 for every outcome.”
+
+| Range | Meaning                               | Examples                                 |
+| ----- | ------------------------------------- | ---------------------------------------- |
+| 2xx   | Success                               | `200`, `201`, `204`                      |
+| 3xx   | Redirection or cache-related response | `301`, `302`, `304`                      |
+| 4xx   | Client request issue                  | `400`, `401`, `403`, `404`, `409`, `429` |
+| 5xx   | Server-side failure                   | `500`, `502`, `503`                      |
+
+Remember: Correct status codes help clients handle API responses consistently.
+
+[↑ Back to top](#table-of-contents)
+
+### 430. What is `$facet`? When would you use it?
+
+`$facet` processes multiple aggregation pipelines within a single stage, enabling multi-faceted computations (e.g., count by category and top products) and returning separate result arrays in one pass.
+
+[↑ Back to top](#table-of-contents)
+
+### 431. What is `--inspect` flag? How do you use Chrome DevTools to profile Node.js?
+
+`node --inspect app.js` starts the debugger. Open `chrome://inspect` in Chrome, connect to the Node instance. Use the Profiler tab to record CPU profiles, heap snapshots, etc.
+
+[↑ Back to top](#table-of-contents)
+
+### 432. What is `.dockerignore`? What should you include in it?
+
+Similar to `.gitignore`, it excludes files from the build context. Include `node_modules`, `npm-debug.log`, `.git`, `Dockerfile`, `.env`, `coverage`, etc., to speed up builds and avoid leaking secrets.
+
+[↑ Back to top](#table-of-contents)
+
+### 433. What is `AbortController` and `AbortSignal` used for in Node.js?
+
+`AbortController` is a standard mechanism to abort one or more asynchronous operations. Create `const ac = new AbortController();`, pass `signal` to fetch, streams, or custom code that listens for `abort` event. Call `ac.abort()` to cancel.
+
+[↑ Back to top](#table-of-contents)
+
+### 434. What is `async_hooks`? How is `AsyncLocalStorage` built on top of it?
+
+`async_hooks` provides low-level hooks to track the lifecycle of async resources (promises, timers, etc.). `AsyncLocalStorage` uses `async_hooks` internally to propagate context, but presents a simpler API. Prior to `AsyncLocalStorage`, libraries like `cls-hooked` used `async_hooks`.
+
+[↑ Back to top](#table-of-contents)
+
+### 435. What is `async_hooks`? What is it used for?
+
+Expected interview answer:
+
+“`async_hooks` is a Node.js module that provides hooks for observing the lifecycle of asynchronous resources.
+
+It can help developers understand how asynchronous operations are created and managed, and it has been used to implement request tracing and context propagation.
+
+For example, in a backend application, we might want to associate a request ID with every log entry produced while handling a particular HTTP request, including logs from asynchronous database operations.
+
+Rather than manually passing the request ID through every function, we can use context-propagation mechanisms. For many application-level use cases, Node.js's `AsyncLocalStorage` is a more convenient high-level solution than directly implementing context management with low-level hooks.”
+
+Remember: `async_hooks` helps observe asynchronous resource lifecycles; `AsyncLocalStorage` is commonly useful for carrying context across asynchronous operations.
+
+[↑ Back to top](#table-of-contents)
+
+### 436. What is `Atomics`? When is it needed with `SharedArrayBuffer`?
+
+`Atomics` provides atomic operations (add, sub, load, store, wait, notify) on `SharedArrayBuffer`, ensuring thread-safe access without race conditions. It's needed to coordinate between workers sharing memory.
+
+[↑ Back to top](#table-of-contents)
+
+### 437. What is `beforeAll`, `beforeEach`, `afterAll`, `afterEach`?
+
+Setup/teardown hooks in test suites. `beforeAll` runs once before all tests, `beforeEach` before each test, `afterEach` after each, `afterAll` once after all.
+
+[↑ Back to top](#table-of-contents)
+
+### 438. What is `cls-hooked` or `AsyncLocalStorage` for log context propagation?
+
+`AsyncLocalStorage` (built into Node.js) allows associating state (like request ID) with the current asynchronous execution context, ensuring it's available in all subsequent async operations without passing it manually. It replaces the deprecated `cls-hooked` with a better API.
+
+[↑ Back to top](#table-of-contents)
+
+### 439. What is `CMD` vs `ENTRYPOINT` in a Dockerfile?
+
+- `CMD`: provides default command and arguments that can be overridden.
+- `ENTRYPOINT`: sets the executable; `CMD` then becomes default arguments to entrypoint. `ENTRYPOINT` is harder to override.
+
+[↑ Back to top](#table-of-contents)
+
+### 440. What is `crypto` module? How do you generate a random token? How do you create an HMAC?
+
+`crypto` provides cryptographic functionality. Random token: `crypto.randomBytes(32).toString('hex')`. HMAC: `crypto.createHmac('sha256', secret).update(data).digest('hex')`.
+
+[↑ Back to top](#table-of-contents)
+
+### 441. What is `isMainThread`? How do you use it to write a single-file worker?
+
+`isMainThread` is a boolean from `worker_threads` that indicates if the code is running in the main thread. Use `if (isMainThread) { ... } else { ... }` to have both the main and worker code in the same file.
+
+[↑ Back to top](#table-of-contents)
+
+### 442. What is `net` module? What can you build with it?
+
+`net` module provides an asynchronous network API for creating TCP or IPC servers and clients. You can build chat servers, custom protocols, proxies.
+
+[↑ Back to top](#table-of-contents)
+
+### 443. What is `os` module? Give 3 use cases.
+
+Provides operating system-related utility methods. Use cases: get CPU info (`os.cpus()`), free memory (`os.freemem()`), hostname, platform, network interfaces, uptime.
+
+[↑ Back to top](#table-of-contents)
+
+### 444. What is `zlib`? How do you compress or decompress data using streams?
+
+Expected interview answer:
+
+“`zlib` is a built-in Node.js module that provides compression and decompression functionality.
+
+It supports formats such as gzip and deflate, as well as Brotli compression and decompression through the appropriate APIs.
+
+For example, if I need to compress a large file, I can create a readable stream from the original file, pass it through `zlib.createGzip()`, and write the compressed output to another file.
+
+Because compression happens through a Transform stream, I can process the data incrementally instead of loading the complete file into memory.”
+
+Example of compression:
+```
+
+const fs = require("node:fs");
+const zlib = require("node:zlib");
+const { pipeline } = require("node:stream");
+
+pipeline(
+fs.createReadStream("input.txt"),
+zlib.createGzip(),
+fs.createWriteStream("input.txt.gz"),
+error => {
+if (error) {
+console.error(error);
+return;
+}
+
+console.log("File compressed successfully");
+}
+);
+```
+
+For decompression, replace `zlib.createGzip()` with `zlib.createGunzip()` and write to the destination file.
+
+Remember: `zlib` provides compression and decompression, and streams allow these operations to process data incrementally.
+
+[↑ Back to top](#table-of-contents)
+
+### 445. What is a BFF (Backend for Frontend)?
+
+A BFF is a dedicated backend service tailored to a specific frontend client (mobile, web), aggregating data and reducing over-fetching, as opposed to a single general-purpose API.
+
+[↑ Back to top](#table-of-contents)
+
+### 446. What is a callback function in Node.js?
+
+A callback is a function passed as an argument to another function, executed after the outer function completes. In Node.js, callbacks are commonly used for asynchronous operations, often following the “error‑first” pattern where the first parameter is an error (or null) and the second is the result.
+
+[↑ Back to top](#table-of-contents)
+
+### 447. What is a deadlock? How do you prevent it?
+
+Deadlock occurs when two transactions hold locks and each waits for the other. Prevent by accessing resources in the same order, using timeouts, and keeping transactions short.
+
+[↑ Back to top](#table-of-contents)
+
+### 448. What is a load balancer? How does Nginx act as a reverse proxy/load balancer for Node.js?
+
+A load balancer distributes incoming traffic across multiple backend servers. Nginx can be configured as a reverse proxy, forwarding requests to multiple Node.js instances defined in an upstream block, with load balancing algorithms (round-robin, least_conn, ip_hash).
+
+[↑ Back to top](#table-of-contents)
+
+### 449. What is a request/response envelope versus a plain JSON body? When would you use each?
+
+Expected interview answer:
+
+“A response envelope wraps the main response data inside a standard structure, potentially including metadata and error information.
+
+For example, an API response might contain `success`, `data`, `meta`, and `errors` fields.
+
+A plain JSON response returns the resource directly without an additional wrapper.
+
+An envelope can be helpful when responses need consistent pagination metadata, status information, or structured errors. However, it adds some extra payload and nesting.
+
+I would choose a response format that meets the API's requirements and apply it consistently so that clients know how to process the results.”
+
+Example of an envelope:
+```
+
+{
+"success": true,
+"data": {
+"id": 123,
+"name": "Shubham"
+},
+"meta": null,
+"errors": null
+}
+```
+
+Remember: An envelope provides a consistent wrapper for data and metadata; plain JSON keeps the response simpler.
+
+[↑ Back to top](#table-of-contents)
+
+### 450. What is a reverse proxy? How do you configure Nginx in front of a Node.js app?
+
+A reverse proxy accepts requests from clients and forwards to backend servers. Nginx config: `location / { proxy_pass http://localhost:3000; proxy_set_header ... }`. It handles SSL, static files, load balancing.
+
+[↑ Back to top](#table-of-contents)
+
+### 451. What is a subquery? What is a CTE (Common Table Expression)?
+
+Subquery: a query nested inside another query (e.g., in `SELECT`, `FROM`, `WHERE`).
+CTE: a named temporary result set defined using `WITH` clause, reusable within the main query, improving readability and recursion (recursive CTE).
+
+[↑ Back to top](#table-of-contents)
+
+### 452. What is a timing attack? How does `crypto.timingSafeEqual()` help?
+
+Timing attacks infer secrets by measuring response time differences. `crypto.timingSafeEqual()` compares two buffers in constant time, preventing leakage of how many characters matched.
+
+[↑ Back to top](#table-of-contents)
+
+### 453. What is an API idempotency key? When is it used?
+
+Expected interview answer:
+
+“An idempotency key is a unique identifier supplied by a client so that repeated submissions of the same logical operation can be recognized by the server.
+
+It is particularly useful for operations such as payments or order creation, where a client may retry a request after a network timeout without knowing whether the original request succeeded.
+
+The server stores the key with the operation's result. If the same key is received again for the same operation, the server can return the previously recorded result rather than performing the operation again.
+
+A robust implementation needs to handle concurrent requests with the same key and define how long keys are retained.”
+
+Example:
+```
+
+POST /payments
+Idempotency-Key: 3f6a8c7b-unique-value
+```
+
+Remember: Idempotency keys help prevent duplicate execution when clients retry important operations.
+
+[↑ Back to top](#table-of-contents)
+
+### 454. What is an upsert?
+
+Option `upsert: true` in update operations creates a new document if no document matches the filter. Insert if not exist, update if exists.
+
+[↑ Back to top](#table-of-contents)
+
+### 455. What is code coverage? What does 100% coverage guarantee?
+
+Code coverage measures which lines/branches/functions are executed during tests. 100% coverage does not guarantee correctness, only that all code was touched; it does not catch missing requirements or edge cases.
+
+[↑ Back to top](#table-of-contents)
+
+### 456. What is connection pooling? Why is it critical in a Node.js app?
+
+Connection pooling maintains a set of database connections that can be reused, avoiding the overhead of establishing a new connection per request. In Node.js, `pg-pool` is essential for performance under load.
+
+[↑ Back to top](#table-of-contents)
+
+### 457. What is contract testing? What is Pact?
+
+Contract testing ensures that services (provider and consumer) adhere to a shared contract. Pact is a framework for contract testing; consumer defines expectations, provider verifies them, preventing integration issues.
+
+[↑ Back to top](#table-of-contents)
+
+### 458. What is CQRS (Command Query Responsibility Segregation)?
+
+CQRS separates read and write operations into different models, potentially using different databases. Useful for complex domains with different read/write performance needs.
+
+[↑ Back to top](#table-of-contents)
+
+### 459. What is deoptimization in V8? What causes it?
+
+When V8's optimizing compiler makes assumptions (like a function is always called with integers) and those assumptions are violated (e.g., passing a string), it deoptimizes, reverting to the generic bytecode. Causes: changing object shapes (adding/deleting properties), passing unexpected types, using `eval` or `arguments`, try/catch in hot functions.
+
+[↑ Back to top](#table-of-contents)
+
+### 460. What is encoding? What are the common encodings in Node.js?
+
+Expected interview answer:
+
+“Encoding defines how data is represented or interpreted when converting between bytes and strings.
+
+For example, UTF-8 is commonly used to represent text. Base64 and hexadecimal are commonly used to represent binary bytes as text.
+
+In Node.js, UTF-8 is the default encoding for many Buffer string-conversion operations. We can also use `base64`, `hex`, and `latin1`, among other supported encodings.
+
+The correct encoding depends on the type of data and how it is represented. If we use the wrong encoding, the resulting string may be incorrect or the data may not be interpreted as intended.
+
+One detail worth remembering is that Node.js's `binary` encoding name is an alias for `latin1` and does not represent a separate general-purpose binary encoding.”
+
+Example:
+```
+
+const buffer = Buffer.from("Hello", "utf8");
+
+console.log(buffer.toString("utf8"));
+console.log(buffer.toString("hex"));
+console.log(buffer.toString("base64"));
+```
+
+Output:
+```
+
+Hello
+48656c6c6f
+SGVsbG8=
+```
+
+Remember: UTF-8 represents text; Base64 and hexadecimal provide text representations of bytes.
+
+[↑ Back to top](#table-of-contents)
+
+### 461. What is event sourcing?
+
+Event sourcing stores state as a sequence of events rather than current state. The current state is derived by replaying events. Good for audit trails and temporal queries. Combined with CQRS.
+
+[↑ Back to top](#table-of-contents)
+
+### 462. What is gRPC? How does it compare to REST?
+
+gRPC is a high-performance RPC framework using Protocol Buffers for serialization, HTTP/2 for transport. Benefits: strong typing, code generation, bidirectional streaming, smaller payloads. REST is text-based (JSON), simpler but less efficient. Use gRPC for internal service communication.
+
+[↑ Back to top](#table-of-contents)
+
+### 463. What is HATEOAS?
+
+Expected interview answer:
+
+“HATEOAS stands for Hypermedia as the Engine of Application State. It is a REST architectural constraint in which API responses include links that guide the client toward related resources or available actions.
+
+For example, when an API returns an order, its response might include links to view the customer or cancel the order if cancellation is allowed.
+
+This allows clients to discover certain navigation options dynamically instead of hardcoding every possible URL.
+
+HATEOAS is a formal REST principle, although many practical REST APIs implement it only partially or do not use it.”
+
+Example response:
+```
+
+{
+"id": 123,
+"status": "pending",
+"links": {
+"self": "/orders/123",
+"cancel": "/orders/123/cancel"
+}
+}
+```
+
+Remember: HATEOAS uses links in responses to guide clients through available resources and actions.
+
+[↑ Back to top](#table-of-contents)
+
+### 464. What is infrastructure as code? What is Terraform?
+
+IaC manages infrastructure through code instead of manual processes. Terraform is a tool to define and provision infrastructure across cloud providers declaratively.
+
+[↑ Back to top](#table-of-contents)
+
+### 465. What is introspection? Should you disable it in production?
+
+Introspection allows querying the schema itself. Disable in production to hide the schema from attackers and prevent automated attacks, unless you need it for client tools. Apollo can disable via `introspection: false`.
+
+[↑ Back to top](#table-of-contents)
+
+### 466. What is mutation testing?
+
+Mutation testing introduces small bugs (mutations) into code and checks if tests catch them. It measures test suite quality beyond coverage. Tools: Stryker.
+
+[↑ Back to top](#table-of-contents)
+
+### 467. What is NAPI / Node Addons? When would you write a native Node.js addon?
+
+N-API (Node-API) is a stable ABI for building native addons in C/C++. Write an addon when you need to call existing C++ libraries, perform CPU-intensive computations with native speed, or interface with OS-specific APIs. Modern addons use `node-addon-api`.
+
+[↑ Back to top](#table-of-contents)
+
+### 468. What is optimistic locking vs pessimistic locking?
+
+- Pessimistic locking: locks the row when reading, preventing others from updating until lock released (SELECT ... FOR UPDATE).
+- Optimistic locking: adds a version column; update checks version has not changed, else fails and retry. Suitable for low contention.
+
+[↑ Back to top](#table-of-contents)
+
+### 469. What is prototype pollution? How can it affect a Node.js app?
+
+Prototype pollution allows an attacker to add or modify properties of `Object.prototype` by abusing deep merge or assignment operations. This can lead to denial of service, or even remote code execution in some cases. Prevent: use `Object.create(null)`, validate object keys, use libraries like `lodash` with safe defaults, or `Object.freeze(Object.prototype)`.
+
+[↑ Back to top](#table-of-contents)
+
+### 470. What is REST? What are the six constraints of REST architecture?
+
+Expected interview answer:
+
+“REST stands for Representational State Transfer. It is an architectural style used to design networked applications and APIs around resources and their representations.
+
+REST defines six architectural constraints.
+
+First, client-server separation keeps the user interface separate from the server's data and business logic.
+
+Second, statelessness means each request contains the information required to process it without relying on stored client context from an earlier request.
+
+Third, cacheability specifies that responses should indicate whether they can be cached.
+
+Fourth, the uniform interface provides a consistent way to identify and interact with resources.
+
+Fifth, the layered-system constraint allows intermediaries such as proxies and gateways.
+
+Sixth, code-on-demand allows servers to provide executable code to clients, but this constraint is optional.
+
+Following these constraints can make an API easier to scale, evolve, and maintain.”
+
+Remember: Client-server, statelessness, cacheability, uniform interface, layered system, and optional code-on-demand.
+
+[↑ Back to top](#table-of-contents)
+
+### 471. What is SSL termination at the load balancer level?
+
+SSL termination means the load balancer decrypts HTTPS traffic and forwards plain HTTP to backend services, offloading encryption overhead from Node.js.
+
+[↑ Back to top](#table-of-contents)
+
+### 472. What is SSRF (Server-Side Request Forgery)?
+
+SSRF allows an attacker to induce the server to make HTTP requests to internal resources. Prevent: validate and sanitize user-supplied URLs, restrict allowed hosts/protocols, use allowlists, and avoid making requests to user-provided URLs.
+
+[↑ Back to top](#table-of-contents)
+
+### 473. What is the `--max-old-space-size` flag? What does it control?
+
+Expected interview answer:
+
+“The `--max-old-space-size` flag configures the maximum size of V8's old-generation heap, measured in megabytes.
+
+For example, we can start a Node.js application with a larger heap limit using this command:
+```
+
+node --max-old-space-size=4096 app.js
+```
+
+This sets the old-generation heap limit to approximately 4 GB.
+
+It can help an application that legitimately needs to keep a large amount of data in memory. However, increasing the limit does not fix a memory leak or guarantee better performance.
+
+I would first investigate memory usage and garbage collection, then increase the heap limit only if the application's workload requires it and the host has sufficient memory.”
+
+Remember: This flag controls a V8 heap limit; it does not set the total memory limit for the entire process.
+
+[↑ Back to top](#table-of-contents)
+
+### 474. What is the `--max-semi-space-size` flag?
+
+It sets the maximum size of V8's semi-spaces (used in new space for Scavenge). Increasing can reduce GC frequency but increases memory footprint. Rarely tuned manually.
+
+[↑ Back to top](#table-of-contents)
+
+### 475. What is the `path` module? What is `path.join()` vs `path.resolve()`?
+
+`path` module provides utilities for working with file and directory paths.
+- `join`: concatenates path segments using the correct separator, normalizing.
+- `resolve`: resolves an absolute path from segments, treating the rightmost parameter as relative to preceding ones or cwd.
+
+[↑ Back to top](#table-of-contents)
+
+### 476. What is the `perf_hooks` module? How do you measure execution time with `performance.now()`?
+
+`perf_hooks` provides high-resolution timing and performance measurement. `performance.now()` returns a high-resolution timestamp in milliseconds. Use to measure code execution: `const start = performance.now(); ... const duration = performance.now() - start;`.
+
+[↑ Back to top](#table-of-contents)
+
+### 477. What is the `url` module? How do you parse a URL?
+
+`url` module parses and formats URL strings. `url.parse('http://example.com/path?query=1')` returns object with `protocol`, `host`, `pathname`, `query`, etc. In modern Node, use `URL` class globally.
+
+[↑ Back to top](#table-of-contents)
+
+### 478. What is the Adapter pattern? Give a Node.js use case.
+
+Adapter converts one interface to another. Example: adapting a third-party payment gateway API into a common interface that your application expects, so switching providers requires only a new adapter.
+
+[↑ Back to top](#table-of-contents)
+
+### 479. What is the bulkhead pattern?
+
+Bulkhead isolates elements of an application into pools so that if one fails, others remain functional. In Node.js, you can limit concurrent connections to a service (e.g., using a connection pool or semaphore) to prevent resource exhaustion.
+
+[↑ Back to top](#table-of-contents)
+
+### 480. What is the difference between `/users/:id/posts` and `/posts?userId=:id`?
+
+Expected interview answer:
+
+“Both endpoints can return posts belonging to a particular user, but they represent the relationship differently.
+
+`/users/:id/posts` treats posts as a nested resource under a user. It clearly communicates that the posts belong to that particular user.
+
+`/posts?userId=:id` treats posts as a collection and filters the collection by user ID.
+
+I would use nested routes when the parent-child relationship is central to the API, and query parameters when I need flexible filtering across the collection.
+
+I would also avoid deeply nested URLs because they can become difficult to maintain.”
+
+Remember: Nested URLs emphasize resource relationships; query parameters filter a collection.
+
+[↑ Back to top](#table-of-contents)
+
+### 481. What is the difference between `COPY` and `ADD` in a Dockerfile?
+
+- `COPY`: copies local files into the image.
+- `ADD`: also supports tar extraction and URL downloading; use `COPY` unless you need those features, for clarity.
+
+[↑ Back to top](#table-of-contents)
+
+### 482. What is the difference between `find()` and `aggregate()`?
+
+`find()` returns documents matching a query, with optional projection and sort, but no complex transformations. `aggregate()` provides a pipeline for advanced data processing, grouping, joining, reshaping.
+
+[↑ Back to top](#table-of-contents)
+
+### 483. What is the difference between `INNER JOIN`, `LEFT JOIN`, `RIGHT JOIN`, `FULL OUTER JOIN`?
+
+- INNER: returns rows with matching values in both tables.
+- LEFT: all rows from left table, plus matched rows from right; NULLs if no match.
+- RIGHT: all rows from right, matched from left.
+- FULL OUTER: all rows when there is a match in either table; NULLs where no match.
+
+[↑ Back to top](#table-of-contents)
+
+### 484. What is the difference between `req.params`, `req.query`, and `req.body`?
+
+Expected interview answer:
+
+“The main difference is where the request data comes from.
+
+`req.params` contains route parameters, which are defined in the route path. For example, in `/users/:id`, the user ID is available through `req.params.id`.
+
+`req.query` contains query-string parameters, such as filters or pagination values. For example, `/users?page=2` gives us the page through `req.query.page`.
+
+`req.body` contains data sent in the request body, commonly with POST, PUT, or PATCH requests. To parse JSON request bodies, we typically use `express.json()`.
+
+I choose the appropriate location based on whether the value identifies a resource, modifies the query, or contains submitted data.”
+
+Example:
+```
+
+app.use(express.json());
+
+app.get("/users/:id", (req, res) => {
+const { id } = req.params;
+const { fields } = req.query;
+
+res.json({ id, fields });
+});
+
+app.post("/users", (req, res) => {
+res.status(201).json(req.body);
+});
+```
+
+Remember: `params` = route values, `query` = URL query string, `body` = request payload.
+
+[↑ Back to top](#table-of-contents)
+
+### 485. What is the difference between `res.json()`, `res.send()`, and `res.end()`?
+
+Expected interview answer:
+
+“These methods are used to send or finish an HTTP response, but they behave differently.
+
+`res.json()` serializes a JavaScript value as JSON and sets the appropriate content type.
+
+`res.send()` sends a response body and generally determines the content type based on the body supplied.
+
+`res.end()` is a lower-level response-ending method. It can finish a response without a body or after writing raw response data.
+
+For JSON APIs, I generally use `res.json()` because it clearly communicates that the response is JSON.”
+
+Example:
+```
+
+res.json({ name: "Rahul" });
+
+res.send("Request successful");
+
+res.status(204).end();
+```
+
+Remember: `res.json()` sends JSON, `res.send()` sends a response body, and `res.end()` ends the response.
+
+[↑ Back to top](#table-of-contents)
+
+### 486. What is the difference between `updateOne`, `updateMany`, `replaceOne`, `findOneAndUpdate`?
+
+- `updateOne`: updates the first matching document.
+- `updateMany`: updates all matching documents.
+- `replaceOne`: replaces an entire document (except `_id`).
+- `findOneAndUpdate`: updates a document and returns the original or updated document.
+
+[↑ Back to top](#table-of-contents)
+
+### 487. What is the difference between a monolithic API and a BFF (Backend for Frontend)?
+
+Expected interview answer:
+
+“A monolithic API is a backend API that serves the application's clients through a shared service or codebase.
+
+A Backend for Frontend, or BFF, is an architectural pattern in which we build a backend layer tailored to a particular frontend experience.
+
+For example, a web application and a mobile application may need different response structures or different combinations of data. A BFF can aggregate information from several backend services and return a response optimized for the specific client.
+
+This can reduce over-fetching and avoid requiring the frontend to make many separate requests.
+
+However, introducing a BFF also adds another service or layer to maintain, so I would use it when the client-specific benefits justify the additional complexity.”
+
+Remember: A monolithic API provides a shared backend interface; a BFF tailors backend behavior to the needs of a particular frontend.
+
+[↑ Back to top](#table-of-contents)
+
+### 488. What is the difference between B-tree, Hash, GIN, and BRIN indexes?
+
+- B-tree: default, good for equality and range queries, sorting.
+- Hash: only equality comparisons, no range.
+- GIN (Generalized Inverted Index): for full-text search, arrays, JSONB.
+- BRIN (Block Range Index): for very large tables with natural correlation (e.g., timestamp), lightweight.
+
+[↑ Back to top](#table-of-contents)
+
+### 489. What is the difference between error-first callbacks and Promises?
+
+Expected interview answer:
+
+“Error-first callbacks and Promises are two different ways of handling asynchronous results.
+
+With an error-first callback, the first argument represents the error, and the second argument represents the successful result. If the operation succeeds, the error is generally `null`.
+
+With Promises, a successful operation fulfills the Promise, while a failure rejects it. We can handle fulfillment using `.then()` and rejection using `.catch()`.
+
+Promises are easier to compose across multiple asynchronous operations and provide a more structured way to propagate errors. They also work naturally with `async/await`.”
+
+Example of an error-first callback:
+```
+
+fs.readFile("data.txt", "utf8", (err, data) => {
+if (err) {
+return console.error(err);
+}
+
+console.log(data);
+});
+```
+
+Example using a Promise:
+```
+
+fetchData()
+.then(data => console.log(data))
+.catch(error => console.error(error));
+```
+
+Remember: Callbacks pass errors as arguments; Promises represent success or failure through their state.
+
+[↑ Back to top](#table-of-contents)
+
+### 490. What is the difference between flowing mode and paused mode in readable streams?
+
+Expected interview answer:
+
+“Readable streams have two main reading modes: flowing mode and paused mode.
+
+In flowing mode, data is automatically delivered to the consumer through events such as `data`.
+
+In paused mode, data is not automatically emitted continuously. We can request chunks explicitly using the `read()` method.
+
+For example, adding a `data` event listener usually switches a readable stream into flowing mode, whereas using `read()` allows us to retrieve data manually in paused mode.
+
+The choice depends on whether I want data to be delivered automatically or prefer more explicit control over reading.”
+
+Example of flowing mode:
+```
+
+readStream.on("data", chunk => {
+console.log(chunk);
+});
+```
+
+Example of paused mode:
+```
+
+readStream.on("readable", () => {
+let chunk;
+
+while ((chunk = readStream.read()) !== null) {
+console.log(chunk);
+}
+});
+```
+
+Remember: Flowing mode delivers chunks automatically; paused mode gives the consumer explicit control over reading.
+
+[↑ Back to top](#table-of-contents)
+
+### 491. What is the difference between operational errors and programmer errors in Node.js?
+
+- Operational errors: expected runtime problems (e.g., failed network connection, invalid user input, database timeout). These should be handled gracefully.
+- Programmer errors: bugs in code (e.g., undefined variable, wrong type). These should be fixed. Handling them as operational errors can hide bugs.
+
+[↑ Back to top](#table-of-contents)
+
+### 492. What is the difference between REST and RPC?
+
+Expected interview answer:
+
+“REST and RPC are two different architectural approaches for designing APIs.
+
+REST is generally resource-oriented. It exposes resources through URLs and uses HTTP methods such as GET, POST, PUT, and DELETE to interact with them.
+
+RPC, or Remote Procedure Call, is action-oriented. It focuses on invoking operations or functions on a remote system.
+
+For example, a REST API might use `GET /users/123` to retrieve a user, whereas an RPC-style API might expose an operation named `getUser`.
+
+REST uses standard HTTP semantics around resources, while RPC focuses on requesting specific operations. The appropriate choice depends on the application's requirements and communication model.”
+
+Remember: REST emphasizes resources; RPC emphasizes operations.
+
+[↑ Back to top](#table-of-contents)
+
+### 493. What is the difference between synchronous and asynchronous functions in Node.js?
+
+Synchronous functions block the execution thread until the operation completes; they can cause performance bottlenecks. Asynchronous functions return immediately and schedule the result to be processed later via callbacks, promises, or events, allowing other code to run in the meantime. Node.js is designed for asynchronous programming to maximize throughput.
+
+[↑ Back to top](#table-of-contents)
+
+### 494. What is the heap vs the stack in Node.js memory?
+
+- Stack: stores local variables and function call frames; fast, small, LIFO.
+- Heap: dynamic memory for objects, strings, closures; managed by GC. Larger but slower allocation.
+
+[↑ Back to top](#table-of-contents)
+
+### 495. What is the old space vs new space in V8 memory?
+
+New space is where new, short-lived objects are allocated; it's collected quickly (Scavenge). Objects that survive two minor GCs are promoted to old space, which is collected less frequently and more thoroughly (Mark-Sweep). Old space holds long-lived data.
+
+[↑ Back to top](#table-of-contents)
+
+### 496. What is the pipeline pattern in Node.js streams?
+
+Streams can be connected using `.pipe()` or `pipeline()`, where data flows through a series of transforms. Each step is a processing unit, forming a pipeline.
+
+[↑ Back to top](#table-of-contents)
+
+### 497. What is the principle of least privilege in APIs?
+
+Grant users and services only the minimum access necessary. Apply fine-grained permissions, separate admin from user routes, and never expose admin functionality to all clients.
+
+[↑ Back to top](#table-of-contents)
+
+### 498. What is the role of the `http` module in Node.js?
+
+The `http` module allows Node.js to transfer data over HTTP. It provides methods to create an HTTP server (`http.createServer()`) and to make HTTP requests (`http.request()`). It handles low‑level socket connections, request/response parsing, and headers.
+
+[↑ Back to top](#table-of-contents)
+
+### 499. What is the saga pattern? What is the difference between choreography and orchestration?
+
+Saga manages distributed transactions by splitting into local transactions with compensating actions. Choreography: services react to events, publish events themselves. Orchestration: a central coordinator tells services what to do.
+
+[↑ Back to top](#table-of-contents)
+
+### 500. What is tree shaking? Why does it work better with ES Modules?
+
+Expected interview answer:
+
+“Tree shaking is a build optimization technique that removes unused code from the final application bundle.
+
+For example, suppose a module exports three functions, but my application imports and uses only one of them. A bundler may be able to remove the unused functions from the production bundle.
+
+Tree shaking works particularly well with ES Modules because their static `import` and `export` declarations allow bundlers to analyze dependencies and determine which exports are used.
+
+CommonJS uses dynamic `require()` calls, which can make it harder for bundlers to determine what code is needed in advance.
+
+Therefore, tree shaking is generally more effective with ES Modules, although the actual result also depends on the bundler and how the code is written.”
+
+Example:
+```
+
+// math.js
+export function add(a, b) {
+return a + b;
+}
+
+export function multiply(a, b) {
+return a * b;
+}
+```
+
+```
+// app.js
+import { add } from "./math.js";
+
+console.log(add(10, 20));
+```
+
+A bundler may remove the unused `multiply()` function from the production bundle.
+
+Remember: Tree shaking removes unused code; ES Modules make it easier for build tools to identify unused exports.
+
+[↑ Back to top](#table-of-contents)
+
+### 501. What is V8 heap snapshot? How do you use it to debug memory leaks?
+
+A heap snapshot captures the state of memory. Take two snapshots with a time gap; compare them to see which objects increased. Chrome DevTools can compare snapshots and show retained size. Objects still referenced unintentionally indicate a leak.
+
+[↑ Back to top](#table-of-contents)
+
+### 502. What is V8's JIT (Just-In-Time) compilation? What is hidden class optimization?
+
+V8 compiles JavaScript to machine code at runtime using two compilers: Ignition (interpreter) and TurboFan (optimizing compiler). Hidden classes (or map) speed up property access; V8 creates a hidden class for each object shape. Objects with same property order share the same hidden class, enabling fast access. Dynamically adding properties creates new hidden classes, degrading performance.
+
+[↑ Back to top](#table-of-contents)
+
+### 503. When do you return 200 versus 201 versus 204?
+
+Expected interview answer:
+
+“I use `200 OK` when the request succeeds and I want to return a response body containing the result.
+
+I use `201 Created` when the request successfully creates a resource. The response may include the created resource and a `Location` header identifying it.
+
+I use `204 No Content` when the operation succeeds but there is no response body to return.
+
+For example, retrieving a user would typically return 200, creating a user would typically return 201, and deleting a user without returning any content could return 204.”
+
+Remember: `200` = successful response, `201` = resource created, `204` = successful response without content.
+
+[↑ Back to top](#table-of-contents)
+
+### 504. When do you use POST versus PUT?
+
+Expected interview answer:
+
+“I use POST when submitting data for processing or creating a resource where the server commonly determines the resource URL.
+
+I use PUT when the client knows the target resource URL and wants to create or replace the resource representation at that URL.
+
+For example, `POST /users` can create a user and allow the server to assign an ID. A request to `PUT /users/123` can replace the representation of the user identified by `123`.
+
+The important distinction is that POST is not generally idempotent, while PUT is intended to be idempotent.”
+
+Remember: POST commonly creates a server-identified resource or triggers processing; PUT targets a known resource URL.
+
+[↑ Back to top](#table-of-contents)
+
+### 505. When would you use `execFile()` instead of `exec()`?
+
+`execFile()` runs an executable file directly without invoking a shell, which is safer and more efficient. Use it when you don't need shell features and want to avoid injection risks.
+
+[↑ Back to top](#table-of-contents)
+
+### 506. Why does Node.js need Buffers? What is binary data?
+
+Expected interview answer:
+
+“Binary data is data represented as a sequence of bytes rather than only as human-readable text.
+
+Node.js frequently interacts with files, network connections, images, audio, and other resources that contain raw bytes.
+
+Buffers provide an efficient way to store and manipulate those bytes in Node.js.
+
+For example, when a server receives an image upload, the content consists of binary data. A Buffer allows the application to access those bytes and pass them to other APIs or process them as required.”
+
+Remember: Buffers make it possible to work directly with the raw bytes used by files, networks, and other binary-data sources.
+
+[↑ Back to top](#table-of-contents)
